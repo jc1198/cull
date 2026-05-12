@@ -57,7 +57,7 @@ export async function buildCullCriteria(tasteProfile) {
     const res = await fetch(`${PROXY}/evaluate`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ model: 'moondream', prompt, stream: false }),
+      body: JSON.stringify({ model: 'moondream', prompt, stream: false, num_predict: 1000 }),
     })
     const data = await res.json()
     if (data.error) throw new Error(data.error)

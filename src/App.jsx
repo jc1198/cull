@@ -51,25 +51,6 @@ export default function App() {
     return () => { photos.forEach((p) => URL.revokeObjectURL(p.url)) }
   }, [photos])
 
-  // Debounced buildCullCriteria preview while typing in tasting step
-  useEffect(() => {
-    if (step !== 'tasting') return
-    if (!cuiInput.trim()) { setCriteria([]); return }
-
-    const timer = setTimeout(async () => {
-      setIsBuilding(true)
-      try {
-        const result = await buildCullCriteria(cuiInput)
-        setCriteria(result)
-      } catch (err) {
-        console.error('buildCullCriteria preview failed:', err)
-      } finally {
-        setIsBuilding(false)
-      }
-    }, 1000)
-
-    return () => clearTimeout(timer)
-  }, [cuiInput, step])
 
   // ── Handlers ────────────────────────────────────────────────
 
