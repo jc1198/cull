@@ -78,43 +78,45 @@ export async function buildCullCriteria(tasteProfile) {
  * Sends a single photo + criteria to Ollama and returns { decision, reason }.
  * imageBase64 may be a full data URL — the prefix is stripped automatically.
  */
+async function ollamaCall(prompt, cleanBase64) {
+  const res = await fetch(`${PROXY}/evaluate`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      model: 'moondream',
+      images: [cleanBase64],
+      prompt,
+      stream: false,
+    }),
+  })
+  const data = await res.json()
+  if (data.error) throw new Error(data.error)
+  return data.response ?? ''
+}
+
 export async function evaluatePhoto(imageBase64, criteria) {
   const cleanBase64 = stripDataUrl(imageBase64)
   console.log('[evaluatePhoto] base64 prefix check (first 100 chars):', cleanBase64.slice(0, 100))
 
-  const criteriaText = criteria
-    .map((c) => `- ${c.signal} (${c.weight}): ${c.description}`)
-    .join('\n')
-
-  const prompt =
-    `Look at this photo carefully.\n\n` +
-    `You are deciding whether to keep or cut it based on these criteria:\n` +
-    `${criteria.map((c) => `- ${c.signal} (${c.weight} priority): ${c.description}`).join('\n')}\n\n` +
-    `Does this photo match the criteria above?\n` +
-    `Reply with ONLY this JSON, no other text:\n` +
-    `{"decision": "keep", "reason": "describe what you see in the photo and why it matches or does not match the criteria"}\n\n` +
-    `Use "keep" if the photo matches the criteria, "cut" if it does not.`
-
   try {
-    const res = await fetch(`${PROXY}/evaluate`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        model: 'moondream',
-        images: [cleanBase64],
-        prompt,
-        stream: false,
-      }),
-    })
-    const data = await res.json()
-    if (data.error) throw new Error(data.error)
+    // Call 1 — decision only (plain text, no JSON)
+    const decisionPrompt =
+      `Look at this photo. Based on these criteria:\n` +
+      `${criteria.map((c) => `- ${c.signal}: ${c.description}`).join('\n')}\n\n` +
+      `Does this photo match the criteria? Reply with ONLY one word: keep or cut`
 
-    const raw = data.response ?? ''
-    console.log('[evaluatePhoto] raw Moondream response:', raw)
+    const decisionRaw = await ollamaCall(decisionPrompt, cleanBase64)
+    console.log('[evaluatePhoto] decision raw:', decisionRaw)
+    const decision = decisionRaw.trim().toLowerCase().includes('keep') ? 'keep' : 'cut'
 
-    const parsed = parseJsonObject(raw)
-    if (parsed && parsed.decision) return parsed
-    return { decision: 'cut', reason: 'Could not evaluate — marked as cut' }
+    // Call 2 — reason only (plain text, no JSON)
+    const reasonPrompt =
+      `Describe what you see in this photo in one sentence. Be specific about the subject and content.`
+
+    const reason = (await ollamaCall(reasonPrompt, cleanBase64)).trim()
+    console.log('[evaluatePhoto] reason raw:', reason)
+
+    return { decision, reason }
   } catch (err) {
     console.error('evaluatePhoto error:', err?.message ?? err)
     return { decision: 'cut', reason: 'Could not evaluate — marked as cut' }
