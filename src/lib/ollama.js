@@ -44,8 +44,12 @@ function parseJsonObject(raw) {
  */
 export async function buildCullCriteria(tasteProfile) {
   const prompt =
-    `You are a photo culling assistant. Based on this taste profile, generate exactly 5 culling signals.\n\n` +
+    `You are a photo culling assistant. Based on this taste profile, generate exactly 5 visual culling signals.\n\n` +
     `Taste profile: "${tasteProfile}"\n\n` +
+    `Each signal must describe something you can SEE in a photo — a visual characteristic to look for.\n` +
+    `For example, if the taste profile mentions "dogs", the signals should describe visual qualities of dog photos to select: ` +
+    `clear view of the dog's face, good focus on the subject, expressive or playful moment, etc.\n` +
+    `Do NOT just restate the input — describe concrete visual things to look for when evaluating each photo.\n\n` +
     `Return ONLY a raw JSON array — no markdown, no explanation — where each item has:\n` +
     `{ "signal": string, "weight": "high"|"medium"|"low", "description": string }`
 
@@ -83,10 +87,13 @@ export async function evaluatePhoto(imageBase64, criteria) {
     .join('\n')
 
   const prompt =
-    `You are a photo culling assistant. Evaluate this photo against the criteria below.\n\n` +
-    `Criteria:\n${criteriaText}\n\n` +
-    `Return ONLY this JSON: { "decision": "keep" or "cut", "reason": "one sentence" }\n` +
-    `No markdown, no explanation.`
+    `Look at this photo carefully.\n\n` +
+    `You are deciding whether to keep or cut it based on these criteria:\n` +
+    `${criteria.map((c) => `- ${c.signal} (${c.weight} priority): ${c.description}`).join('\n')}\n\n` +
+    `Does this photo match the criteria above?\n` +
+    `Reply with ONLY this JSON, no other text:\n` +
+    `{"decision": "keep", "reason": "describe what you see in the photo and why it matches or does not match the criteria"}\n\n` +
+    `Use "keep" if the photo matches the criteria, "cut" if it does not.`
 
   try {
     const res = await fetch(`${PROXY}/evaluate`, {
