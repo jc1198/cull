@@ -8,8 +8,7 @@ import ProcessingView from './components/ProcessingView'
 import ResultsView from './components/ResultsView'
 import CUIBar from './components/CUIBar'
 import ChipRow from './components/ChipRow'
-import { extractIntentSignals } from './lib/extractIntents'
-import { cullPhoto } from './lib/cullPhoto'
+import { buildCullCriteria, evaluatePhoto, fileToBase64 } from './lib/ollama'
 
 const UPLOAD_CHIPS  = ['Landscape', 'Street photo', 'Portrait', 'Events', 'Architecture']
 const LOADED_CHIPS  = ['Moody / dramatic', 'Clean & bright', 'Candid / natural', 'Minimalist']
@@ -23,38 +22,51 @@ export default function App() {
   const [photos, setPhotos]               = useState([])
 
   // Tasting
-  const [intentSignals, setIntentSignals] = useState([])
-  const [isExtracting, setIsExtracting]   = useState(false)
+  const [criteria, setCriteria]               = useState([])
+  const [isBuildingCriteria, setIsBuilding]   = useState(false)
 
   // Processing
-  const [progress, setProgress] = useState({ current: 0, total: 0, label: '' })
-  const [results, setResults]   = useState([])
+  const [processingStage, setProcessingStage] = useState(null) // 'compressing' | 'evaluating'
+  const [cullCriteria, setCullCriteria]       = useState([])
+  const [progress, setProgress]               = useState({ current: 0, total: 0, label: '' })
+  const [results, setResults]                 = useState([])
 
   // Results
   const [selectedId, setSelectedId] = useState(null)
   const [showCuts, setShowCuts]     = useState(false)
-  const [undoItem, setUndoItem]     = useState(null)  // { photoId, photoName, timeoutId }
+  const [undoItem, setUndoItem]     = useState(null)
+
+  // Ollama connection
+  const [ollamaStatus, setOllamaStatus] = useState({ connected: false, models: [] })
+
+  // Check Ollama on mount
+  useEffect(() => {
+    fetch('http://localhost:3001/health')
+      .then((r) => r.json())
+      .then(setOllamaStatus)
+      .catch(() => setOllamaStatus({ connected: false, models: [] }))
+  }, [])
 
   useEffect(() => {
     return () => { photos.forEach((p) => URL.revokeObjectURL(p.url)) }
   }, [photos])
 
-  // Debounced intent extraction in tasting step
+  // Debounced buildCullCriteria preview while typing in tasting step
   useEffect(() => {
     if (step !== 'tasting') return
-    if (!cuiInput.trim()) { setIntentSignals([]); return }
+    if (!cuiInput.trim()) { setCriteria([]); return }
 
     const timer = setTimeout(async () => {
-      setIsExtracting(true)
+      setIsBuilding(true)
       try {
-        const signals = await extractIntentSignals(cuiInput)
-        setIntentSignals(signals)
+        const result = await buildCullCriteria(cuiInput)
+        setCriteria(result)
       } catch (err) {
-        console.error('Intent extraction failed:', err)
+        console.error('buildCullCriteria preview failed:', err)
       } finally {
-        setIsExtracting(false)
+        setIsBuilding(false)
       }
-    }, 800)
+    }, 1000)
 
     return () => clearTimeout(timer)
   }, [cuiInput, step])
@@ -77,7 +89,7 @@ export default function App() {
   }
 
   function handleContinue() {
-    setIntentSignals([])
+    setCriteria([])
     setStep('tasting')
   }
 
@@ -85,17 +97,30 @@ export default function App() {
     setStep('processing')
     setResults([])
     setShowCuts(false)
-    setProgress({ current: 0, total: photos.length, label: 'Starting…' })
+    setCullCriteria([])
 
-    const tasteProfile = cuiInput.trim() || selectedChips.join(', ') || 'Best overall quality'
+    const freeText       = cuiInput.trim()
+    const chipConstraints = selectedChips.join(', ')
+    const tasteProfile   = [freeText, chipConstraints].filter(Boolean).join(', ') || 'Best overall quality'
+
+    // Stage 1: compress taste profile into structured criteria
+    setProcessingStage('compressing')
+    setProgress({ current: 0, total: photos.length, label: 'Reading your taste profile…' })
+
+    const builtCriteria = await buildCullCriteria(tasteProfile)
+    setCullCriteria(builtCriteria)
+
+    // Stage 2: evaluate each photo
+    setProcessingStage('evaluating')
     const accumulated = []
 
     for (let i = 0; i < photos.length; i++) {
       const photo = photos[i]
-      setProgress({ current: i + 1, total: photos.length, label: `Analyzing ${photo.name}…` })
+      setProgress({ current: i + 1, total: photos.length, label: `Evaluating photo ${i + 1} of ${photos.length}…` })
 
       try {
-        const result = await cullPhoto(photo, i, tasteProfile)
+        const base64 = await fileToBase64(photo.file)
+        const result  = await evaluatePhoto(base64, builtCriteria)
         accumulated.push({ photo, decision: result.decision, reason: result.reason, starred: false })
       } catch (err) {
         console.error(`Failed on ${photo.name}:`, err)
@@ -103,16 +128,11 @@ export default function App() {
       }
 
       setResults([...accumulated])
-
-      // Free tier: 5 req/min — wait between photos except after the last one
-      if (i < photos.length - 1) {
-        setProgress({ current: i + 1, total: photos.length, label: `Waiting to avoid rate limit…` })
-        await new Promise((r) => setTimeout(r, 15000))
-      }
     }
 
     const firstKeep = accumulated.find((r) => r.decision === 'keep')
     setSelectedId(firstKeep?.photo.id ?? null)
+    setProcessingStage(null)
     setStep('results')
   }
 
@@ -166,13 +186,13 @@ export default function App() {
   // ── Derived ─────────────────────────────────────────────────
 
   const chips = (
-    step === 'upload'     ? UPLOAD_CHIPS  :
-    step === 'loaded'     ? LOADED_CHIPS  :
-    step === 'tasting'    ? TASTING_CHIPS :
+    step === 'upload'  ? UPLOAD_CHIPS  :
+    step === 'loaded'  ? LOADED_CHIPS  :
+    step === 'tasting' ? TASTING_CHIPS :
     ['Export selects', showCuts ? 'Show keeps instead' : 'Show cuts instead', 'Re-rank by sharpness', 'Starred only']
   )
   const runCullDisabled = cuiInput.trim() === '' && selectedChips.length === 0
-  const isUpload = step === 'upload'
+  const isUpload    = step === 'upload'
   const showSidebar = step === 'results'
 
   return (
@@ -205,7 +225,18 @@ export default function App() {
         ) : (
           <div className="w-full flex flex-col" style={{ gap: '30px' }}>
 
-            {step === 'upload' && <DropZone onFiles={handleFiles} />}
+            {step === 'upload' && (
+              <>
+                {!ollamaStatus.connected && (
+                  <div className="w-full px-4 py-3 text-sm text-primary border border-border rounded-md bg-gray-50">
+                    ⚠ Ollama isn't running. Start Ollama and run{' '}
+                    <code className="font-mono text-xs bg-gray-100 px-1 py-0.5 rounded">npm run dev</code>
+                    {' '}to use Cull.
+                  </div>
+                )}
+                <DropZone onFiles={handleFiles} />
+              </>
+            )}
 
             {step === 'loaded' && (
               <>
@@ -218,15 +249,20 @@ export default function App() {
               <TastingScreen
                 value={cuiInput}
                 onChange={setCuiInput}
-                intentSignals={intentSignals}
-                isExtracting={isExtracting}
+                criteria={criteria}
+                isBuildingCriteria={isBuildingCriteria}
                 onRunCull={handleRunCull}
                 runCullDisabled={runCullDisabled}
               />
             )}
 
             {step === 'processing' && (
-              <ProcessingView progress={progress} results={results} />
+              <ProcessingView
+                processingStage={processingStage}
+                progress={progress}
+                results={results}
+                cullCriteria={cullCriteria}
+              />
             )}
 
             {(step === 'upload' || step === 'loaded') && (

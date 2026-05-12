@@ -1,12 +1,12 @@
 export default function TastingScreen({
   value,
   onChange,
-  intentSignals,
-  isExtracting,
+  criteria,
+  isBuildingCriteria,
   onRunCull,
   runCullDisabled,
 }) {
-  const showPanel = intentSignals.length > 0 || isExtracting
+  const showPanel = criteria.length > 0 || isBuildingCriteria
 
   return (
     <div className="w-full flex flex-col" style={{ gap: '20px' }}>
@@ -30,17 +30,22 @@ export default function TastingScreen({
           <p className="text-xs font-semibold text-muted uppercase tracking-wider mb-3">
             Cull will prioritize
           </p>
-          {isExtracting ? (
+          {isBuildingCriteria ? (
             <div className="flex items-center gap-2">
               <div className="w-3 h-3 rounded-full border-2 border-border border-t-primary animate-spin" />
               <span className="text-sm text-muted">Analyzing your description…</span>
             </div>
           ) : (
             <ul className="flex flex-col" style={{ gap: '6px' }}>
-              {intentSignals.map((signal, i) => (
+              {criteria.map((c, i) => (
                 <li key={i} className="flex items-start gap-2 text-sm text-primary">
                   <span className="text-muted mt-0.5">•</span>
-                  <span>{signal}</span>
+                  <span>
+                    {c.signal}
+                    {c.weight && (
+                      <span className="text-muted ml-1 text-xs">· {c.weight}</span>
+                    )}
+                  </span>
                 </li>
               ))}
             </ul>
