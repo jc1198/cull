@@ -25,6 +25,7 @@ export default function TastingScreen({
       </div>
 
       {/* Priority panel */}
+      {console.log('[TastingScreen] criteria prop:', criteria)}
       {showPanel && (
         <div className="w-full border border-border rounded-md px-5 py-4">
           <p className="text-xs font-semibold text-muted uppercase tracking-wider mb-3">

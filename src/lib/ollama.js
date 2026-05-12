@@ -65,8 +65,28 @@ export async function buildCullCriteria(tasteProfile) {
     const raw = data.response ?? ''
     console.log('[buildCullCriteria] raw Moondream response:', raw)
 
-    const parsed = parseJsonArray(raw)
-    if (Array.isArray(parsed) && parsed.length > 0) return parsed
+    let parsed = parseJsonArray(raw)
+
+    // Normalise nested structures Moondream sometimes emits:
+    // [[{signal,...}]]            → unwrap outer array
+    // [{criteria:[{signal,...}]}] → unwrap items wrapper
+    // {criteria:[{signal,...}]}   → top-level object wrapper
+    if (!Array.isArray(parsed)) {
+      const obj = parseJsonObject(raw)
+      if (obj && Array.isArray(obj.criteria)) parsed = obj.criteria
+      else if (obj && Array.isArray(obj.signals))  parsed = obj.signals
+    }
+    if (Array.isArray(parsed) && parsed.length === 1 && Array.isArray(parsed[0])) {
+      parsed = parsed[0] // [[...]] → [...]
+    }
+    if (Array.isArray(parsed) && parsed.length > 0 && !parsed[0].signal) {
+      // items like [{criteria:[...]}] — grab first array-valued property
+      const inner = Object.values(parsed[0]).find(Array.isArray)
+      if (inner) parsed = inner
+    }
+
+    console.log('[buildCullCriteria] normalised criteria:', parsed)
+    if (Array.isArray(parsed) && parsed.length > 0 && parsed[0].signal) return parsed
     return FALLBACK_CRITERIA
   } catch (err) {
     console.error('buildCullCriteria error:', err?.message ?? err)
