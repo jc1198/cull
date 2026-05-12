@@ -19,16 +19,23 @@ function stripDataUrl(base64) {
   return idx !== -1 ? base64.slice(idx + 1) : base64
 }
 
-function parseJson(raw) {
-  try {
-    return JSON.parse(raw.trim())
-  } catch {
-    const arrMatch = raw.match(/\[[\s\S]*?\]/)
-    if (arrMatch) return JSON.parse(arrMatch[0])
-    const objMatch = raw.match(/\{[\s\S]*?\}/)
-    if (objMatch) return JSON.parse(objMatch[0])
-    return null
-  }
+function stripFences(raw) {
+  // Remove ```json ... ``` or ``` ... ``` wrappers Moondream sometimes adds
+  return raw.replace(/```(?:json)?\s*([\s\S]*?)```/g, '$1').trim()
+}
+
+function parseJsonArray(raw) {
+  const cleaned = stripFences(raw)
+  const match = cleaned.match(/\[[\s\S]*\]/)
+  if (!match) return null
+  try { return JSON.parse(match[0]) } catch { return null }
+}
+
+function parseJsonObject(raw) {
+  const cleaned = stripFences(raw)
+  const match = cleaned.match(/\{[\s\S]*\}/)
+  if (!match) return null
+  try { return JSON.parse(match[0]) } catch { return null }
 }
 
 /**
@@ -51,7 +58,10 @@ export async function buildCullCriteria(tasteProfile) {
     const data = await res.json()
     if (data.error) throw new Error(data.error)
 
-    const parsed = parseJson(data.response ?? '')
+    const raw = data.response ?? ''
+    console.log('[buildCullCriteria] raw Moondream response:', raw)
+
+    const parsed = parseJsonArray(raw)
     if (Array.isArray(parsed) && parsed.length > 0) return parsed
     return FALLBACK_CRITERIA
   } catch (err) {
@@ -66,6 +76,7 @@ export async function buildCullCriteria(tasteProfile) {
  */
 export async function evaluatePhoto(imageBase64, criteria) {
   const cleanBase64 = stripDataUrl(imageBase64)
+  console.log('[evaluatePhoto] base64 prefix check (first 100 chars):', cleanBase64.slice(0, 100))
 
   const criteriaText = criteria
     .map((c) => `- ${c.signal} (${c.weight}): ${c.description}`)
@@ -91,7 +102,10 @@ export async function evaluatePhoto(imageBase64, criteria) {
     const data = await res.json()
     if (data.error) throw new Error(data.error)
 
-    const parsed = parseJson(data.response ?? '')
+    const raw = data.response ?? ''
+    console.log('[evaluatePhoto] raw Moondream response:', raw)
+
+    const parsed = parseJsonObject(raw)
     if (parsed && parsed.decision) return parsed
     return { decision: 'cut', reason: 'Could not evaluate — marked as cut' }
   } catch (err) {
