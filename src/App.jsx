@@ -100,6 +100,7 @@ export default function App() {
       setProgress({ current: i + 1, total: photos.length, label: `Evaluating photo ${i + 1} of ${photos.length}…` })
 
       try {
+        console.log('[evaluatePhoto] image size:', photo.file.size, 'bytes')
         const base64 = await fileToBase64(photo.file)
         const result  = await evaluatePhoto(base64, builtCriteria)
         accumulated.push({ photo, decision: result.decision, reason: result.reason, starred: false })
