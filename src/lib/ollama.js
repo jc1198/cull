@@ -20,7 +20,7 @@ function stripDataUrl(base64) {
 }
 
 function stripFences(raw) {
-  // Remove ```json ... ``` or ``` ... ``` wrappers Moondream sometimes adds
+  // Remove ```json ... ``` or ``` ... ``` wrappers the model sometimes adds
   return raw.replace(/```(?:json)?\s*([\s\S]*?)```/g, '$1').trim()
 }
 
@@ -44,37 +44,36 @@ function parseJsonObject(raw) {
  */
 export async function buildCullCriteria(tasteProfile) {
   const prompt =
-    `You are a photo culling assistant. Based on this taste profile, generate exactly 5 visual culling signals.\n\n` +
-    `Taste profile: "${tasteProfile}"\n\n` +
-    `Each signal must describe something you can SEE in a photo — a visual characteristic to look for.\n` +
-    `For example, if the taste profile mentions "dogs", the signals should describe visual qualities of dog photos to select: ` +
-    `clear view of the dog's face, good focus on the subject, expressive or playful moment, etc.\n` +
-    `Do NOT just restate the input — describe concrete visual things to look for when evaluating each photo.\n\n` +
-    `Return ONLY a raw JSON array — no markdown, no explanation — where each item has:\n` +
-    `{ "signal": string, "weight": "high"|"medium"|"low", "description": string }`
+    `You are a photo culling assistant. A photographer wants: "${tasteProfile}"\n\n` +
+    `Return ONLY a JSON array of 3 culling criteria, each with:\n` +
+    `{ "signal": "short label", "weight": "high|medium|low", "description": "what to visually look for in the photo" }\n\n` +
+    `Example for "golden hour landscapes":\n` +
+    `[{"signal": "warm light", "weight": "high", "description": "photo has orange or golden toned light"},\n` +
+    `{"signal": "horizon composition", "weight": "medium", "description": "horizon line is visible and well placed"}]\n\n` +
+    `No explanation, no markdown, just the JSON array.`
 
   try {
     const res = await fetch(`${PROXY}/evaluate`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ model: 'moondream', prompt, stream: false, num_predict: 1000 }),
+      body: JSON.stringify({ model: 'llava:7b', prompt, stream: false, num_predict: 1000 }),
     })
     const data = await res.json()
     if (data.error) throw new Error(data.error)
 
     const raw = data.response ?? ''
-    console.log('[buildCullCriteria] raw Moondream response:', raw)
+    console.log('[buildCullCriteria] raw response:', raw)
 
     let parsed = parseJsonArray(raw)
 
-    // Normalise nested structures Moondream sometimes emits:
+    // Normalise nested structures llava may emit:
     // [[{signal,...}]]            → unwrap outer array
     // [{criteria:[{signal,...}]}] → unwrap items wrapper
     // {criteria:[{signal,...}]}   → top-level object wrapper
     if (!Array.isArray(parsed)) {
       const obj = parseJsonObject(raw)
       if (obj && Array.isArray(obj.criteria)) parsed = obj.criteria
-      else if (obj && Array.isArray(obj.signals))  parsed = obj.signals
+      else if (obj && Array.isArray(obj.signals)) parsed = obj.signals
     }
     if (Array.isArray(parsed) && parsed.length === 1 && Array.isArray(parsed[0])) {
       parsed = parsed[0] // [[...]] → [...]
@@ -98,47 +97,46 @@ export async function buildCullCriteria(tasteProfile) {
  * Sends a single photo + criteria to Ollama and returns { decision, reason }.
  * imageBase64 may be a full data URL — the prefix is stripped automatically.
  */
-async function ollamaCall(prompt, cleanBase64) {
-  const res = await fetch(`${PROXY}/evaluate`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      model: 'moondream',
-      images: [cleanBase64],
-      prompt,
-      stream: false,
-    }),
-  })
-  const data = await res.json()
-  if (data.error) throw new Error(data.error)
-  return data.response ?? ''
-}
-
 export async function evaluatePhoto(imageBase64, criteria) {
   const cleanBase64 = stripDataUrl(imageBase64)
   console.log('[evaluatePhoto] base64 prefix check (first 100 chars):', cleanBase64.slice(0, 100))
 
+  const prompt =
+    `Look at this photo carefully.\n\n` +
+    `You are a photo culling assistant. Decide whether to keep or cut this photo based on these criteria:\n` +
+    `${criteria.map((c) => `- ${c.signal} (${c.weight} priority): ${c.description}`).join('\n')}\n\n` +
+    `Reply with ONLY this JSON and nothing else:\n` +
+    `{"decision": "keep", "reason": "one sentence describing what you see and why it matches or does not match the criteria"}\n\n` +
+    `Use "keep" if the photo matches the criteria, "cut" if not.`
+
   try {
-    // Call 1 — decision only (plain text, no JSON)
-    const decisionPrompt =
-      `Look at this photo. Based on these criteria:\n` +
-      `${criteria.map((c) => `- ${c.signal}: ${c.description}`).join('\n')}\n\n` +
-      `Does this photo match the criteria? Reply with ONLY one word: keep or cut`
+    const res = await fetch(`${PROXY}/evaluate`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'llava:7b',
+        images: [cleanBase64],
+        prompt,
+        stream: false,
+      }),
+    })
+    const data = await res.json()
+    if (data.error) throw new Error(data.error)
 
-    const decisionRaw = await ollamaCall(decisionPrompt, cleanBase64)
-    console.log('[evaluatePhoto] decision raw:', decisionRaw)
-    const decision = decisionRaw.trim().toLowerCase().includes('keep') ? 'keep' : 'cut'
+    const raw = data.response ?? ''
+    console.log('[evaluatePhoto] raw response:', raw)
 
-    // Call 2 — reason only (plain text, no JSON)
-    const reasonPrompt =
-      `Describe what you see in this photo in one sentence. Be specific about the subject and content.`
+    const parsed = parseJsonObject(raw)
+    if (parsed && (parsed.decision === 'keep' || parsed.decision === 'cut')) {
+      return { decision: parsed.decision, reason: parsed.reason ?? '' }
+    }
 
-    const reason = (await ollamaCall(reasonPrompt, cleanBase64)).trim()
-    console.log('[evaluatePhoto] reason raw:', reason)
-
-    return { decision, reason }
+    // Fallback: try to infer decision from plain text if JSON parse failed
+    const lower = raw.toLowerCase()
+    const decision = lower.includes('keep') ? 'keep' : 'cut'
+    return { decision, reason: 'Could not evaluate' }
   } catch (err) {
     console.error('evaluatePhoto error:', err?.message ?? err)
-    return { decision: 'cut', reason: 'Could not evaluate — marked as cut' }
+    return { decision: 'cut', reason: 'Could not evaluate' }
   }
 }
