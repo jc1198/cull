@@ -103,11 +103,15 @@ export async function evaluatePhoto(imageBase64, criteria) {
 
   const prompt =
     `Look at this photo carefully.\n\n` +
-    `You are a photo culling assistant. Decide whether to keep or cut this photo based on these criteria:\n` +
-    `${criteria.map((c) => `- ${c.signal} (${c.weight} priority): ${c.description}`).join('\n')}\n\n` +
-    `Reply with ONLY this JSON and nothing else:\n` +
-    `{"decision": "keep", "reason": "one sentence describing what you see and why it matches or does not match the criteria"}\n\n` +
-    `Use "keep" if the photo matches the criteria, "cut" if not.`
+    `You are a photo culling assistant. The PRIMARY requirement is:\n` +
+    `${criteria.filter((c) => c.weight === 'high').map((c) => `${c.signal}: ${c.description}`).join(', ')}\n\n` +
+    `If the photo does NOT satisfy the primary requirement, it must be cut regardless of anything else.\n\n` +
+    `Secondary criteria (only considered if primary is met):\n` +
+    `${criteria.filter((c) => c.weight !== 'high').map((c) => `- ${c.signal}: ${c.description}`).join('\n')}\n\n` +
+    `Reply with ONLY this JSON:\n` +
+    `{"decision": "keep", "reason": "one sentence describing what you see and why it meets or fails the primary requirement"}\n\n` +
+    `Use "keep" only if the primary requirement is satisfied.\n` +
+    `Use "cut" if the primary requirement is not satisfied.`
 
   try {
     const res = await fetch(`${PROXY}/evaluate`, {
