@@ -151,6 +151,7 @@ export default function App() {
     if (step === 'results') {
       if (chip === 'Show cuts instead' || chip === 'Show keeps instead') {
         setShowCuts((prev) => !prev)
+        setSelectedId(null)
       } else {
         setCuiInput(chip)
       }
