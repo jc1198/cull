@@ -51,6 +51,26 @@ export default function App() {
     return () => { photos.forEach((p) => URL.revokeObjectURL(p.url)) }
   }, [photos])
 
+  // Debounced buildCullCriteria preview while typing in the tasting step
+  useEffect(() => {
+    if (step !== 'tasting') return
+    if (!cuiInput.trim()) { setCriteria([]); return }
+
+    const timer = setTimeout(async () => {
+      setIsBuilding(true)
+      try {
+        const result = await buildCullCriteria(cuiInput)
+        setCriteria(result)
+      } catch (err) {
+        console.error('buildCullCriteria preview failed:', err)
+      } finally {
+        setIsBuilding(false)
+      }
+    }, 800)
+
+    return () => clearTimeout(timer)
+  }, [cuiInput, step])
+
 
   // ── Handlers ────────────────────────────────────────────────
 
@@ -84,11 +104,12 @@ export default function App() {
     const chipConstraints = selectedChips.join(', ')
     const tasteProfile   = [freeText, chipConstraints].filter(Boolean).join(', ') || 'Best overall quality'
 
-    // Stage 1: compress taste profile into structured criteria
+    // Stage 1: use existing edited criteria if available, else build from taste profile
     setProcessingStage('compressing')
     setProgress({ current: 0, total: photos.length, label: 'Reading your taste profile…' })
 
-    const builtCriteria = await buildCullCriteria(tasteProfile)
+    let builtCriteria = criteria.length > 0 ? criteria : await buildCullCriteria(tasteProfile)
+    setCriteria(builtCriteria)
     setCullCriteria(builtCriteria)
 
     // Stage 2: evaluate each photo
@@ -233,6 +254,7 @@ export default function App() {
                 value={cuiInput}
                 onChange={setCuiInput}
                 criteria={criteria}
+                onCriteriaChange={setCriteria}
                 isBuildingCriteria={isBuildingCriteria}
                 onRunCull={handleRunCull}
                 runCullDisabled={runCullDisabled}
