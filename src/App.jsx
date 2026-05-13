@@ -124,10 +124,10 @@ export default function App() {
         console.log('[evaluatePhoto] image size:', photo.file.size, 'bytes')
         const base64 = await fileToBase64(photo.file)
         const result  = await evaluatePhoto(base64, builtCriteria)
-        accumulated.push({ photo, decision: result.decision, reason: result.reason, starred: false })
+        accumulated.push({ photo, decision: result.decision, originalDecision: result.decision, reason: result.reason, starred: false })
       } catch (err) {
         console.error(`Failed on ${photo.name}:`, err)
-        accumulated.push({ photo, decision: 'keep', reason: 'Could not analyze — kept by default.', starred: false })
+        accumulated.push({ photo, decision: 'keep', originalDecision: 'keep', reason: 'Could not analyze — kept by default.', starred: false })
       }
 
       setResults([...accumulated])

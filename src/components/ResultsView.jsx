@@ -65,7 +65,7 @@ function DetailPanel({ item, showCuts, onMoveToCuts, onStar }) {
   }
 
   const bullets = reasonToBullets(item.reason)
-  const label = showCuts ? 'Why Cull cut this' : 'Why Cull kept this'
+  const manuallyMoved = item.originalDecision && item.decision !== item.originalDecision
 
   return (
     <div className="flex flex-col" style={{ gap: '16px' }}>
@@ -77,7 +77,14 @@ function DetailPanel({ item, showCuts, onMoveToCuts, onStar }) {
         draggable={false}
       />
       <div>
-        <p className="text-xs font-semibold text-muted uppercase tracking-wider mb-2">{label}</p>
+        <div className="flex items-center gap-2 mb-2">
+          <p className="text-xs font-semibold text-muted uppercase tracking-wider">Cull's Analysis</p>
+          {manuallyMoved && (
+            <span className="px-2 py-0.5 text-xs rounded-full" style={{ backgroundColor: '#f3f4f6', color: '#6b7280' }}>
+              Manually moved
+            </span>
+          )}
+        </div>
         <ul className="flex flex-col" style={{ gap: '6px' }}>
           {bullets.map((bullet, i) => (
             <li key={i} className="flex items-start gap-2 text-sm text-primary">
