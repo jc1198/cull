@@ -42,13 +42,16 @@ export function StatusLabel({ prefix, children }) {
 /**
  * The label row's right-aligned control. 12px bold, underlined — distinct from
  * the console's other text link, which is 13px with a bottom border.
-
+ *
+ * Pinned to the step label's 14px line box. A button's default `normal` line
+ * height is taller than the label's, so an unconstrained link grew the label row
+ * and walked the console's top border a few pixels whenever it appeared.
  */
 export function ConsoleLink({ children, ...props }) {
   return (
     <button
       type="button"
-      className="text-[12px] font-bold text-primary underline whitespace-nowrap hover:opacity-70 transition-opacity"
+      className="block text-[12px] font-bold text-primary leading-[14px] underline whitespace-nowrap hover:opacity-70 transition-opacity"
       {...props}
     >
       {children}
@@ -64,7 +67,9 @@ export default function Console({ label, secondary, progress, description, prior
         style={{ maxWidth: '1440px', padding: '32px 80px 48px', gap: '24px' }}
       >
         {(label || secondary) && (
-          <div className="flex items-center justify-between gap-4">
+          /* The row holds the label's line box whether or not a secondary
+             control is present, so the console's top edge never shifts. */
+          <div className="flex items-center justify-between gap-4" style={{ minHeight: '14px' }}>
             <div>{label}</div>
             {secondary ? <div className="shrink-0">{secondary}</div> : null}
           </div>

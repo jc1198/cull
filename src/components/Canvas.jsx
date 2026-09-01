@@ -10,18 +10,18 @@
 
 import Wordmark from './Wordmark'
 
-export default function Canvas({ children, center = false, scroll = false, className = '' }) {
+// Every step clips — results was the last screen that scrolled, and it now sizes
+// its detail pane to the canvas instead, so the scroll variant is gone. Screens
+// size their own content within the column; the canvas only supplies the frame.
+export default function Canvas({ children, className = '' }) {
   return (
-    <main className={['flex-1 min-h-0', scroll ? 'overflow-y-auto' : 'overflow-hidden', className].join(' ')}>
+    <main className={['flex-1 min-h-0 overflow-hidden', className].join(' ')}>
       <div
-        className={['mx-auto w-full flex flex-col', scroll ? '' : 'h-full'].join(' ')}
+        className="mx-auto w-full h-full flex flex-col"
         style={{ maxWidth: '1440px', paddingLeft: '80px', paddingRight: '80px' }}
       >
         <Wordmark />
-        <div
-          className={['flex flex-col', scroll ? '' : 'flex-1 min-h-0',
-                      center ? 'justify-center' : ''].join(' ')}
-        >
+        <div className="flex flex-col flex-1 min-h-0">
           {children}
         </div>
       </div>

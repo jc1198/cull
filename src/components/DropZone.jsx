@@ -13,8 +13,12 @@ function UploadGlyph() {
 }
 
 /**
- * 1280 x 459 drop target on the canvas. The Browse files button lives in the
- * console, not here — both open the same picker, which App owns.
+ * The drop target on the canvas: full 1280 column, filling whatever height the
+ * canvas leaves between its clearances. It doesn't hold the frame's 459px —
+ * the frame's height was a viewport, not a constraint.
+ *
+ * The Browse files button lives in the console, not here — both open the same
+ * picker, which App owns.
  */
 export default function DropZone({ onFiles, onBrowse }) {
   function handleDragOver(e) { e.preventDefault() }
@@ -26,9 +30,8 @@ export default function DropZone({ onFiles, onBrowse }) {
 
   return (
     <div
-      className="w-full flex flex-col items-center justify-center cursor-pointer"
+      className="w-full flex flex-col flex-1 min-h-0 items-center justify-center cursor-pointer"
       style={{
-        height: '459px',
         borderRadius: '12px',
         backgroundColor: 'rgba(209, 209, 209, 0.2)',
       }}

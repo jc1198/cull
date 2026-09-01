@@ -381,18 +381,26 @@ export default function App() {
 
       {step === 'upload' && (
         <>
-          <Canvas center>
-            {!ollamaStatus.connected && (
-              <div className="w-full px-4 py-3 mb-6 text-[13px] text-primary border border-border rounded-lg">
-                &#9888; Ollama isn&apos;t running. Start Ollama and run{' '}
-                <code className="font-mono text-xs px-1 py-0.5 rounded bg-surface">npm run dev</code>
-                {' '}to use Cull.
-              </div>
-            )}
-            <DropZone onFiles={handleFiles} onBrowse={openPicker} />
-            {isIngesting && (
-              <p className="mt-4 text-[13px] text-primary">Preparing thumbnails&hellip;</p>
-            )}
+          <Canvas>
+            {/* 64 above matches the wordmark's own top margin, so the wordmark
+                sits with equal space either side; 32 below is the console's top
+                padding, the same clearance the detail pane holds. */}
+            <div
+              className="flex flex-col flex-1 min-h-0"
+              style={{ paddingTop: '64px', paddingBottom: '32px' }}
+            >
+              {!ollamaStatus.connected && (
+                <div className="w-full shrink-0 px-4 py-3 mb-6 text-[13px] text-primary border border-border rounded-lg">
+                  &#9888; Ollama isn&apos;t running. Start Ollama and run{' '}
+                  <code className="font-mono text-xs px-1 py-0.5 rounded bg-surface">npm run dev</code>
+                  {' '}to use Cull.
+                </div>
+              )}
+              <DropZone onFiles={handleFiles} onBrowse={openPicker} />
+              {isIngesting && (
+                <p className="mt-4 shrink-0 text-[13px] text-primary">Preparing thumbnails&hellip;</p>
+              )}
+            </div>
           </Canvas>
 
           <Console
@@ -419,7 +427,9 @@ export default function App() {
             label={<StepLabel prefix="Step 2 of 3:" name="Set taste" />}
             secondary={
               showRevert
-                ? <ConsoleLink onClick={handleRevert}>Revert changes</ConsoleLink>
+                // Names its scope: it restores the read snapshot, and manual
+                // photo moves were never in that snapshot.
+                ? <ConsoleLink onClick={handleRevert}>Revert priorities</ConsoleLink>
                 : null
             }
             description={<TasteInput value={cuiInput} onChange={setCuiInput} />}
@@ -442,8 +452,7 @@ export default function App() {
               <div className="w-full flex flex-col items-start" style={{ gap: '12px' }}>
                 {manuallyMovedCount > 0 && (
                   <p className="text-[12px] font-normal text-primary leading-[14px]">
-                    Re-running replaces your {manuallyMovedCount} moved photo
-                    {manuallyMovedCount === 1 ? '' : 's'}.
+                    Re-running resets photos you moved between keeps and cuts.
                   </p>
                 )}
                 <div className="w-full flex items-center" style={{ gap: '16px' }}>
@@ -495,7 +504,9 @@ export default function App() {
 
       {step === 'results' && (
         <>
-          <Canvas scroll>
+          {/* Not a scrolling canvas: the detail pane sizes itself to the canvas
+              height so its actions can hold a fixed clearance above the console. */}
+          <Canvas>
             <ResultsView
               results={results}
               activeTab={activeTab}

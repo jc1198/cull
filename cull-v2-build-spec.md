@@ -41,7 +41,7 @@ The label slot carries a step when the user can act, and a status when they can'
 | Screen | Label | Right-aligned |
 |---|---|---|
 | Empty drop zone | `Step 1 of 3: Add photos` | — |
-| Set taste | `Step 2 of 3: Set taste` | `Revert changes` |
+| Set taste | `Step 2 of 3: Set taste` | `Revert priorities` |
 | Analyzing | `Analyzing 12 of 116` | — |
 | Review results | `Step 3 of 3: Review results` | `116 photos` |
 
@@ -51,6 +51,12 @@ a step label with a missing prefix.
 ## Screen 1 — Add photos
 
 Drop zone on the canvas. Console holds the step label and `Browse files`.
+
+The zone fills the canvas between two clearances: **64px above, 32px below**. 64 matches
+the wordmark's own top margin, so the wordmark sits with equal space either side; 32 is
+the console's top padding, the same clearance the detail pane holds. The frame's 459px
+was a viewport, not a constraint — the zone taking the remaining height is fine, but
+running edge to edge with no clearance is not.
 
 On upload the canvas fills with a thumbnail grid at 148 × 110, 8 columns, 8px gutters.
 Show 23 thumbnails plus a `+N more` tile that opens the expanded view.
@@ -177,7 +183,7 @@ Match new criteria against existing ones by `signal` label:
 This requires tracking, per criterion, whether the current weight was set by the user or
 by the model. That flag isn't in the current state shape.
 
-### Revert changes
+### Revert priorities
 
 One control, one meaning: restore the console to the last state a read ran on.
 
@@ -185,11 +191,16 @@ One control, one meaning: restore the console to the last state a read ran on.
 - Restore both, discarding manual weight edits made after that read.
 - Show the control only when the console differs from the snapshot.
 - Hide it before the first read and after a revert.
-- Right-aligned on the step-label row, as a text link. It resets the whole console, not
-  only the priorities.
+- Right-aligned on the step-label row, as a text link, constrained to the step label's
+  line box so its appearance doesn't grow the row and shift the console's top edge.
 
 Don't label it `Undo` — in a frame containing a text field, undo reads as "undo my last
 keystroke," which is what the keyboard shortcut already does.
+
+Name the scope. It restores the description, the chips and the criteria — the read
+snapshot — and deliberately leaves manual photo moves alone, since those were never in
+that snapshot. Sitting inches from the re-run warning, an unscoped `Revert changes` reads
+as a promise to undo the moves too, and then as a bug when it doesn't.
 
 ## Screen 3 — Analyzing
 
@@ -203,7 +214,7 @@ Console contents:
 2. A 6px progress bar across the full 1280px column
 3. `Cancel`
 
-`Revert changes` is hidden — there's nothing to revert into.
+`Revert priorities` is hidden — there's nothing to revert into.
 
 ### Live feedback on the canvas
 
@@ -256,6 +267,12 @@ bright image.
 Selection uses an accent border — the same accent as the tabs and the star, not a
 separate blue.
 
+Starred photos carry the star badge; manually moved photos carry the `Moved` marker; a
+photo can carry both. The selection effect is a shadow at spread 1 / radius 4, so it
+reaches ~5px past the thumbnail: the grid's clipping box needs ~6px of room on every side
+or the glow clips on the outer tiles. Keep the clip itself on the grid — below 1440 the
+grid must still clip rather than push the detail pane off-screen.
+
 ### Detail pane
 
 - Selected photo at 484 × 280
@@ -264,11 +281,59 @@ separate blue.
 - Four bullets from the `reason` field
 - Actions below: `Move to cuts` and the star toggle
 
+#### The pane is height-anchored at both ends
+
+The pane fills the canvas height rather than ending where its content does. Photo at the
+top, rationale below it, **actions pinned to the bottom with 32px of clearance above the
+console** — the same 32px as the console's own top padding, so the two zones breathe
+symmetrically across the boundary.
+
+Sized by content, the gap above the console tracked the bullet count: cramped under a long
+rationale, loose under a short one, and moving by the height of the override line whenever
+a moved photo was selected. Pinning the actions makes that gap a constant, and the card
+grows into the space between the photo and the actions instead of pushing anything.
+
+The pane's top edge still aligns with the grid — that alignment is load-bearing; only the
+bottom changes.
+
+The pane and the grid therefore end differently at the console: the grid clips
+mid-thumbnail, the pane holds its clearance. That's intended. They're doing different
+jobs — one is a batch bleeding off the edge, the other a single object with a baseline.
+
+Two levels of give when the content outruns the canvas, in order:
+
+1. A long rationale shrinks the card, which scrolls inside itself. The photo stays put.
+2. A canvas too short even for the photo scrolls the photo-plus-card region as a whole.
+
+The actions never move in either case. The card keeps a minimum height of four
+single-line bullets — not to stop the pane shifting any more, that's the pinned actions'
+job, but because the card is the pane's only shrinkable item and without a floor a short
+canvas collapses it to its own padding before anything else gives.
+
 The star toggle is labelled, not icon-only: `Star` with an outline glyph when unstarred,
 `Starred` with a filled glyph and an accent fill when starred.
 
 `Move to cuts` becomes `Move to keeps` on the cuts tab. Both need the 5-second undo toast
 — the reverse action is equally a mistake someone can make.
+
+#### The card after a manual move
+
+A moved photo has two decisions: Cull's and the user's. The card must not conflate them.
+
+- **The title stays keyed to Cull's original decision**, not the tab the photo now sits
+  in, because the bullets are the reasoning for that decision. A photo Cull kept and the
+  user moved to cuts titled `Why Cull cut this` over four bullets arguing for a keep is a
+  card contradicting itself.
+- **A line above the title states the override**, in the accent color:
+  `You moved this photo to cuts`, or `…to keeps` in the other direction. It renders only
+  when `decision !== originalDecision`.
+- The move action still follows where the photo *is* — a photo now in cuts offers
+  `Move to keeps`.
+
+The grid carries the same state so it's visible before selection: a `Moved` marker on the
+thumbnail. Keep it visually distinct from the star badge — no accent fill, no glyph — the
+two co-occur. Top-left, across from the star rather than below it, so it survives the row
+the canvas clips at the console edge.
 
 ### Selection rules
 
@@ -305,7 +370,10 @@ interpretation surface.
 
 - **Preserve stars across runs.** A photo the user marked as a hero shot stays marked.
 - **Warn about manual moves.** When manual cuts or keeps exist, show a line in the taste
-  console before running: `Re-running replaces your N moved photos.`
+  console before running: `Re-running resets photos you moved between keeps and cuts.`
+  No count and no plural variant — the count isn't the thing at risk. `Replaces` didn't
+  say what happens to the photo, and the tabs are named Keeps and Cuts, so the warning
+  uses the same words the user just clicked.
 
 ## Accent color
 

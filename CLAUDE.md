@@ -39,6 +39,9 @@ Every screen uses two zones.
 - **Console** — a full-bleed frame at the bottom, 1440px max-width, contents on a 1280px
   column (80px gutters). Sizes to its contents rather than holding a fixed height.
 
+**Every** step clips: results was the last screen with a scrolling canvas, and it now
+sizes its detail pane to the canvas instead, so `Canvas` has no `scroll` variant left.
+
 This is a plain flex column — `Wordmark`/canvas `flex-1 min-h-0 overflow-hidden` / console
 `shrink-0`. The canvas clips with no measurement code and the console's variable height
 (436 set taste, 458 stale, 181 analyzing, 151 results) works for free. **Don't** switch
@@ -77,7 +80,7 @@ cull/
 │       ├── Wordmark.jsx          # "Cull" as canvas content
 │       ├── Console.jsx           # Console shell, StepLabel, StatusLabel, ConsoleLink
 │       ├── Button.jsx            # PrimaryButton / SecondaryButton / TextLink
-│       ├── DropZone.jsx          # 1280 × 459 drop target (screen 1)
+│       ├── DropZone.jsx          # drop target, fills the canvas column (screen 1)
 │       ├── ThumbnailGrid.jsx     # 8 × 148×110 grid, +N more tile, analyzing states
 │       ├── TasteInput.jsx        # The description textarea (screen 2)
 │       ├── PriorityPanel.jsx     # "Cull will prioritize:" + cards + stale note
@@ -101,8 +104,8 @@ changes — so upload goes straight to set taste with the grid already on the ca
 
 | Step | Canvas | Console |
 |------|--------|---------|
-| `upload` | DropZone | `Step 1 of 3: Add photos`, `Browse files` |
-| `tasting` | Thumbnail grid | description, priorities, chips, buttons, `Revert changes` |
+| `upload` | DropZone, 64px below the wordmark and 32px above the console | `Step 1 of 3: Add photos`, `Browse files` |
+| `tasting` | Thumbnail grid | description, priorities, chips, buttons, `Revert priorities` |
 | `processing` | Same grid, with decision states | `Analyzing N of M`, counts, progress bar, `Cancel` |
 | `results` | Tabs + grid + detail pane | `Step 3 of 3: Review results`, exports, `Back to set taste` |
 
@@ -125,7 +128,10 @@ user undoes an edit and the text matches again, stale clears on its own. Don't t
 by edit distance.
 
 `lastRead` snapshots `{ description, chips, criteria }` on **successful reads only**, and
-is both the stale comparand and the `Revert changes` target.
+is both the stale comparand and the `Revert priorities` target. The link is named for
+its scope — it restores the read snapshot and leaves manual photo moves alone — and is
+pinned to the step label's 14px line box so its appearance doesn't move the console's top
+edge.
 
 ### Merging on re-read
 
@@ -187,8 +193,32 @@ restores the correct prior decision.
 
 **Stars live in `starredIds` (a Set), outside `results`**, because a star is a property of
 the photo, not of a run — that's what makes them survive a re-run. A re-run discards the
-result set, so the taste console warns `Re-running replaces your N moved photos.` when
-manual moves exist.
+result set, so the taste console warns
+`Re-running resets photos you moved between keeps and cuts.` when manual moves exist.
+
+A moved photo keeps its card title on **`originalDecision`** — the bullets argue for
+Cull's decision, so titling them by the current tab makes the card contradict itself — and
+gains an accent line above the title (`You moved this photo to cuts`) plus a `Moved`
+marker on the thumbnail. The move action still follows the current decision.
+
+**The detail pane is height-anchored at both ends.** It stretches to the canvas floor
+(`self-stretch`) instead of ending with its content, and the actions sit at the bottom
+behind `ACTIONS_CLEARANCE = 32` — the console's own top padding — so the gap at the
+boundary is constant rather than a function of the bullet count. The top edge still aligns
+with the grid. Photo and card live in one bounded `flex-1 min-h-0 overflow-y-auto` region:
+a long rationale shrinks and scrolls the card with the photo fixed, and a canvas too short
+for the photo scrolls the whole region. The actions never move.
+
+That makes the pane and the grid end differently at the console — the grid clips
+mid-thumbnail, the pane holds clearance. Intended; they're doing different jobs.
+
+`REASON_CARD_MIN_H` survives for a different reason than it was added: the card is the
+pane's only shrinkable item, so without a floor a short canvas collapses it to its padding
+before the region starts scrolling.
+
+The results grid's clipping box carries 6px of padding, pulled back by an equal negative
+margin, so the selection shadow (spread 1, radius 4) has room. The analyzing scan line is
+an inset border, not a shadow, so it needs none.
 
 There is no refinement input. Refinement happens by returning to step 2.
 
