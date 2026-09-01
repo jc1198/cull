@@ -59,11 +59,12 @@ a step label with a missing prefix.
 
 Drop zone on the canvas. Console holds the step label and `Browse files`.
 
-The zone fills the canvas between two clearances: **64px above, 32px below**. 64 matches
-the wordmark's own top margin, so the wordmark sits with equal space either side; 32 is
-the console's top padding, the same clearance the detail pane holds. The frame's 459px
-was a viewport, not a constraint — the zone taking the remaining height is fine, but
-running edge to edge with no clearance is not.
+The zone fills the canvas between two clearances: **48px above, 32px below**. The 48 is
+the canvas's own wordmark-to-content gap, which every other screen already used — screen 1
+was the outlier, so the value belongs to the canvas rather than to any screen. The 32 is
+the console's top padding, the same clearance the detail pane holds. The frame's 459px was
+a viewport, not a constraint — the zone taking the remaining height is fine, but running
+edge to edge with no clearance is not.
 
 On upload the canvas fills with a thumbnail grid at 148 × 110, 8 columns, 8px gutters.
 Show 23 thumbnails plus a `+N more` tile that opens the expanded view.
@@ -388,8 +389,11 @@ The accent carries: active chip, active tab, selection border, star badge and to
 active weight in the menu, progress fill, and the analyzing scan line.
 
 Don't use it for the input focus ring. A focused unselected chip and an unfocused
-selected chip would look identical. Use a lighter outline or a heavier stroke weight for
-focus.
+selected chip would look identical.
+
+Focus changes the border's **opacity** — white at 60% unfocused, 100% focused. Not its
+width: a border growing from 1px to 2px moves the content box inside it, which shifts the
+placeholder a pixel down and right at the moment the user commits to typing.
 
 ## Reversed decisions
 

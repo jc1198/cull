@@ -232,7 +232,7 @@ export default function ResultsView({
   const selectedItem = displayed.find((r) => r.photo.id === selectedId) ?? null
 
   return (
-    <div className="w-full flex flex-col flex-1 min-h-0" style={{ marginTop: '48px', gap: '24px' }}>
+    <div className="w-full flex flex-col flex-1 min-h-0" style={{ gap: '24px' }}>
       <FilterTabs
         activeTab={activeTab}
         counts={{ keeps: keeps.length, cuts: cuts.length, starred: starred.length }}

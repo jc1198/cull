@@ -11,11 +11,13 @@ export default function TasteInput({ value, onChange }) {
       value={value}
       onChange={(e) => onChange(e.target.value)}
       placeholder={PLACEHOLDER}
-      // Focus uses a heavier stroke, never the accent — a focused unselected
-      // chip and an unfocused selected chip would otherwise look identical.
-      className="w-full bg-canvas border border-border rounded-lg text-[14px] font-normal
+      // Focus changes the border's opacity, never the accent — a focused
+      // unselected chip and an unfocused selected chip would otherwise look
+      // identical. Never its width either: widening the stroke moves the
+      // content box, which shifted the placeholder a pixel down and right.
+      className="w-full bg-canvas border border-white/60 rounded-lg text-[14px] font-normal
                  text-primary placeholder-white/70 resize-none outline-none
-                 focus:border-2 focus:px-[19px] focus:pt-[14px] transition-colors"
+                 focus:border-white transition-colors"
       style={{ height: '80px', paddingLeft: '20px', paddingRight: '20px', paddingTop: '15px', paddingBottom: '13px' }}
     />
   )

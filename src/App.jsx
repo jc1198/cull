@@ -382,13 +382,9 @@ export default function App() {
       {step === 'upload' && (
         <>
           <Canvas>
-            {/* 64 above matches the wordmark's own top margin, so the wordmark
-                sits with equal space either side; 32 below is the console's top
-                padding, the same clearance the detail pane holds. */}
-            <div
-              className="flex flex-col flex-1 min-h-0"
-              style={{ paddingTop: '64px', paddingBottom: '32px' }}
-            >
+            {/* The canvas supplies the 48px above; 32 below is the console's
+                top padding, the same clearance the detail pane holds. */}
+            <div className="flex flex-col flex-1 min-h-0" style={{ paddingBottom: '32px' }}>
               {!ollamaStatus.connected && (
                 <div className="w-full shrink-0 px-4 py-3 mb-6 text-[13px] text-primary border border-border rounded-lg">
                   &#9888; Ollama isn&apos;t running. Start Ollama and run{' '}
@@ -417,10 +413,7 @@ export default function App() {
       {step === 'tasting' && (
         <>
           <Canvas>
-            {/* 48px below the wordmark, per the canvas frame */}
-            <div style={{ marginTop: '48px' }}>
-              <ThumbnailGrid photos={photos} />
-            </div>
+            <ThumbnailGrid photos={photos} />
           </Canvas>
 
           <Console
@@ -474,13 +467,11 @@ export default function App() {
       {step === 'processing' && (
         <>
           <Canvas>
-            <div style={{ marginTop: '48px' }}>
-              <ThumbnailGrid
-                photos={photos}
-                decisions={decisions}
-                evaluatingId={evaluatingId}
-              />
-            </div>
+            <ThumbnailGrid
+              photos={photos}
+              decisions={decisions}
+              evaluatingId={evaluatingId}
+            />
           </Canvas>
 
           {/* Everything else locks: description, priorities, chips and Revert

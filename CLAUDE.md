@@ -42,6 +42,10 @@ Every screen uses two zones.
 **Every** step clips: results was the last screen with a scrolling canvas, and it now
 sizes its detail pane to the canvas instead, so `Canvas` has no `scroll` variant left.
 
+`Canvas` owns the 48px gap between the wordmark and screen content (`WORDMARK_GAP`) —
+one value in one place. Screens don't set their own top margin; screen 1 used to, and
+drifted.
+
 This is a plain flex column — `Wordmark`/canvas `flex-1 min-h-0 overflow-hidden` / console
 `shrink-0`. The canvas clips with no measurement code and the console's variable height
 (436 set taste, 458 stale, 181 analyzing, 151 results) works for free. **Don't** switch
@@ -106,7 +110,7 @@ changes — so upload goes straight to set taste with the grid already on the ca
 
 | Step | Canvas | Console |
 |------|--------|---------|
-| `upload` | DropZone, 64px below the wordmark and 32px above the console | `Step 1 of 3: Add photos`, `Browse files` |
+| `upload` | DropZone, filling the canvas, 32px above the console | `Step 1 of 3: Add photos`, `Browse files` |
 | `tasting` | Thumbnail grid | description, priorities, chips, buttons, `Revert priorities` |
 | `processing` | Same grid, with decision states | `Analyzing N of M`, counts, progress bar, `Cancel` |
 | `results` | Tabs + grid + detail pane | `Step 3 of 3: Review results`, exports, `Back to set taste` |
@@ -245,7 +249,10 @@ secondary text color.
 
 The accent carries: active chip, active tab, selection, star badge and toggle, active
 weight, progress fill, scan line. **Not** the input focus ring — a focused unselected chip
-and an unfocused selected chip would look identical. Focus uses a heavier stroke.
+and an unfocused selected chip would look identical. Focus changes the border's
+**opacity** — white at 60% unfocused, 100% focused — never its width. Widening a stroke
+moves the content box inside it, which walked the description placeholder a pixel down and
+right on every focus.
 
 ### Line heights are load-bearing
 
