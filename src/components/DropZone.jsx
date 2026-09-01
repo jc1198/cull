@@ -1,90 +1,54 @@
-import { useState, useRef } from 'react'
-
-function UploadIcon() {
+function UploadGlyph() {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
-      width="40"
-      height="40"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.5"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      className="text-white"
+      width="24" height="24" viewBox="0 0 24 24"
+      fill="none" stroke="#FFFFFF" strokeWidth="2"
+      strokeLinecap="round" strokeLinejoin="round"
     >
-      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-      <polyline points="17 8 12 3 7 8" />
-      <line x1="12" y1="3" x2="12" y2="15" />
+      <line x1="12" y1="19" x2="12" y2="5" />
+      <polyline points="5 12 12 5 19 12" />
     </svg>
   )
 }
 
-export default function DropZone({ onFiles }) {
-  const [isDragging, setIsDragging] = useState(false)
-  const fileInputRef = useRef(null)
-
-  function handleDragOver(e) {
-    e.preventDefault()
-    setIsDragging(true)
-  }
-
-  function handleDragLeave(e) {
-    if (!e.currentTarget.contains(e.relatedTarget)) {
-      setIsDragging(false)
-    }
-  }
+/**
+ * 1280 x 459 drop target on the canvas. The Browse files button lives in the
+ * console, not here — both open the same picker, which App owns.
+ */
+export default function DropZone({ onFiles, onBrowse }) {
+  function handleDragOver(e) { e.preventDefault() }
 
   function handleDrop(e) {
     e.preventDefault()
-    setIsDragging(false)
     if (onFiles) onFiles(e.dataTransfer.files)
-  }
-
-  function handleChange(e) {
-    if (onFiles) onFiles(e.target.files)
   }
 
   return (
     <div
-      className={[
-        'w-full flex flex-col items-center justify-center gap-3 rounded-lg cursor-pointer transition-colors',
-        isDragging ? 'opacity-80' : 'opacity-100',
-      ].join(' ')}
+      className="w-full flex flex-col items-center justify-center cursor-pointer"
       style={{
-        height: '55vh',
-        backgroundColor: '#A1A1A1',
+        height: '459px',
+        borderRadius: '12px',
+        backgroundColor: 'rgba(209, 209, 209, 0.2)',
       }}
       onDragOver={handleDragOver}
-      onDragLeave={handleDragLeave}
       onDrop={handleDrop}
-      onClick={() => fileInputRef.current?.click()}
+      onClick={onBrowse}
     >
-      <input
-        ref={fileInputRef}
-        type="file"
-        multiple
-        accept=".jpg,.jpeg,.png,.raw,.cr2,.cr3,.nef,.arw,.dng,.raf,.orf"
-        className="hidden"
-        onChange={handleChange}
-      />
-
-      <UploadIcon />
-
-      <p className="text-base font-medium text-white">Add or Drop files here</p>
-      <p className="text-sm text-white/70 tracking-widest uppercase">JPG · PNG · RAW</p>
-
-      <button
-        type="button"
-        onClick={(e) => {
-          e.stopPropagation()
-          fileInputRef.current?.click()
-        }}
-        className="mt-2 px-5 py-2 text-sm font-medium text-white border border-white/50 rounded-md bg-transparent hover:bg-white/10 active:bg-white/20 transition-colors"
+      <div
+        className="flex items-center justify-center"
+        style={{ width: '56px', height: '56px', borderRadius: '8px', backgroundColor: '#BAA9FF' }}
       >
-        Browse files
-      </button>
+        <UploadGlyph />
+      </div>
+
+      <p className="text-[16px] font-normal text-primary text-center" style={{ marginTop: '24px' }}>
+        Add or Drop files here
+      </p>
+      <p className="text-[13px] font-normal text-primary text-center" style={{ marginTop: '23px' }}>
+        JPG · PNG · RAW
+      </p>
     </div>
   )
 }

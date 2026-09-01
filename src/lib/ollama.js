@@ -1,4 +1,10 @@
+import { mockBuildCullCriteria, mockEvaluatePhoto } from './mock'
+
 const PROXY = 'http://localhost:3001'
+
+// Gate for offline UI work. The v2 screens are built and checked against these
+// without Ollama running — see lib/mock.js for the fixtures.
+export const USE_MOCK = import.meta.env.VITE_MOCK_API === 'true'
 
 const FALLBACK_CRITERIA = [
   { signal: 'General quality', weight: 'high', description: 'Select the best overall photos from the batch' },
@@ -43,6 +49,8 @@ function parseJsonObject(raw) {
  * structured culling criteria: [{ signal, weight, description }, ...]
  */
 export async function buildCullCriteria(tasteProfile) {
+  if (USE_MOCK) return mockBuildCullCriteria(tasteProfile)
+
   const prompt =
     `You are a photo culling assistant. A photographer wants: "${tasteProfile}"\n\n` +
     `Return ONLY a JSON array of 3 culling criteria, each with:\n` +
@@ -96,8 +104,15 @@ export async function buildCullCriteria(tasteProfile) {
 /**
  * Sends a single photo + criteria to Ollama and returns { decision, reason }.
  * imageBase64 may be a full data URL — the prefix is stripped automatically.
+ * `index` is used only by the mock path to produce a deterministic decision.
+ *
+ * `constraints` are the active chips. They are a separate layer from the
+ * criteria: the user sets them directly rather than the model inferring them,
+ * so they're applied at evaluation time and never dim the priorities panel.
  */
-export async function evaluatePhoto(imageBase64, criteria) {
+export async function evaluatePhoto(imageBase64, criteria, index = 0, constraints = []) {
+  if (USE_MOCK) return mockEvaluatePhoto(index)
+
   const cleanBase64 = stripDataUrl(imageBase64)
   console.log('[evaluatePhoto] base64 prefix check (first 100 chars):', cleanBase64.slice(0, 100))
 
@@ -108,6 +123,11 @@ export async function evaluatePhoto(imageBase64, criteria) {
     `If the photo does NOT satisfy the primary requirement, it must be cut regardless of anything else.\n\n` +
     `Secondary criteria (only considered if primary is met):\n` +
     `${criteria.filter((c) => c.weight !== 'high').map((c) => `- ${c.signal}: ${c.description}`).join('\n')}\n\n` +
+    (constraints.length
+      ? `Hard constraints set by the photographer — a photo violating any of ` +
+        `these must be cut regardless of everything above:\n` +
+        `${constraints.map((c) => `- ${c}`).join('\n')}\n\n`
+      : '') +
     `Reply with ONLY this JSON:\n` +
     `{"decision": "keep", "reason": "one sentence describing what you see and why it meets or fails the primary requirement"}\n\n` +
     `Use "keep" only if the primary requirement is satisfied.\n` +

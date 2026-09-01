@@ -1,22 +1,23 @@
-import { useState, useEffect } from 'react'
-import Nav from './components/Nav'
+import { useState, useEffect, useRef } from 'react'
+import Canvas from './components/Canvas'
+import Console, { StepLabel, StatusLabel, ConsoleLink } from './components/Console'
+import TasteInput from './components/TasteInput'
+import PriorityPanel from './components/PriorityPanel'
+import ProgressBar from './components/ProgressBar'
+import { PrimaryButton, SecondaryButton, TextLink } from './components/Button'
 import DropZone from './components/DropZone'
 import ThumbnailGrid from './components/ThumbnailGrid'
-import TasteBanner from './components/TasteBanner'
-import TastingScreen from './components/TastingScreen'
-import ProcessingView from './components/ProcessingView'
 import ResultsView from './components/ResultsView'
-import CUIBar from './components/CUIBar'
 import ChipRow from './components/ChipRow'
-import { buildCullCriteria, evaluatePhoto, fileToBase64 } from './lib/ollama'
+import { buildCullCriteria, evaluatePhoto, fileToBase64, USE_MOCK } from './lib/ollama'
+import { makeThumbnail } from './lib/thumbnail'
 
-const UPLOAD_CHIPS  = ['Landscape', 'Street photo', 'Portrait', 'Events', 'Architecture']
-const LOADED_CHIPS  = ['Moody / dramatic', 'Clean & bright', 'Candid / natural', 'Minimalist']
-const TASTING_CHIPS = ['No closed eyes', 'Best of duplicates', 'Sharpest frame only', 'Faces in focus']
+const TASTING_CHIPS = ['Exclude blurry shots', 'Best of duplicates', 'Faces in focus']
 
 export default function App() {
   const [step, setStep] = useState('upload')
-  // steps: 'upload' | 'loaded' | 'tasting' | 'processing' | 'results'
+  // steps: 'upload' | 'tasting' | 'processing' | 'results'
+  // The canvas persists across steps — only the console changes.
   const [cuiInput, setCuiInput]           = useState('')
   const [selectedChips, setSelectedChips] = useState([])
   const [photos, setPhotos]               = useState([])
@@ -24,275 +25,509 @@ export default function App() {
   // Tasting
   const [criteria, setCriteria]               = useState([])
   const [isBuildingCriteria, setIsBuilding]   = useState(false)
+  const [lastRead, setLastRead]               = useState(null) // { description, chips, criteria }
 
   // Processing
-  const [processingStage, setProcessingStage] = useState(null) // 'compressing' | 'evaluating'
-  const [cullCriteria, setCullCriteria]       = useState([])
-  const [progress, setProgress]               = useState({ current: 0, total: 0, label: '' })
-  const [results, setResults]                 = useState([])
+  const [progress, setProgress]         = useState({ current: 0, total: 0 })
+  const [results, setResults]           = useState([])
+  const [decisions, setDecisions]       = useState(() => new Map())
+  const [evaluatingId, setEvaluatingId] = useState(null)
+  // A ref, not state: the loop must read the current value, not one closed over
+  // at the iteration it started.
+  const cancelRef = useRef(false)
 
   // Results
   const [selectedId, setSelectedId] = useState(null)
-  const [showCuts, setShowCuts]     = useState(false)
+  const [activeTab, setActiveTab]   = useState('keeps') // 'keeps' | 'cuts' | 'starred'
   const [undoItem, setUndoItem]     = useState(null)
+  // Stars are a property of the photo, not of a run, so they live outside
+  // `results` and survive a re-run.
+  const [starredIds, setStarredIds] = useState(() => new Set())
+
+  // Ingest
+  const [isIngesting, setIsIngesting] = useState(false)
+  const ingestSeq = useRef(0)
+  const fileInputRef = useRef(null)
 
   // Ollama connection
   const [ollamaStatus, setOllamaStatus] = useState({ connected: false, models: [] })
 
   // Check Ollama on mount
   useEffect(() => {
+    if (USE_MOCK) { setOllamaStatus({ connected: true, models: ['mock'] }); return }
     fetch('http://localhost:3001/health')
       .then((r) => r.json())
       .then(setOllamaStatus)
       .catch(() => setOllamaStatus({ connected: false, models: [] }))
   }, [])
 
-  useEffect(() => {
-    return () => { photos.forEach((p) => URL.revokeObjectURL(p.url)) }
-  }, [photos])
-
-  // Debounced buildCullCriteria preview while typing in the tasting step
-  useEffect(() => {
-    if (step !== 'tasting') return
-    if (!cuiInput.trim()) { setCriteria([]); return }
-
-    const timer = setTimeout(async () => {
-      setIsBuilding(true)
-      try {
-        const result = await buildCullCriteria(cuiInput)
-        setCriteria(result)
-      } catch (err) {
-        console.error('buildCullCriteria preview failed:', err)
-      } finally {
-        setIsBuilding(false)
-      }
-    }, 800)
-
-    return () => clearTimeout(timer)
-  }, [cuiInput, step])
+  // Revoke thumbnail blob URLs on unmount only. Keying this to [photos] would
+  // revoke the whole batch every time the array changes — which "Add more
+  // photos" does, killing the thumbnails already on the canvas.
+  const photosRef = useRef(photos)
+  useEffect(() => { photosRef.current = photos }, [photos])
+  useEffect(() => () => {
+    photosRef.current.forEach((p) => URL.revokeObjectURL(p.thumbUrl))
+  }, [])
 
 
   // ── Handlers ────────────────────────────────────────────────
 
-  function handleFiles(fileList) {
+  async function handleFiles(fileList) {
     const files = Array.from(fileList).filter(
       (f) => f.type.startsWith('image/') || /\.(raw|cr2|cr3|nef|arw|dng|raf|orf)$/i.test(f.name)
     )
     if (files.length === 0) return
-    const photoObjects = files.map((file) => {
-      const url = URL.createObjectURL(file)
-      return { id: url, url, name: file.name, size: file.size, type: file.type, file }
-    })
-    setPhotos(photoObjects)
-    setSelectedChips([])
-    setCuiInput('')
-    setStep('loaded')
-  }
 
-  function handleContinue() {
-    setCriteria([])
+    setIsIngesting(true)
+    // ids are independent of the thumbnail URL — they key results, selection
+    // and the memoized thumbnail, so they can't be a URL that gets revoked.
+    const photoObjects = await Promise.all(
+      files.map(async (file, i) => ({
+        id:       `${ingestSeq.current++}-${file.name}-${file.size}`,
+        thumbUrl: await makeThumbnail(file),
+        file,
+        name: file.name,
+        size: file.size,
+        type: file.type,
+      }))
+    )
+    setIsIngesting(false)
+
+    setPhotos((prev) => [...prev, ...photoObjects])
     setStep('tasting')
   }
 
+  const criteriaSeq = useRef(0)
+
+  function normalizeCriteria(raw) {
+    return raw.map((c) => ({
+      id: `c${criteriaSeq.current++}`,
+      signal: c.signal,
+      weight: c.weight,
+      description: c.description,
+      weightSource: 'model',
+    }))
+  }
+
+  /**
+   * Match new criteria against existing ones by `signal` label:
+   *   label matches — keep the user's weight if they set one manually; their
+   *                   edit wins over the model's fresh assignment
+   *   label is new  — add it at whatever weight the model assigned
+   *   label is gone — drop it; the description changed, and that's the user's
+   *                   own doing
+   *
+   * A criterion that keeps a user weight keeps weightSource 'user', or a second
+   * re-read would silently revert it to the model's weight.
+   */
+  function mergeCriteria(existing, incoming) {
+    const byLabel = new Map(existing.map((c) => [c.signal.trim().toLowerCase(), c]))
+    return incoming.map((inc) => {
+      const prev = byLabel.get(inc.signal.trim().toLowerCase())
+      if (!prev) {
+        return {
+          id: `c${criteriaSeq.current++}`,
+          signal: inc.signal,
+          weight: inc.weight,
+          description: inc.description,
+          weightSource: 'model',
+        }
+      }
+      const userSet = prev.weightSource === 'user'
+      return {
+        ...prev,
+        // The model rewrote the description in vocabulary it can ground; take it.
+        description: inc.description,
+        weight: userSet ? prev.weight : inc.weight,
+        weightSource: prev.weightSource,
+      }
+    })
+  }
+
+  function tasteProfile() {
+    return [cuiInput.trim(), selectedChips.join(', ')].filter(Boolean).join(', ')
+  }
+
+  // Called only on a primary-button click — never on a debounce. A debounced
+  // read flickers, and a late response can overwrite good criteria with
+  // fallback defaults.
+  async function runRead() {
+    setIsBuilding(true)
+    try {
+      const raw = await buildCullCriteria(tasteProfile() || 'Best overall quality')
+      // First read builds; every read after that merges onto what's on screen.
+      const next = lastRead === null ? normalizeCriteria(raw) : mergeCriteria(criteria, raw)
+      setCriteria(next)
+      // Snapshot on every successful read only — a failed read leaves the
+      // previous snapshot standing.
+      setLastRead({
+        description: cuiInput.trim(),
+        chips: [...selectedChips],
+        criteria: next.map((c) => ({ ...c })),
+      })
+    } catch (err) {
+      console.error('buildCullCriteria failed:', err)
+    } finally {
+      setIsBuilding(false)
+    }
+  }
+
+  function handleWeightChange(id, weight) {
+    setCriteria((prev) => prev.map((c) =>
+      c.id === id ? { ...c, weight, weightSource: 'user' } : c
+    ))
+  }
+
+  function handleRemoveCriterion(id) {
+    setCriteria((prev) => prev.filter((c) => c.id !== id))
+  }
+
+  // One control, one meaning: restore the console to the last state a read ran
+  // on. Resets the whole console, not only the priorities.
+  function handleRevert() {
+    if (!lastRead) return
+    setCuiInput(lastRead.description)
+    setSelectedChips([...lastRead.chips])
+    setCriteria(lastRead.criteria.map((c) => ({ ...c })))
+  }
+
+  function handleToggleChip(chip) {
+    setSelectedChips((prev) =>
+      prev.includes(chip) ? prev.filter((c) => c !== chip) : [...prev, chip]
+    )
+  }
+
+  function openPicker() {
+    fileInputRef.current?.click()
+  }
+
+  // Below this, the scan border becomes a flicker rather than a readable state.
+  const MIN_SCAN_MS = 300
+
   async function handleRunCull() {
+    cancelRef.current = false
     setStep('processing')
     setResults([])
-    setShowCuts(false)
-    setCullCriteria([])
+    setActiveTab('keeps')
+    setDecisions(new Map())
+    setEvaluatingId(null)
+    setProgress({ current: 0, total: photos.length })
 
-    const freeText       = cuiInput.trim()
-    const chipConstraints = selectedChips.join(', ')
-    const tasteProfile   = [freeText, chipConstraints].filter(Boolean).join(', ') || 'Best overall quality'
+    const builtCriteria = criteria
 
-    // Stage 1: use existing edited criteria if available, else build from taste profile
-    setProcessingStage('compressing')
-    setProgress({ current: 0, total: photos.length, label: 'Reading your taste profile…' })
-
-    let builtCriteria = criteria.length > 0 ? criteria : await buildCullCriteria(tasteProfile)
-    setCriteria(builtCriteria)
-    setCullCriteria(builtCriteria)
-
-    // Stage 2: evaluate each photo
-    setProcessingStage('evaluating')
     const accumulated = []
+    const decided = new Map()
 
     for (let i = 0; i < photos.length; i++) {
-      const photo = photos[i]
-      setProgress({ current: i + 1, total: photos.length, label: `Evaluating photo ${i + 1} of ${photos.length}…` })
+      if (cancelRef.current) break
 
+      const photo = photos[i]
+      const startedAt = Date.now()
+      setEvaluatingId(photo.id)
+      setProgress({ current: i + 1, total: photos.length })
+
+      let entry
       try {
-        console.log('[evaluatePhoto] image size:', photo.file.size, 'bytes')
         const base64 = await fileToBase64(photo.file)
-        const result  = await evaluatePhoto(base64, builtCriteria)
-        accumulated.push({ photo, decision: result.decision, originalDecision: result.decision, reason: result.reason, starred: false })
+        const result = await evaluatePhoto(base64, builtCriteria, i, selectedChips)
+        entry = { photo, decision: result.decision, originalDecision: result.decision, reason: result.reason }
       } catch (err) {
         console.error(`Failed on ${photo.name}:`, err)
-        accumulated.push({ photo, decision: 'keep', originalDecision: 'keep', reason: 'Could not analyze — kept by default.', starred: false })
+        entry = { photo, decision: 'keep', originalDecision: 'keep', reason: 'Could not analyze — kept by default.' }
       }
 
+      // Hold the scan border for its minimum before the decision lands.
+      const elapsed = Date.now() - startedAt
+      if (elapsed < MIN_SCAN_MS) await new Promise((r) => setTimeout(r, MIN_SCAN_MS - elapsed))
+
+      accumulated.push(entry)
+      decided.set(photo.id, entry.decision)
       setResults([...accumulated])
+      setDecisions(new Map(decided))
     }
 
-    const firstKeep = accumulated.find((r) => r.decision === 'keep')
-    setSelectedId(firstKeep?.photo.id ?? null)
-    setProcessingStage(null)
+    // Cancel goes to results with whatever finished — partial results are
+    // usable results.
+    setEvaluatingId(null)
+    setSelectedId(accumulated.find((r) => r.decision === 'keep')?.photo.id ?? null)
     setStep('results')
   }
 
-  function handleMoveToCuts(photoId) {
-    const remaining = results.filter((r) => r.photo.id !== photoId && r.decision === 'keep')
-    setResults((prev) => prev.map((r) => r.photo.id === photoId ? { ...r, decision: 'cut' } : r))
-
-    if (selectedId === photoId) setSelectedId(remaining[0]?.photo.id ?? null)
-
-    const movedPhoto = results.find((r) => r.photo.id === photoId)
-    if (undoItem?.timeoutId) clearTimeout(undoItem.timeoutId)
-    const timeoutId = setTimeout(() => setUndoItem(null), 5000)
-    setUndoItem({ photoId, photoName: movedPhoto?.photo.name ?? '', timeoutId })
+  function handleCancel() {
+    cancelRef.current = true
   }
 
-  function handleMoveToKeeps(photoId) {
-    setResults((prev) => prev.map((r) => r.photo.id === photoId ? { ...r, decision: 'keep' } : r))
-    setSelectedId(photoId)
+  // The set the user is currently looking at, in grid order.
+  function visibleSet(tab, res, stars) {
+    if (tab === 'cuts') return res.filter((r) => r.decision === 'cut')
+    if (tab === 'starred') return res.filter((r) => stars.has(r.photo.id))
+    return res.filter((r) => r.decision === 'keep')
+  }
+
+  // The detail pane always shows something, so the actions never need a
+  // disabled state. When the selected photo leaves the set: next photo in the
+  // grid, or the previous one if it was last.
+  function nextSelectionAfterRemoval(list, removedId) {
+    const i = list.findIndex((r) => r.photo.id === removedId)
+    if (i === -1) return list[0]?.photo.id ?? null
+    const rest = list.filter((r) => r.photo.id !== removedId)
+    if (rest.length === 0) return null
+    return (rest[i] ?? rest[rest.length - 1]).photo.id
+  }
+
+  function handleTabChange(tab) {
+    setActiveTab(tab)
+    const list = visibleSet(tab, results, starredIds)
+    setSelectedId(list[0]?.photo.id ?? null)
+  }
+
+  // Both directions need the undo toast — the reverse action is equally a
+  // mistake someone can make.
+  function handleMove(photoId) {
+    const item = results.find((r) => r.photo.id === photoId)
+    if (!item) return
+    const from = item.decision
+    const to   = from === 'keep' ? 'cut' : 'keep'
+
+    const list = visibleSet(activeTab, results, starredIds)
+    const nextSelected = activeTab === 'starred'
+      ? selectedId // starred membership doesn't change on a move
+      : nextSelectionAfterRemoval(list, photoId)
+
+    setResults((prev) => prev.map((r) => r.photo.id === photoId ? { ...r, decision: to } : r))
+    if (selectedId === photoId) setSelectedId(nextSelected)
+
+    if (undoItem?.timeoutId) clearTimeout(undoItem.timeoutId)
+    const timeoutId = setTimeout(() => setUndoItem(null), 5000)
+    setUndoItem({ photoId, photoName: item.photo.name, from, to: to === 'cut' ? 'cuts' : 'keeps', timeoutId })
   }
 
   function handleUndo() {
     if (!undoItem) return
     clearTimeout(undoItem.timeoutId)
-    setResults((prev) => prev.map((r) => r.photo.id === undoItem.photoId ? { ...r, decision: 'keep' } : r))
+    setResults((prev) => prev.map((r) =>
+      r.photo.id === undoItem.photoId ? { ...r, decision: undoItem.from } : r
+    ))
     setSelectedId(undoItem.photoId)
     setUndoItem(null)
   }
 
   function handleStar(photoId) {
-    setResults((prev) => prev.map((r) => r.photo.id === photoId ? { ...r, starred: !r.starred } : r))
+    setStarredIds((prev) => {
+      const next = new Set(prev)
+      next.has(photoId) ? next.delete(photoId) : next.add(photoId)
+      return next
+    })
   }
 
-  function handleChipSelect(chip) {
-    if (step === 'results') {
-      if (chip === 'Show cuts instead' || chip === 'Show keeps instead') {
-        setShowCuts((prev) => !prev)
-        setSelectedId(null)
-      } else {
-        setCuiInput(chip)
-      }
-      return
-    }
-    if (step === 'tasting') {
-      setCuiInput((prev) => { const b = prev.trim(); return b ? `${b}, ${chip}` : chip })
-      setSelectedChips((prev) => [...prev.filter((c) => c !== chip), chip])
-      return
-    }
-    setCuiInput(chip)
-    setSelectedChips([chip])
+  function handleBackToSetTaste() {
+    setStep('tasting')
   }
 
   // ── Derived ─────────────────────────────────────────────────
 
-  const chips = (
-    step === 'upload'  ? UPLOAD_CHIPS  :
-    step === 'loaded'  ? LOADED_CHIPS  :
-    step === 'tasting' ? TASTING_CHIPS :
-    ['Export selects', showCuts ? 'Show keeps instead' : 'Show cuts instead', 'Re-rank by sharpness', 'Starred only']
-  )
-  const runCullDisabled = cuiInput.trim() === '' && selectedChips.length === 0
-  const isUpload    = step === 'upload'
-  const showSidebar = step === 'results'
+  // Chips are the user's input, not the model's output — a read never clears
+  // them, and they no longer write into the description.
+  const hasInput = cuiInput.trim() !== '' || selectedChips.length > 0
 
+  const keepCount = results.filter((r) => r.decision === 'keep').length
+  const cutCount  = results.filter((r) => r.decision === 'cut').length
+
+  // Stale is derived, never stored: if the user undoes an edit and the text
+  // matches the last read again, the state clears on its own. No edit-distance
+  // threshold — guessing which edits matter reintroduces the mismatch the panel
+  // exists to prevent.
+  const isStale = lastRead !== null && cuiInput.trim() !== lastRead.description
+
+  const readState = lastRead === null ? 'none' : isStale ? 'stale' : 'current'
+
+  // Show Revert only when the console actually differs from the snapshot —
+  // hidden before the first read, and again after a revert.
+  const chipsDiffer =
+    lastRead !== null &&
+    (selectedChips.length !== lastRead.chips.length ||
+     selectedChips.some((c) => !lastRead.chips.includes(c)))
+
+  const criteriaDiffer =
+    lastRead !== null &&
+    (criteria.length !== lastRead.criteria.length ||
+     criteria.some((c, i) => {
+       const snap = lastRead.criteria[i]
+       return !snap || snap.id !== c.id || snap.weight !== c.weight
+     }))
+
+  const showRevert = lastRead !== null && (isStale || chipsDiffer || criteriaDiffer)
+
+  const primaryLabel =
+    readState === 'none'  ? 'Show priorities' :
+    readState === 'stale' ? 'Update priorities' :
+    `Run Cull on ${photos.length} photos`
+
+  const starredCount = results.filter((r) => starredIds.has(r.photo.id)).length
+  // A re-run discards the result set, so warn about anything the user moved by hand.
+  const manuallyMovedCount = results.filter((r) => r.decision !== r.originalDecision).length
   return (
-    <div className="flex flex-col min-h-full bg-white font-sans">
-      <Nav />
+    <div className="flex flex-col h-screen overflow-hidden bg-canvas text-primary font-sans">
+      {/* One picker for both the drop zone and the console's Browse files */}
+      <input
+        ref={fileInputRef}
+        type="file"
+        multiple
+        accept=".jpg,.jpeg,.png,.raw,.cr2,.cr3,.nef,.arw,.dng,.raf,.orf"
+        className="hidden"
+        onChange={(e) => handleFiles(e.target.files)}
+      />
 
-      <main
-        className={[
-          'flex flex-col flex-1 px-20 pb-10',
-          isUpload ? 'justify-center items-center' : 'items-start',
-        ].join(' ')}
-        style={{ paddingTop: '24px' }}
-      >
-        {showSidebar ? (
-          <ResultsView
-            results={results}
-            selectedId={selectedId}
-            onSelect={setSelectedId}
-            showCuts={showCuts}
-            onMoveToCuts={handleMoveToCuts}
-            onMoveToKeeps={handleMoveToKeeps}
-            onStar={handleStar}
-            undoItem={undoItem}
-            onUndo={handleUndo}
-            cuiInput={cuiInput}
-            onCuiChange={setCuiInput}
-            chips={chips}
-            onChipSelect={handleChipSelect}
-          />
-        ) : (
-          <div className="w-full flex flex-col" style={{ gap: '30px' }}>
-
-            {step === 'upload' && (
-              <>
-                {!ollamaStatus.connected && (
-                  <div className="w-full px-4 py-3 text-sm text-primary border border-border rounded-md bg-gray-50">
-                    ⚠ Ollama isn't running. Start Ollama and run{' '}
-                    <code className="font-mono text-xs bg-gray-100 px-1 py-0.5 rounded">npm run dev</code>
-                    {' '}to use Cull.
-                  </div>
-                )}
-                <DropZone onFiles={handleFiles} />
-              </>
-            )}
-
-            {step === 'loaded' && (
-              <>
-                <ThumbnailGrid photos={photos} />
-                <TasteBanner onContinue={handleContinue} />
-              </>
-            )}
-
-            {step === 'tasting' && (
-              <TastingScreen
-                value={cuiInput}
-                onChange={setCuiInput}
-                criteria={criteria}
-                onCriteriaChange={setCriteria}
-                isBuildingCriteria={isBuildingCriteria}
-                onRunCull={handleRunCull}
-                runCullDisabled={runCullDisabled}
-              />
-            )}
-
-            {step === 'processing' && (
-              <ProcessingView
-                processingStage={processingStage}
-                progress={progress}
-                results={results}
-                cullCriteria={cullCriteria}
-              />
-            )}
-
-            {(step === 'upload' || step === 'loaded') && (
-              <CUIBar
-                value={cuiInput}
-                onChange={setCuiInput}
-                placeholder="What kind of shoot is this?  (optional)"
-              />
-            )}
-
-            {step !== 'processing' && (
-              <div className="flex flex-col items-start" style={{ gap: '20px' }}>
-                <ChipRow chips={chips} onSelect={handleChipSelect} />
-                {isUpload && (
-                  <div className="flex items-center gap-6">
-                    <span className="text-xs text-muted">Up to 200 photos per batch</span>
-                    <span className="text-xs text-muted">No account required to start</span>
-                  </div>
-                )}
+      {step === 'upload' && (
+        <>
+          <Canvas center>
+            {!ollamaStatus.connected && (
+              <div className="w-full px-4 py-3 mb-6 text-[13px] text-primary border border-border rounded-lg">
+                &#9888; Ollama isn&apos;t running. Start Ollama and run{' '}
+                <code className="font-mono text-xs px-1 py-0.5 rounded bg-surface">npm run dev</code>
+                {' '}to use Cull.
               </div>
             )}
+            <DropZone onFiles={handleFiles} onBrowse={openPicker} />
+            {isIngesting && (
+              <p className="mt-4 text-[13px] text-primary">Preparing thumbnails&hellip;</p>
+            )}
+          </Canvas>
 
-          </div>
-        )}
-      </main>
+          <Console
+            label={<StepLabel prefix="Step 1 of 3:" name="Add photos" />}
+            buttons={
+              <div className="flex">
+                <PrimaryButton onClick={openPicker}>Browse files</PrimaryButton>
+              </div>
+            }
+          />
+        </>
+      )}
+
+      {step === 'tasting' && (
+        <>
+          <Canvas>
+            {/* 48px below the wordmark, per the canvas frame */}
+            <div style={{ marginTop: '48px' }}>
+              <ThumbnailGrid photos={photos} />
+            </div>
+          </Canvas>
+
+          <Console
+            label={<StepLabel prefix="Step 2 of 3:" name="Set taste" />}
+            secondary={
+              showRevert
+                ? <ConsoleLink onClick={handleRevert}>Revert changes</ConsoleLink>
+                : null
+            }
+            description={<TasteInput value={cuiInput} onChange={setCuiInput} />}
+            priorities={
+              <PriorityPanel
+                criteria={criteria}
+                stale={readState === 'stale'}
+                onWeightChange={handleWeightChange}
+                onRemove={handleRemoveCriterion}
+              />
+            }
+            chips={
+              <ChipRow
+                chips={TASTING_CHIPS}
+                activeChips={selectedChips}
+                onToggle={handleToggleChip}
+              />
+            }
+            buttons={
+              <div className="w-full flex flex-col items-start" style={{ gap: '12px' }}>
+                {manuallyMovedCount > 0 && (
+                  <p className="text-[12px] font-normal text-primary leading-[14px]">
+                    Re-running replaces your {manuallyMovedCount} moved photo
+                    {manuallyMovedCount === 1 ? '' : 's'}.
+                  </p>
+                )}
+                <div className="w-full flex items-center" style={{ gap: '16px' }}>
+                <PrimaryButton
+                  minWidth={157}
+                  disabled={!hasInput || isBuildingCriteria}
+                  onClick={readState === 'current' ? handleRunCull : runRead}
+                >
+                  {isBuildingCriteria ? 'Reading…' : primaryLabel}
+                </PrimaryButton>
+                <SecondaryButton onClick={openPicker}>Add more photos</SecondaryButton>
+                </div>
+              </div>
+            }
+          />
+        </>
+      )}
+
+      {step === 'processing' && (
+        <>
+          <Canvas>
+            <div style={{ marginTop: '48px' }}>
+              <ThumbnailGrid
+                photos={photos}
+                decisions={decisions}
+                evaluatingId={evaluatingId}
+              />
+            </div>
+          </Canvas>
+
+          {/* Everything else locks: description, priorities, chips and Revert
+              are all absent — there's nothing to revert into. */}
+          <Console
+            label={<StatusLabel prefix="Analyzing">{` ${progress.current} of ${progress.total}`}</StatusLabel>}
+            secondary={
+              <p className="text-[12px] font-normal text-primary leading-[14px] whitespace-nowrap">
+                {keepCount} kept · {cutCount} cut
+              </p>
+            }
+            progress={<ProgressBar current={progress.current} total={progress.total} />}
+            buttons={
+              <div className="w-full flex items-center" style={{ gap: '16px' }}>
+                <PrimaryButton minWidth={157} onClick={handleCancel}>Cancel</PrimaryButton>
+              </div>
+            }
+          />
+        </>
+      )}
+
+      {step === 'results' && (
+        <>
+          <Canvas scroll>
+            <ResultsView
+              results={results}
+              activeTab={activeTab}
+              onTabChange={handleTabChange}
+              selectedId={selectedId}
+              onSelect={setSelectedId}
+              starredIds={starredIds}
+              onMove={handleMove}
+              onStar={handleStar}
+              undoItem={undoItem}
+              onUndo={handleUndo}
+            />
+          </Canvas>
+
+          <Console
+            label={<StepLabel prefix="Step 3 of 3:" name="Review results" />}
+            secondary={
+              <p className="text-[12px] font-normal text-primary leading-[14px] whitespace-nowrap">
+                {photos.length} photos
+              </p>
+            }
+            buttons={
+              <div className="w-full flex items-center" style={{ gap: '16px' }}>
+                {/* TODO: export flow is unspecified — inert for now. */}
+                <PrimaryButton minWidth={157} disabled>Export keeps</PrimaryButton>
+                <SecondaryButton disabled={starredCount === 0}>Export starred</SecondaryButton>
+                <TextLink onClick={handleBackToSetTaste}>Back to set taste</TextLink>
+              </div>
+            }
+          />
+        </>
+      )}
     </div>
   )
 }
