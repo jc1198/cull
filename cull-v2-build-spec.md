@@ -18,6 +18,13 @@ Every screen uses two zones.
 - **Console** — a full-bleed frame anchored to the bottom of the viewport, 1440px wide.
   Contents sit on a 1280px column starting at x=80.
 
+Canvas and console carry the same fill (`#272727`). **The console's drop shadow —
+`0 -4px 2px rgba(0,0,0,0.25)` — is the only thing separating them.** There is no top
+stroke on the console; an earlier draft of this spec called for a white one, which was a
+mistake and was never in the Figma frames. It reads as a soft 5px darkening above the
+console edge, and a thumbnail row clipping there passes under it rather than being cut by
+a line. If the boundary ever needs strengthening, deepen the shadow — don't add a stroke.
+
 The canvas persists across steps. Don't clear or replace the grid on a step transition —
 only the console changes. The one exception is review results, where the canvas splits
 into a grid and a detail pane.

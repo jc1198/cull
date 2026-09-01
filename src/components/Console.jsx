@@ -1,6 +1,6 @@
 // The console: a full-bleed frame at the bottom of the viewport. Canvas and
-// console share #272727 — they separate by the top border and drop shadow, not
-// by fill.
+// console share #272727 — the drop shadow alone separates them. No top stroke:
+// the border was a spec error, never in the Figma frames.
 //
 // Slots render in a FIXED order. A step omits what it doesn't need, but nothing
 // reorders:
@@ -61,7 +61,7 @@ export function ConsoleLink({ children, ...props }) {
 
 export default function Console({ label, secondary, progress, description, priorities, chips, buttons }) {
   return (
-    <footer className="shrink-0 w-full bg-canvas border-t border-border shadow-console relative z-10">
+    <footer className="shrink-0 w-full bg-canvas shadow-console relative z-10">
       <div
         className="mx-auto w-full flex flex-col"
         style={{ maxWidth: '1440px', padding: '32px 80px 48px', gap: '24px' }}

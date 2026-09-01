@@ -47,8 +47,10 @@ This is a plain flex column — `Wordmark`/canvas `flex-1 min-h-0 overflow-hidde
 (436 set taste, 458 stale, 181 analyzing, 151 results) works for free. **Don't** switch
 the console to fixed positioning; it would reintroduce height measurement.
 
-Canvas and console share `#272727`. They separate by the console's top border and drop
-shadow, not by fill.
+Canvas and console share `#272727`. The console's drop shadow is the **only** thing
+separating them — there is no top stroke. A white `border-t` was in an early spec by
+mistake and never in the Figma frames; don't reintroduce it. If the boundary ever reads
+too weak, deepen `shadow-console` rather than adding a stroke back.
 
 `Console` takes its slots as named props and renders them in a **fixed order**: label row,
 progress, description, priorities, chips, buttons. A step omits what it doesn't need;

@@ -7,8 +7,8 @@ export default {
   theme: {
     extend: {
       colors: {
-        // v2 dark system. Canvas and console share a value — they separate by
-        // the console's top border and drop shadow, not by fill.
+        // v2 dark system. Canvas and console share a value — the console's drop
+        // shadow separates them, not a change of fill and not a stroke.
         canvas:  '#272727',
         surface: '#474747', // elevated: priority cards, reasoning card
         accent:      '#BAA9FF', // on dark
