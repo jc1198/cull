@@ -6,13 +6,13 @@ const TILE_H = 110
 const GUTTER = 8
 const COLUMNS = 5
 
-// `color` is the glyph's own color when filled. On the canvas it's the accent;
-// on the accent fill of the active toggle it flips to the canvas color, the same
-// inversion the primary button uses — white on #BAA9FF is ~1.9:1.
-function StarGlyph({ filled, size = 16, color = '#BAA9FF' }) {
+// White in both states, per the Review results frame — the filled star sits on
+// the accent (the active toggle's fill, the grid badge's image) and the accent
+// is the fill, not the glyph.
+function StarGlyph({ filled, size = 16 }) {
   return (
     <svg width={size} height={size} viewBox="0 0 24 24" className="block shrink-0"
-         fill={filled ? color : 'none'} stroke={filled ? color : '#FFFFFF'} strokeWidth="2"
+         fill={filled ? '#FFFFFF' : 'none'} stroke="#FFFFFF" strokeWidth="2"
          strokeLinejoin="round" aria-hidden="true">
       <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
     </svg>
@@ -208,12 +208,12 @@ function DetailPane({ item, activeTab, starred, onMove, onStar }) {
           onClick={() => onStar(item.photo.id)}
           className={[
             'flex items-center border border-border rounded-lg text-[14px] font-normal transition-colors',
-            starred ? 'bg-accent text-canvas' : 'bg-transparent text-primary hover:bg-white/10',
+            starred ? 'bg-accent text-primary' : 'bg-transparent text-primary hover:bg-white/10',
           ].join(' ')}
           style={{ height: '34px', paddingLeft: '8px', paddingRight: '8px', gap: '4px', lineHeight: '16px' }}
         >
           <span>{starred ? 'Starred' : 'Star'}</span>
-          <StarGlyph filled={starred} size={16} color="#272727" />
+          <StarGlyph filled={starred} size={16} />
         </button>
       </div>
     </div>

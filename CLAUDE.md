@@ -127,7 +127,7 @@ fallback defaults.
 |-------|-------|---------|
 | No read | Placeholder card at reserved height | `Show priorities`, disabled until input exists |
 | Current | Cards at full opacity | `Run Cull on N photos` |
-| Stale | Cards at 60% + `Reflects your earlier description` | `Update priorities` |
+| Stale | Cards at 60% + `These priorities reflect your earlier description`, right-aligned in the panel's label row | `Update priorities` |
 
 `isStale` is **derived, never stored**: `input.trim() !== lastRead.description`. If the
 user undoes an edit and the text matches again, stale clears on its own. Don't threshold

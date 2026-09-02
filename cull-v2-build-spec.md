@@ -159,7 +159,7 @@ model's output.
 |---|---|---|
 | No read yet | Empty placeholder at reserved height | `Show priorities →`, disabled until input exists |
 | Current | Cards at full opacity | `Run Cull on N photos` |
-| Stale | Cards at 60%, with `Reflects your earlier description` below | `Update priorities` |
+| Stale | Cards at 60%, with `These priorities reflect your earlier description` right-aligned in the `Cull will prioritize:` label row | `Update priorities` |
 
 Call `buildCullCriteria` only on a primary button click. Don't call it on a debounce as
 the user types — the debounced version flickers, and a late response can overwrite good
@@ -167,6 +167,11 @@ criteria with fallback defaults.
 
 Reserve the panel's height in the empty and loading states so the console doesn't change
 height when cards arrive.
+
+The stale note belongs **in** the `Cull will prioritize:` label row, right-aligned — the
+position `Revert priorities` holds on the step-label row. That row already exists and has
+empty space, so the note costs no height. As its own row below the cards it grew the
+console and pushed the console's top edge up the moment it appeared.
 
 Set a min-width on the primary so the row doesn't shift when the label swaps.
 
