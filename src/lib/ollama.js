@@ -1,14 +1,7 @@
 import { mockBuildCullCriteria, mockEvaluatePhoto } from './mock'
+import { DEMO_MODEL } from './models'
 
 const PROXY = 'http://localhost:3001'
-
-// Gate for offline UI work. The v2 screens are built and checked against these
-// without Ollama running — see lib/mock.js for the fixtures.
-export const USE_MOCK = import.meta.env.VITE_MOCK_API === 'true'
-
-const FALLBACK_CRITERIA = [
-  { signal: 'General quality', weight: 'high', description: 'Select the best overall photos from the batch' },
-]
 
 // Returns the full data URL as-is; evaluatePhoto strips the prefix before sending
 export function fileToBase64(file) {
@@ -48,8 +41,8 @@ function parseJsonObject(raw) {
  * Sends the taste profile text to Ollama and returns an array of
  * structured culling criteria: [{ signal, weight, description }, ...]
  */
-export async function buildCullCriteria(tasteProfile) {
-  if (USE_MOCK) return mockBuildCullCriteria(tasteProfile)
+export async function buildCullCriteria(tasteProfile, model = DEMO_MODEL, signal) {
+  if (model === DEMO_MODEL) return mockBuildCullCriteria(tasteProfile)
 
   const prompt =
     `You are a photo culling assistant. A photographer wants: "${tasteProfile}"\n\n` +
@@ -63,9 +56,11 @@ export async function buildCullCriteria(tasteProfile) {
   try {
     const res = await fetch(`${PROXY}/evaluate`, {
       method: 'POST',
+      signal: signal ? AbortSignal.any([signal, AbortSignal.timeout(120000)]) : AbortSignal.timeout(120000),
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ model: 'llava:7b', prompt, stream: false, num_predict: 1000 }),
+      body: JSON.stringify({ model, prompt, stream: false, num_predict: 1000 }),
     })
+    if (!res.ok) throw new Error(`Model request failed (${res.status})`)
     const data = await res.json()
     if (data.error) throw new Error(data.error)
 
@@ -94,10 +89,10 @@ export async function buildCullCriteria(tasteProfile) {
 
     console.log('[buildCullCriteria] normalised criteria:', parsed)
     if (Array.isArray(parsed) && parsed.length > 0 && parsed[0].signal) return parsed
-    return FALLBACK_CRITERIA
+    throw new Error('The model did not return usable priorities')
   } catch (err) {
     console.error('buildCullCriteria error:', err?.message ?? err)
-    return FALLBACK_CRITERIA
+    throw err
   }
 }
 
@@ -110,8 +105,8 @@ export async function buildCullCriteria(tasteProfile) {
  * criteria: the user sets them directly rather than the model inferring them,
  * so they're applied at evaluation time and never dim the priorities panel.
  */
-export async function evaluatePhoto(imageBase64, criteria, index = 0, constraints = []) {
-  if (USE_MOCK) return mockEvaluatePhoto(index)
+export async function evaluatePhoto(imageBase64, criteria, index = 0, constraints = [], model = DEMO_MODEL, signal) {
+  if (model === DEMO_MODEL) return mockEvaluatePhoto(index)
 
   const cleanBase64 = stripDataUrl(imageBase64)
   console.log('[evaluatePhoto] base64 prefix check (first 100 chars):', cleanBase64.slice(0, 100))
@@ -136,14 +131,16 @@ export async function evaluatePhoto(imageBase64, criteria, index = 0, constraint
   try {
     const res = await fetch(`${PROXY}/evaluate`, {
       method: 'POST',
+      signal: signal ? AbortSignal.any([signal, AbortSignal.timeout(120000)]) : AbortSignal.timeout(120000),
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        model: 'llava:7b',
+        model,
         images: [cleanBase64],
         prompt,
         stream: false,
       }),
     })
+    if (!res.ok) throw new Error(`Model request failed (${res.status})`)
     const data = await res.json()
     if (data.error) throw new Error(data.error)
 
@@ -157,10 +154,11 @@ export async function evaluatePhoto(imageBase64, criteria, index = 0, constraint
 
     // Fallback: try to infer decision from plain text if JSON parse failed
     const lower = raw.toLowerCase()
-    const decision = lower.includes('keep') ? 'keep' : 'cut'
-    return { decision, reason: 'Could not evaluate' }
+    if (!/\b(keep|cut)\b/.test(lower)) throw new Error('The model did not return a decision')
+    const decision = /\bkeep\b/.test(lower) ? 'keep' : 'cut'
+    return { decision, reason: raw }
   } catch (err) {
     console.error('evaluatePhoto error:', err?.message ?? err)
-    return { decision: 'cut', reason: 'Could not evaluate' }
+    throw err
   }
 }

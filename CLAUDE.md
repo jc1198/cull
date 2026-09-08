@@ -22,7 +22,7 @@ the Figma frames disagree, **the frames win** — several spec details were stal
 | Frontend | React 18 + Vite 6 |
 | Styling | Tailwind CSS 3 (custom design tokens) |
 | Type | Kantumruy Pro (Google Fonts) |
-| Vision model | `llava:7b` via Ollama |
+| Vision model | User-selected local model via Ollama (Demo by default) |
 | Proxy | Express 5 (`proxy.js`) on port 3001 |
 | Legacy APIs (unused in current flow) | Gemini 2.5 Flash, Anthropic Claude Haiku |
 
@@ -129,11 +129,11 @@ fallback defaults.
 | Current | Cards at full opacity | `Run Cull on N photos` |
 | Stale | Cards at 60% + `These priorities reflect your earlier description`, right-aligned in the panel's label row | `Update priorities` |
 
-`isStale` is **derived, never stored**: `input.trim() !== lastRead.description`. If the
+`isStale` is **derived, never stored**: `input.trim() !== lastRead.description || model !== lastRead.model`. If the
 user undoes an edit and the text matches again, stale clears on its own. Don't threshold
 by edit distance.
 
-`lastRead` snapshots `{ description, chips, criteria }` on **successful reads only**, and
+`lastRead` snapshots `{ model, description, chips, criteria }` on **successful reads only**, and
 is both the stale comparand and the `Revert priorities` target. The link is named for
 its scope — it restores the read snapshot and leaves manual photo moves alone — and is
 pinned to the step label's 14px line box so its appearance doesn't move the console's top
@@ -268,14 +268,15 @@ Stored in `.env.local` (never commit):
 
 | Variable | Purpose |
 |----------|---------|
-| `VITE_MOCK_API` | `true` runs the whole UI on mocks — no Ollama needed |
+| `VITE_MOCK_API` | Legacy setting; runtime model selection now controls demo/local inference |
 | `VITE_GEMINI_API_KEY` | Gemini key (legacy modules only) |
 | `VITE_ANTHROPIC_API_KEY` | Anthropic key (`refineResults.js`; dangerouslyAllowBrowser) |
 
 ## Mock Mode
 
-`VITE_MOCK_API=true` gates `ollama.js` itself, so the entire v2 UI is buildable and
-checkable without inference:
+Demo mode is the initial default and uses the existing mock fixtures. Selection is stored
+in localStorage under `cull.selectedModel`; both inference calls receive the selected model
+explicitly. `VITE_MOCK_API` no longer overrides runtime selection.
 
 - `mockBuildCullCriteria` — 4 criteria at mixed weights on the first read; a deliberately
   **shifted** set on every read after (two labels match, one at a different model weight;
@@ -286,8 +287,9 @@ checkable without inference:
   cuts — an opening run of cuts makes analyzing read as though the taste profile isn't
   landing. Don't "simplify" the seed away.
 
-The health check is short-circuited in mock mode; with mock off it still fires and the
-"Ollama isn't running" banner is the only signal the local model is unreachable.
+Health checks run on mount, whenever the picker opens, and on Re-check, including in Demo
+mode. The menu distinguishes unavailable Ollama from reachable Ollama with missing models.
+Health requests time out after 5 seconds; stale requests cannot overwrite newer checks.
 
 ---
 
@@ -356,4 +358,29 @@ scoring.
 
 - The expanded canvas view behind the `+N more` tile (tile renders, inert, marked TODO)
 - The export flow (`Export keeps` / `Export starred` render disabled)
-- The model picker described in the reference doc
+## Model picker
+
+`src/components/ModelPicker.jsx` supplies the top-right Running on pill and portal menu.
+`src/hooks/useOllamaHealth.js` owns health requests; `src/lib/models.js` owns the model
+catalog, tag matching, persistence key, and model-aware stale predicate. Original Figma
+SVG exports live in `src/assets/model-picker/`.
+
+- Demo is always selectable. Installed models are selectable after the health response;
+  missing models offer a persistent copy command only when Ollama is reachable.
+- Untagged names match `:latest`, not arbitrary versions. Unknown installed models display
+  their name without invented size or description.
+- Switching clears results and manual result moves, preserves photos/stars/input/chips and
+  the old priority snapshot, and returns results or failed runs to set taste. Old priorities
+  stay dimmed and require Update priorities when the snapshot model differs. Revert cannot
+  make a different model's priorities current. Late reads from a previous selection are ignored.
+- While analysis is active the pill is inert without visual dimming. A failed request stops
+  the run rather than inventing a decision. The console offers retry from the failed photo,
+  switching to Demo (returning to set taste), or viewing finished photos. Retry uses the
+  original run snapshot and appends only unfinished photos. Requests time out after 120s.
+- Copy success shows the Figma toast for five seconds and leaves the menu open. Escape,
+  outside click, focus departure, and model selection close the menu. Arrow keys navigate.
+
+Validation: `node --test tests/models.test.mjs`; `npm run build`; and, with the dev server
+running, `node tests/model-picker.browser.mjs` using an installed Playwright and Chrome.
+Set `PLAYWRIGHT_MODULE` to an absolute Playwright module path to use a bundled installation.
+The browser suite intercepts health/inference requests; it does not require a live model.

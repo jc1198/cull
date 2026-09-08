@@ -9,7 +9,10 @@ import DropZone from './components/DropZone'
 import ThumbnailGrid from './components/ThumbnailGrid'
 import ResultsView from './components/ResultsView'
 import ChipRow from './components/ChipRow'
-import { buildCullCriteria, evaluatePhoto, fileToBase64, USE_MOCK } from './lib/ollama'
+import { buildCullCriteria, evaluatePhoto, fileToBase64 } from './lib/ollama'
+import ModelPicker from './components/ModelPicker'
+import useOllamaHealth from './hooks/useOllamaHealth'
+import { DEMO_MODEL, MODEL_STORAGE_KEY, readSavedModel, prioritiesAreStale } from './lib/models'
 import { makeThumbnail } from './lib/thumbnail'
 
 const TASTING_CHIPS = ['Exclude blurry shots', 'Best of duplicates', 'Faces in focus']
@@ -49,17 +52,44 @@ export default function App() {
   const ingestSeq = useRef(0)
   const fileInputRef = useRef(null)
 
-  // Ollama connection
-  const [ollamaStatus, setOllamaStatus] = useState({ connected: false, models: [] })
+  const [model, setModel] = useState(readSavedModel)
+  const { health, refresh, markOffline } = useOllamaHealth()
+  const [readError, setReadError] = useState(null)
+  const [runFailure, setRunFailure] = useState(null)
+  const readSequence = useRef(0)
+  const readRequest = useRef(null)
+  const runRequest = useRef(null)
+  const runSnapshot = useRef(null)
+  const runActive = useRef(false)
 
-  // Check Ollama on mount
   useEffect(() => {
-    if (USE_MOCK) { setOllamaStatus({ connected: true, models: ['mock'] }); return }
-    fetch('http://localhost:3001/health')
-      .then((r) => r.json())
-      .then(setOllamaStatus)
-      .catch(() => setOllamaStatus({ connected: false, models: [] }))
+    try { localStorage.setItem(MODEL_STORAGE_KEY, model) } catch { /* Storage may be unavailable. */ }
+  }, [model])
+  useEffect(() => () => {
+    readSequence.current++
+    readRequest.current?.abort()
+    runRequest.current?.abort()
+    cancelRef.current = true
   }, [])
+
+  function switchModel(nextModel) {
+    if (runActive.current || nextModel === model) return
+    readSequence.current++
+    readRequest.current?.abort()
+    setIsBuilding(false)
+    setReadError(null)
+    setModel(nextModel)
+    setResults([])
+    setDecisions(new Map())
+    setEvaluatingId(null)
+    setSelectedId(null)
+    setActiveTab('keeps')
+    if (undoItem?.timeoutId) clearTimeout(undoItem.timeoutId)
+    setUndoItem(null)
+    setRunFailure(null)
+    runSnapshot.current = null
+    if (step === 'results' || step === 'processing') setStep('tasting')
+  }
 
   // Revoke thumbnail blob URLs on unmount only. Keying this to [photos] would
   // revoke the whole batch every time the array changes — which "Add more
@@ -153,23 +183,32 @@ export default function App() {
   // read flickers, and a late response can overwrite good criteria with
   // fallback defaults.
   async function runRead() {
+    const sequence = ++readSequence.current
+    readRequest.current?.abort()
+    const controller = new AbortController()
+    readRequest.current = controller
     setIsBuilding(true)
+    setReadError(null)
     try {
-      const raw = await buildCullCriteria(tasteProfile() || 'Best overall quality')
+      const raw = await buildCullCriteria(tasteProfile() || 'Best overall quality', model, controller.signal)
+      if (sequence !== readSequence.current) return
       // First read builds; every read after that merges onto what's on screen.
       const next = lastRead === null ? normalizeCriteria(raw) : mergeCriteria(criteria, raw)
       setCriteria(next)
       // Snapshot on every successful read only — a failed read leaves the
       // previous snapshot standing.
       setLastRead({
+        model,
         description: cuiInput.trim(),
         chips: [...selectedChips],
         criteria: next.map((c) => ({ ...c })),
       })
     } catch (err) {
-      console.error('buildCullCriteria failed:', err)
+      if (sequence !== readSequence.current) return
+      setReadError(`${model === DEMO_MODEL ? 'Demo mode' : model} could not read your priorities. Please retry or choose another model.`)
+      if (model !== DEMO_MODEL) refresh()
     } finally {
-      setIsBuilding(false)
+      if (sequence === readSequence.current) setIsBuilding(false)
     }
   }
 
@@ -205,57 +244,77 @@ export default function App() {
   // Below this, the scan border becomes a flicker rather than a readable state.
   const MIN_SCAN_MS = 300
 
-  async function handleRunCull() {
+  async function handleRunCull(resume = false) {
+    if (runActive.current) return
+    if (!resume && (lastRead === null || prioritiesAreStale(lastRead, cuiInput, model))) return
+    runActive.current = true
     cancelRef.current = false
+    const controller = new AbortController()
+    runRequest.current = controller
+    setRunFailure(null)
+    if (resume && model !== DEMO_MODEL) refresh()
     setStep('processing')
-    setResults([])
     setActiveTab('keeps')
-    setDecisions(new Map())
-    setEvaluatingId(null)
-    setProgress({ current: 0, total: photos.length })
+    if (undoItem?.timeoutId) clearTimeout(undoItem.timeoutId)
+    setUndoItem(null)
+    if (!resume) {
+      runSnapshot.current = { criteria, chips: [...selectedChips], model, photos: [...photos], finished: [] }
+      setResults([])
+      setDecisions(new Map())
+    }
+    const snapshot = runSnapshot.current
+    const accumulated = [...snapshot.finished]
+    const decided = new Map(accumulated.map((entry) => [entry.photo.id, entry.decision]))
+    setProgress({ current: accumulated.length, total: snapshot.photos.length })
 
-    const builtCriteria = criteria
-
-    const accumulated = []
-    const decided = new Map()
-
-    for (let i = 0; i < photos.length; i++) {
+    for (let i = accumulated.length; i < snapshot.photos.length; i++) {
       if (cancelRef.current) break
-
-      const photo = photos[i]
+      const photo = snapshot.photos[i]
       const startedAt = Date.now()
       setEvaluatingId(photo.id)
-      setProgress({ current: i + 1, total: photos.length })
-
+      setProgress({ current: i + 1, total: snapshot.photos.length })
       let entry
       try {
         const base64 = await fileToBase64(photo.file)
-        const result = await evaluatePhoto(base64, builtCriteria, i, selectedChips)
+        if (cancelRef.current) break
+        const result = await evaluatePhoto(base64, snapshot.criteria, i, snapshot.chips, snapshot.model, controller.signal)
         entry = { photo, decision: result.decision, originalDecision: result.decision, reason: result.reason }
       } catch (err) {
-        console.error(`Failed on ${photo.name}:`, err)
-        entry = { photo, decision: 'keep', originalDecision: 'keep', reason: 'Could not analyze — kept by default.' }
+        if (cancelRef.current) break
+        snapshot.finished = accumulated
+        setProgress({ current: accumulated.length, total: snapshot.photos.length })
+        setEvaluatingId(null)
+        setRunFailure({ model: snapshot.model, nextIndex: i })
+        markOffline()
+        runActive.current = false
+        return
       }
-
-      // Hold the scan border for its minimum before the decision lands.
       const elapsed = Date.now() - startedAt
       if (elapsed < MIN_SCAN_MS) await new Promise((r) => setTimeout(r, MIN_SCAN_MS - elapsed))
-
+      if (cancelRef.current) break
       accumulated.push(entry)
+      snapshot.finished = [...accumulated]
       decided.set(photo.id, entry.decision)
       setResults([...accumulated])
       setDecisions(new Map(decided))
     }
-
-    // Cancel goes to results with whatever finished — partial results are
-    // usable results.
+    runActive.current = false
     setEvaluatingId(null)
     setSelectedId(accumulated.find((r) => r.decision === 'keep')?.photo.id ?? null)
     setStep('results')
+    if (snapshot.model !== DEMO_MODEL) refresh()
   }
 
   function handleCancel() {
     cancelRef.current = true
+    runRequest.current?.abort()
+  }
+
+  function seeFinished() {
+    setRunFailure(null)
+    setActiveTab('keeps')
+    setSelectedId(results.find((r) => r.decision === 'keep')?.photo.id ?? null)
+    setStep('results')
   }
 
   // The set the user is currently looking at, in grid order.
@@ -338,7 +397,8 @@ export default function App() {
   // matches the last read again, the state clears on its own. No edit-distance
   // threshold — guessing which edits matter reintroduces the mismatch the panel
   // exists to prevent.
-  const isStale = lastRead !== null && cuiInput.trim() !== lastRead.description
+  const isStale = prioritiesAreStale(lastRead, cuiInput, model)
+  const modelChanged = lastRead !== null && model !== lastRead.model
 
   const readState = lastRead === null ? 'none' : isStale ? 'stale' : 'current'
 
@@ -357,7 +417,7 @@ export default function App() {
        return !snap || snap.id !== c.id || snap.weight !== c.weight
      }))
 
-  const showRevert = lastRead !== null && (isStale || chipsDiffer || criteriaDiffer)
+  const showRevert = lastRead !== null && (cuiInput.trim() !== lastRead.description || chipsDiffer || criteriaDiffer)
 
   const primaryLabel =
     readState === 'none'  ? 'Show priorities' :
@@ -367,6 +427,9 @@ export default function App() {
   const starredCount = results.filter((r) => starredIds.has(r.photo.id)).length
   // A re-run discards the result set, so warn about anything the user moved by hand.
   const manuallyMovedCount = results.filter((r) => r.decision !== r.originalDecision).length
+  const modelPicker = <ModelPicker model={model} health={health} refresh={refresh}
+    locked={step === 'processing' && !runFailure} onSelect={switchModel}
+    consequence={results.length > 0 || step === 'results' ? 'results' : lastRead ? 'priorities' : null} />
   return (
     <div className="flex flex-col h-screen overflow-hidden bg-canvas text-primary font-sans">
       {/* One picker for both the drop zone and the console's Browse files */}
@@ -381,17 +444,10 @@ export default function App() {
 
       {step === 'upload' && (
         <>
-          <Canvas>
+          <Canvas modelPicker={modelPicker}>
             {/* The canvas supplies the 48px above; 32 below is the console's
                 top padding, the same clearance the detail pane holds. */}
             <div className="flex flex-col flex-1 min-h-0" style={{ paddingBottom: '32px' }}>
-              {!ollamaStatus.connected && (
-                <div className="w-full shrink-0 px-4 py-3 mb-6 text-[13px] text-primary border border-border rounded-lg">
-                  &#9888; Ollama isn&apos;t running. Start Ollama and run{' '}
-                  <code className="font-mono text-xs px-1 py-0.5 rounded bg-surface">npm run dev</code>
-                  {' '}to use Cull.
-                </div>
-              )}
               <DropZone onFiles={handleFiles} onBrowse={openPicker} />
               {isIngesting && (
                 <p className="mt-4 shrink-0 text-[13px] text-primary">Preparing thumbnails&hellip;</p>
@@ -412,7 +468,7 @@ export default function App() {
 
       {step === 'tasting' && (
         <>
-          <Canvas>
+          <Canvas modelPicker={modelPicker}>
             <ThumbnailGrid photos={photos} />
           </Canvas>
 
@@ -430,6 +486,7 @@ export default function App() {
               <PriorityPanel
                 criteria={criteria}
                 stale={readState === 'stale'}
+                staleMessage={modelChanged ? 'These priorities reflect your earlier model' : undefined}
                 onWeightChange={handleWeightChange}
                 onRemove={handleRemoveCriterion}
               />
@@ -443,6 +500,7 @@ export default function App() {
             }
             buttons={
               <div className="w-full flex flex-col items-start" style={{ gap: '12px' }}>
+                {readError && <p role="alert" className="text-[12px] leading-[14px]">{readError}</p>}
                 {manuallyMovedCount > 0 && (
                   <p className="text-[12px] font-normal text-primary leading-[14px]">
                     Re-running resets photos you moved between keeps and cuts.
@@ -452,7 +510,7 @@ export default function App() {
                 <PrimaryButton
                   minWidth={157}
                   disabled={!hasInput || isBuildingCriteria}
-                  onClick={readState === 'current' ? handleRunCull : runRead}
+                  onClick={readState === 'current' ? () => handleRunCull() : runRead}
                 >
                   {isBuildingCriteria ? 'Reading…' : primaryLabel}
                 </PrimaryButton>
@@ -466,7 +524,7 @@ export default function App() {
 
       {step === 'processing' && (
         <>
-          <Canvas>
+          <Canvas modelPicker={modelPicker}>
             <ThumbnailGrid
               photos={photos}
               decisions={decisions}
@@ -477,16 +535,23 @@ export default function App() {
           {/* Everything else locks: description, priorities, chips and Revert
               are all absent — there's nothing to revert into. */}
           <Console
-            label={<StatusLabel prefix="Analyzing">{` ${progress.current} of ${progress.total}`}</StatusLabel>}
-            secondary={
+            label={<StatusLabel prefix="Analyzing">{`${runFailure ? ' stopped at' : ''} ${progress.current} of ${progress.total}`}</StatusLabel>}
+            secondary={!runFailure &&
               <p className="text-[12px] font-normal text-primary leading-[14px] whitespace-nowrap">
                 {keepCount} kept · {cutCount} cut
               </p>
             }
-            progress={<ProgressBar current={progress.current} total={progress.total} />}
+            progress={!runFailure && <ProgressBar current={progress.current} total={progress.total} />}
+            description={runFailure && <p role="alert" className="text-[12px] font-bold leading-[14px]">
+              <span className="font-mono text-accent">{runFailure.model}</span> stopped responding
+            </p>}
             buttons={
               <div className="w-full flex items-center" style={{ gap: '16px' }}>
-                <PrimaryButton minWidth={157} onClick={handleCancel}>Cancel</PrimaryButton>
+                {runFailure ? <>
+                  <PrimaryButton minWidth={157} onClick={() => handleRunCull(true)}>Retry from photo {runFailure.nextIndex + 1}</PrimaryButton>
+                  <SecondaryButton onClick={() => switchModel(DEMO_MODEL)}>Switch to demo mode</SecondaryButton>
+                  <TextLink onClick={seeFinished} disabled={results.length === 0}>See the {results.length} finished</TextLink>
+                </> : <PrimaryButton minWidth={157} onClick={handleCancel}>Cancel</PrimaryButton>}
               </div>
             }
           />
@@ -497,7 +562,7 @@ export default function App() {
         <>
           {/* Not a scrolling canvas: the detail pane sizes itself to the canvas
               height so its actions can hold a fixed clearance above the console. */}
-          <Canvas>
+          <Canvas modelPicker={modelPicker}>
             <ResultsView
               results={results}
               activeTab={activeTab}

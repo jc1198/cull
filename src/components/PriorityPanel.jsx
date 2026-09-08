@@ -2,7 +2,7 @@ import PriorityCard from './PriorityCard'
 
 // Cards fill the container: three across the 1280px column land at 416px,
 // four at 308px. flex-1 with a 16px gap produces both without a special case.
-export default function PriorityPanel({ criteria, stale = false, onWeightChange, onRemove }) {
+export default function PriorityPanel({ criteria, stale = false, staleMessage = 'These priorities reflect your earlier description', onWeightChange, onRemove }) {
   return (
     <div className="w-full flex flex-col items-start" style={{ gap: '16px' }}>
       {/* The stale note rides the heading's row — the same place Revert
@@ -12,7 +12,7 @@ export default function PriorityPanel({ criteria, stale = false, onWeightChange,
         <p className="text-[16px] font-bold text-primary leading-[19px]">Cull will prioritize:</p>
         {stale && (
           <p className="shrink-0 text-[12px] font-normal text-primary leading-[14px]">
-            These priorities reflect your earlier description
+            {staleMessage}
           </p>
         )}
       </div>

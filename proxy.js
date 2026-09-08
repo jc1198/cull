@@ -10,7 +10,8 @@ app.use(express.json({ limit: '50mb' }))
 // Health check — never throws, always returns valid JSON
 app.get('/health', async (_req, res) => {
   try {
-    const r = await fetch(`${OLLAMA}/api/tags`)
+    const r = await fetch(`${OLLAMA}/api/tags`, { signal: AbortSignal.timeout(4000) })
+    if (!r.ok) throw new Error(`Ollama request failed (${r.status})`)
     const data = await r.json()
     const models = (data.models ?? []).map((m) => m.name)
     res.json({ connected: true, models })
@@ -24,9 +25,11 @@ app.post('/evaluate', async (req, res) => {
   try {
     const r = await fetch(`${OLLAMA}/api/generate`, {
       method: 'POST',
+      signal: AbortSignal.timeout(120000),
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(req.body),
     })
+    if (!r.ok) throw new Error(`Ollama request failed (${r.status})`)
     const data = await r.json()
     res.json(data)
   } catch (err) {

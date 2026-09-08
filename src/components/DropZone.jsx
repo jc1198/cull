@@ -30,11 +30,7 @@ export default function DropZone({ onFiles, onBrowse }) {
 
   return (
     <div
-      className="w-full flex flex-col flex-1 min-h-0 items-center justify-center cursor-pointer"
-      style={{
-        borderRadius: '12px',
-        backgroundColor: 'rgba(209, 209, 209, 0.2)',
-      }}
+      className="drop-zone-glass w-full flex flex-col flex-1 min-h-0 items-center justify-center cursor-pointer"
       onDragOver={handleDragOver}
       onDrop={handleDrop}
       onClick={onBrowse}

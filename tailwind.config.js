@@ -20,6 +20,7 @@ export default {
         border:  '#FFFFFF',
       },
       fontFamily: {
+        mono: ['"JetBrains Mono"', 'monospace'],
         sans: ['"Kantumruy Pro"', 'system-ui', 'sans-serif'],
       },
       boxShadow: {

@@ -10,3 +10,52 @@ body {
   background-color: theme('colors.canvas');
   color: theme('colors.primary');
 }
+
+/* Figma 144:296: 20% grey fill, 12px corners, 4px glass blur,
+   20px depth, and upper-left lighting. CSS approximates the native glass rim. */
+.drop-zone-glass {
+  position: relative;
+  isolation: isolate;
+  border-radius: 12px;
+  background: rgba(209, 209, 209, 0.2);
+  -webkit-backdrop-filter: blur(4px);
+  backdrop-filter: blur(4px);
+  box-shadow: inset 0 0 20px rgba(255, 255, 255, 0.055);
+}
+
+.drop-zone-glass::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1px;
+  background: linear-gradient(135deg,
+    rgba(255, 255, 255, 0.46) 0%,
+    rgba(255, 255, 255, 0.16) 22%,
+    rgba(255, 255, 255, 0.06) 55%,
+    rgba(255, 255, 255, 0.24) 100%);
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  mask-composite: exclude;
+  pointer-events: none;
+}
+
+.model-menu { width: max-content; max-width: calc(100vw - 16px); overflow-y: auto; box-shadow: 0 0 5px #baa9ff; font-family: "Kantumruy Pro", sans-serif; }
+.model-line { display: flex; align-items: center; min-height: 20px; padding: 4px; }
+.model-option { border-radius: 4px; }
+.model-menu button:focus-visible, .model-trigger:focus-visible { outline: 2px solid #2100b2; outline-offset: 1px; }
+.model-option:not(:disabled):hover { background: rgba(186,169,255,.15); }
+.model-copy:hover { text-decoration: underline; }
+.model-trigger:disabled { cursor: default; }
+.model-toast { max-width: calc(100vw - 32px); width: max-content; }
+.checking-dots { display: inline-block; width: 9px; animation: checking-dots 1.2s steps(4, end) infinite; overflow: hidden; vertical-align: bottom; }
+@keyframes checking-dots { from { clip-path: inset(0 100% 0 0); } to { clip-path: inset(0 0 0 0); } }
+@media (prefers-reduced-motion: reduce) { .checking-dots { animation: none; } }
+
+.model-picker-label { font-family: "Kantumruy Pro", sans-serif; font-weight: 600; font-synthesis: none; }
+.model-picker-anchor { transition: width 240ms cubic-bezier(0.22, 1, 0.36, 1); }
+.model-trigger { transition: opacity 160ms ease; }
+@media (prefers-reduced-motion: reduce) {
+  .model-picker-anchor, .model-trigger { transition: none; }
+}

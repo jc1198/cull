@@ -18,14 +18,17 @@ const WORDMARK_GAP = 48
 // Every step clips — results was the last screen that scrolled, and it now sizes
 // its detail pane to the canvas instead, so the scroll variant is gone. Screens
 // size their own content within the column; the canvas only supplies the frame.
-export default function Canvas({ children, className = '' }) {
+export default function Canvas({ children, modelPicker, className = '' }) {
   return (
     <main className={['flex-1 min-h-0 overflow-hidden', className].join(' ')}>
       <div
         className="mx-auto w-full h-full flex flex-col"
         style={{ maxWidth: '1440px', paddingLeft: '80px', paddingRight: '80px' }}
       >
-        <Wordmark />
+        <div className="flex shrink-0 items-end justify-between gap-4">
+          <Wordmark />
+          {modelPicker}
+        </div>
         <div className="flex flex-col flex-1 min-h-0" style={{ marginTop: `${WORDMARK_GAP}px` }}>
           {children}
         </div>
