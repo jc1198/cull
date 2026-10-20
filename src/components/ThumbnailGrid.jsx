@@ -4,7 +4,6 @@ const TILE_W = 148
 const TILE_H = 110
 const GUTTER = 8
 const COLUMNS = 8
-const VISIBLE = 23 // 23 thumbnails + the "+N more" tile fills three rows of 8
 
 // Memoized and keyed by photo id, with `state` as a plain string prop. Without
 // this, each streamed decision during analyzing re-renders all 116 thumbnails.
@@ -14,10 +13,10 @@ const VISIBLE = 23 // 23 thumbnails + the "+N more" tile fills three rows of 8
 //   cut        — dims to 40%
 //   keep       — returns to full opacity
 //   idle       — not yet reached, unchanged
-const Thumbnail = memo(function Thumbnail({ photo, state = 'idle' }) {
+const Thumbnail = memo(function Thumbnail({ photo, state = 'idle', onRemove }) {
   return (
     <div
-      className="relative"
+      className="relative photo-thumbnail"
       style={{ width: `${TILE_W}px`, height: `${TILE_H}px` }}
     >
       <img
@@ -32,6 +31,10 @@ const Thumbnail = memo(function Thumbnail({ photo, state = 'idle' }) {
         }}
         draggable={false}
       />
+      {onRemove && (
+        <button type="button" className="photo-remove" aria-label={`Remove ${photo.name}`}
+          onClick={() => onRemove(photo.id)}>×</button>
+      )}
       {state === 'evaluating' && (
         <div
           className="absolute inset-0 border-2 border-accent pointer-events-none"
@@ -42,55 +45,37 @@ const Thumbnail = memo(function Thumbnail({ photo, state = 'idle' }) {
   )
 })
 
-// Outlined, filled with the canvas color so it reads as a hole in the grid
-// rather than as another photo.
-function MoreTile({ count, onClick }) {
+export default function ThumbnailGrid({ photos, decisions, evaluatingId, onRemove, scrollRef }) {
   return (
-    <button
-      type="button"
-      onClick={onClick}
-      className="flex items-center justify-center bg-canvas border border-border text-primary text-[20px] font-bold leading-none"
-      style={{ width: `${TILE_W}px`, height: `${TILE_H}px`, borderRadius: '6px' }}
-    >
-      +{count} more
-    </button>
-  )
-}
-
-export default function ThumbnailGrid({ photos, onExpand, decisions, evaluatingId }) {
-  // Only hold back photos when doing so actually saves a row's worth of space —
-  // "+1 more" next to 23 tiles is noise.
-  const truncated = photos.length > VISIBLE + 1
-  const shown = truncated ? photos.slice(0, VISIBLE) : photos
-
-  return (
-    <div className="flex flex-col items-start" style={{ gap: '24px' }}>
-      <p className="text-[20px] font-medium text-primary" style={{ lineHeight: '24px' }}>
+    <div className="flex flex-col flex-1 min-h-0 items-start w-full" style={{ gap: '24px' }}>
+      <p className="shrink-0 text-[20px] font-medium text-primary" style={{ lineHeight: '24px' }}>
         {photos.length} photo{photos.length === 1 ? '' : 's'} added
       </p>
 
-      <div
-        className="grid justify-start"
-        style={{
-          gridTemplateColumns: `repeat(${COLUMNS}, ${TILE_W}px)`,
-          gap: `${GUTTER}px`,
-        }}
-      >
-        {shown.map((photo) => (
-          <Thumbnail
-            key={photo.id}
-            photo={photo}
-            state={
-              photo.id === evaluatingId ? 'evaluating'
-              : decisions?.get(photo.id) ?? 'idle'
-            }
-          />
-        ))}
-        {truncated && (
-          // TODO: opens the expanded canvas view — a scrolling grid of the full
-          // batch that stays expanded across steps. Not yet specified; inert.
-          <MoreTile count={photos.length - VISIBLE} onClick={onExpand} />
-        )}
+      <div className="photo-grid-frame">
+        <div ref={scrollRef} className="photo-grid-scroll" tabIndex={0} role="region" aria-label="Photo library">
+          <div className="photo-grid-runway">
+            <div
+              className="photo-grid-tiles grid justify-start"
+              style={{
+                gridTemplateColumns: `repeat(${COLUMNS}, ${TILE_W}px)`,
+                gap: `${GUTTER}px`,
+              }}
+            >
+              {photos.map((photo) => (
+                <Thumbnail
+                  key={photo.id}
+                  photo={photo}
+                  onRemove={onRemove}
+                  state={
+                    photo.id === evaluatingId ? 'evaluating'
+                    : decisions?.get(photo.id) ?? 'idle'
+                  }
+                />
+              ))}
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   )

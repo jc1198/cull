@@ -1,6 +1,8 @@
 import { useState, useRef } from 'react'
 import WeightMenu from './WeightMenu'
 
+const capitalizeFirst = (text) => text.charAt(0).toUpperCase() + text.slice(1)
+
 const WEIGHT_LABEL = { high: 'HIGH', medium: 'MED', low: 'LOW' }
 
 /**
@@ -29,10 +31,10 @@ export default function PriorityCard({ criterion, onWeightChange, onRemove }) {
   return (
     <div
       className="flex flex-col bg-surface rounded-lg"
-      style={{ flex: '1 1 0', minWidth: 0, height: '64px', padding: '12px', gap: '8px' }}
+      style={{ flex: '1 1 0', minWidth: 0, minHeight: '80px', padding: '12px', gap: '8px' }}
     >
-      <div className="flex items-center justify-between w-full" style={{ height: '20px' }}>
-        <p className="text-[12px] font-medium text-accent truncate">{criterion.signal}</p>
+      <div className="flex items-center justify-between w-full" style={{ height: '20px', flexShrink: 0 }}>
+        <p className="text-[12px] font-medium text-accent truncate">{capitalizeFirst(criterion.signal)}</p>
 
         <div className="relative shrink-0" ref={pillRef}>
           <button
@@ -58,8 +60,8 @@ export default function PriorityCard({ criterion, onWeightChange, onRemove }) {
         </div>
       </div>
 
-      <p className="text-[10px] font-normal text-accent w-full truncate">
-        {criterion.description}
+      <p className="text-[10px] font-normal text-accent w-full leading-[14px] line-clamp-2 break-words">
+        {capitalizeFirst(criterion.description)}
       </p>
     </div>
   )

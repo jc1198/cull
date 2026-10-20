@@ -16,6 +16,6 @@ test('untagged models match only their latest tag, not arbitrary versions', () =
   assert.equal(isInstalled('moondream', ['moondream:latest']), true)
   assert.equal(isInstalled('llava:7b', ['llava:13b']), false)
   const rows = modelRows(['moondream:latest', 'custom:vision'])
-  assert.equal(rows.length, 4)
-  assert.deepEqual(rows[3], { name: 'custom:vision' })
+  assert.equal(rows.length, 6)
+  assert.deepEqual(rows[5], { name: 'custom:vision' })
 })

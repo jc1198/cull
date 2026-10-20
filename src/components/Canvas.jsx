@@ -15,9 +15,9 @@ import Wordmark from './Wordmark'
 // setting its own and drifting.
 const WORDMARK_GAP = 48
 
-// Every step clips — results was the last screen that scrolled, and it now sizes
-// its detail pane to the canvas instead, so the scroll variant is gone. Screens
-// size their own content within the column; the canvas only supplies the frame.
+// The outer canvas clips; each screen controls overflow within its content.
+// ThumbnailGrid scrolls only its photos, keeping the wordmark and count fixed.
+// Results sizes its detail pane to the canvas.
 export default function Canvas({ children, modelPicker, className = '' }) {
   return (
     <main className={['flex-1 min-h-0 overflow-hidden', className].join(' ')}>

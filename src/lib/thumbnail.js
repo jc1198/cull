@@ -1,9 +1,7 @@
 // Downscale on ingest. The canvas paints 148 x 110 tiles; holding 116 full-
 // resolution decoded bitmaps to do that is the real memory cost of a batch.
 //
-// This does NOT change what the model sees. `photo.file` stays the untouched
-// original and remains what fileToBase64 encodes — the "no compression before
-// Ollama" decision was about the model's input, not the DOM's.
+// The original photo.file is retained; model encoding is a separate decode.
 
 const THUMB_W = 296 // 2x the 148px tile, for retina
 const THUMB_H = 220
@@ -37,4 +35,26 @@ export async function makeThumbnail(file) {
   } catch {
     return URL.createObjectURL(file)
   }
+}
+
+// Longest edge 768px, JPEG q0.85, raw base64 with no data: prefix.
+export async function encodeForModel(file) {
+  const bitmap = await createImageBitmap(file)
+  const canvas = document.createElement('canvas')
+  try {
+    const scale = Math.min(1, 768 / Math.max(bitmap.width, bitmap.height))
+    canvas.width = Math.max(1, Math.round(bitmap.width * scale))
+    canvas.height = Math.max(1, Math.round(bitmap.height * scale))
+    canvas.getContext('2d').drawImage(bitmap, 0, 0, canvas.width, canvas.height)
+  } finally {
+    bitmap.close()
+  }
+  const blob = await new Promise((resolve) => canvas.toBlob(resolve, 'image/jpeg', 0.85))
+  if (!blob) throw new Error('Could not encode photo for the model')
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader()
+    reader.onload = () => resolve(reader.result.slice(reader.result.indexOf(',') + 1))
+    reader.onerror = () => reject(reader.error)
+    reader.readAsDataURL(blob)
+  })
 }

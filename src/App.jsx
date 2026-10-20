@@ -1,5 +1,6 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useCallback, useLayoutEffect } from 'react'
 import Canvas from './components/Canvas'
+import UndoToast from './components/UndoToast'
 import Console, { StepLabel, StatusLabel, ConsoleLink } from './components/Console'
 import TasteInput from './components/TasteInput'
 import PriorityPanel from './components/PriorityPanel'
@@ -9,11 +10,11 @@ import DropZone from './components/DropZone'
 import ThumbnailGrid from './components/ThumbnailGrid'
 import ResultsView from './components/ResultsView'
 import ChipRow from './components/ChipRow'
-import { buildCullCriteria, evaluatePhoto, fileToBase64 } from './lib/ollama'
+import { buildCullCriteria, evaluatePhoto, unloadCriteriaModel } from './lib/ollama'
 import ModelPicker from './components/ModelPicker'
 import useOllamaHealth from './hooks/useOllamaHealth'
-import { DEMO_MODEL, MODEL_STORAGE_KEY, readSavedModel, prioritiesAreStale } from './lib/models'
-import { makeThumbnail } from './lib/thumbnail'
+import { CRITERIA_MODEL, DEMO_MODEL, MODEL_STORAGE_KEY, readSavedModel, prioritiesAreStale } from './lib/models'
+import { makeThumbnail, encodeForModel } from './lib/thumbnail'
 
 const TASTING_CHIPS = ['Exclude blurry shots', 'Best of duplicates', 'Faces in focus']
 
@@ -30,6 +31,40 @@ export default function App() {
   const [isBuildingCriteria, setIsBuilding]   = useState(false)
   const [lastRead, setLastRead]               = useState(null) // { description, chips, criteria }
 
+  const [tasteCollapsed, setTasteCollapsed] = useState(false)
+  const [tasteMotionReady, setTasteMotionReady] = useState(false)
+  const tasteGridRef = useRef(null)
+  const tastePanelRef = useRef(null)
+
+  // Measure the expanded layout before paint, once per entry to this step.
+  // Subsequent edits, uploads, scrolling and resizes never override the choice.
+  useLayoutEffect(() => {
+    if (step !== 'tasting') return
+    setTasteMotionReady(false)
+    const scroll = tasteGridRef.current
+    const naturalHeight = scroll.querySelector('.photo-grid-tiles').offsetHeight
+    const panelHeight = tastePanelRef.current.firstElementChild.scrollHeight
+    const expandedSpace = scroll.clientHeight - (tasteCollapsed ? panelHeight : 0)
+    setTasteCollapsed(naturalHeight > expandedSpace)
+    let secondFrame
+    const firstFrame = requestAnimationFrame(() => {
+      secondFrame = requestAnimationFrame(() => setTasteMotionReady(true))
+    })
+    return () => { cancelAnimationFrame(firstFrame); cancelAnimationFrame(secondFrame) }
+  }, [step])
+
+  function changeTasteCollapsed(collapsed) {
+    const scroll = tasteGridRef.current
+    if (scroll && collapsed !== tasteCollapsed) {
+      // Keep enough trailing space to prevent the browser clamping scrollTop
+      // when collapse enlarges the viewport, including at the final grid row.
+      const panelHeight = tastePanelRef.current.firstElementChild.scrollHeight
+      scroll.firstElementChild.style.minHeight =
+        `${scroll.scrollTop + scroll.clientHeight + (collapsed ? panelHeight : 0)}px`
+    }
+    setTasteCollapsed(collapsed)
+  }
+
   // Processing
   const [progress, setProgress]         = useState({ current: 0, total: 0 })
   const [results, setResults]           = useState([])
@@ -43,6 +78,8 @@ export default function App() {
   const [selectedId, setSelectedId] = useState(null)
   const [activeTab, setActiveTab]   = useState('keeps') // 'keeps' | 'cuts' | 'starred'
   const [undoItem, setUndoItem]     = useState(null)
+  const undoTimer = useRef(null)
+  useEffect(() => () => clearTimeout(undoTimer.current), [])
   // Stars are a property of the photo, not of a run, so they live outside
   // `results` and survive a re-run.
   const [starredIds, setStarredIds] = useState(() => new Set())
@@ -84,7 +121,7 @@ export default function App() {
     setEvaluatingId(null)
     setSelectedId(null)
     setActiveTab('keeps')
-    if (undoItem?.timeoutId) clearTimeout(undoItem.timeoutId)
+    clearTimeout(undoTimer.current)
     setUndoItem(null)
     setRunFailure(null)
     runSnapshot.current = null
@@ -94,10 +131,11 @@ export default function App() {
   // Revoke thumbnail blob URLs on unmount only. Keying this to [photos] would
   // revoke the whole batch every time the array changes — which "Add more
   // photos" does, killing the thumbnails already on the canvas.
+  const thumbnailUrls = useRef(new Set())
   const photosRef = useRef(photos)
   useEffect(() => { photosRef.current = photos }, [photos])
   useEffect(() => () => {
-    photosRef.current.forEach((p) => URL.revokeObjectURL(p.thumbUrl))
+    thumbnailUrls.current.forEach((url) => URL.revokeObjectURL(url))
   }, [])
 
 
@@ -122,6 +160,7 @@ export default function App() {
         type: file.type,
       }))
     )
+    photoObjects.forEach((photo) => thumbnailUrls.current.add(photo.thumbUrl))
     setIsIngesting(false)
 
     setPhotos((prev) => [...prev, ...photoObjects])
@@ -183,6 +222,7 @@ export default function App() {
   // read flickers, and a late response can overwrite good criteria with
   // fallback defaults.
   async function runRead() {
+    changeTasteCollapsed(false)
     const sequence = ++readSequence.current
     readRequest.current?.abort()
     const controller = new AbortController()
@@ -255,7 +295,7 @@ export default function App() {
     if (resume && model !== DEMO_MODEL) refresh()
     setStep('processing')
     setActiveTab('keeps')
-    if (undoItem?.timeoutId) clearTimeout(undoItem.timeoutId)
+    clearTimeout(undoTimer.current)
     setUndoItem(null)
     if (!resume) {
       runSnapshot.current = { criteria, chips: [...selectedChips], model, photos: [...photos], finished: [] }
@@ -267,7 +307,8 @@ export default function App() {
     const decided = new Map(accumulated.map((entry) => [entry.photo.id, entry.decision]))
     setProgress({ current: accumulated.length, total: snapshot.photos.length })
 
-    for (let i = accumulated.length; i < snapshot.photos.length; i++) {
+    const firstIndex = accumulated.length
+    for (let i = firstIndex; i < snapshot.photos.length; i++) {
       if (cancelRef.current) break
       const photo = snapshot.photos[i]
       const startedAt = Date.now()
@@ -275,7 +316,8 @@ export default function App() {
       setProgress({ current: i + 1, total: snapshot.photos.length })
       let entry
       try {
-        const base64 = await fileToBase64(photo.file)
+        if (i === firstIndex && snapshot.model !== DEMO_MODEL && health.models.includes(CRITERIA_MODEL)) await unloadCriteriaModel(controller.signal)
+        const base64 = snapshot.model === DEMO_MODEL ? '' : await encodeForModel(photo.file)
         if (cancelRef.current) break
         const result = await evaluatePhoto(base64, snapshot.criteria, i, snapshot.chips, snapshot.model, controller.signal)
         entry = { photo, decision: result.decision, originalDecision: result.decision, reason: result.reason }
@@ -290,6 +332,7 @@ export default function App() {
         return
       }
       const elapsed = Date.now() - startedAt
+      console.log('[evaluatePhoto] elapsed:', { photo: photo.name, elapsedMs: elapsed })
       if (elapsed < MIN_SCAN_MS) await new Promise((r) => setTimeout(r, MIN_SCAN_MS - elapsed))
       if (cancelRef.current) break
       accumulated.push(entry)
@@ -357,18 +400,38 @@ export default function App() {
     setResults((prev) => prev.map((r) => r.photo.id === photoId ? { ...r, decision: to } : r))
     if (selectedId === photoId) setSelectedId(nextSelected)
 
-    if (undoItem?.timeoutId) clearTimeout(undoItem.timeoutId)
+    clearTimeout(undoTimer.current)
     const timeoutId = setTimeout(() => setUndoItem(null), 5000)
-    setUndoItem({ photoId, photoName: item.photo.name, from, to: to === 'cut' ? 'cuts' : 'keeps', timeoutId })
+    undoTimer.current = timeoutId
+    setUndoItem({ kind: 'move', photoId, from, message: `Moved ${item.photo.name} to ${to === 'cut' ? 'cuts' : 'keeps'}`, timeoutId })
   }
+
+  const handleRemovePhoto = useCallback((photoId) => {
+    const index = photosRef.current.findIndex((photo) => photo.id === photoId)
+    if (index < 0) return
+    const photo = photosRef.current[index]
+    setPhotos((prev) => prev.filter((item) => item.id !== photoId))
+    clearTimeout(undoTimer.current)
+    const timeoutId = setTimeout(() => setUndoItem(null), 5000)
+    undoTimer.current = timeoutId
+    setUndoItem({ kind: 'remove', photo, index, message: 'Photo removed', timeoutId })
+  }, [])
 
   function handleUndo() {
     if (!undoItem) return
     clearTimeout(undoItem.timeoutId)
-    setResults((prev) => prev.map((r) =>
-      r.photo.id === undoItem.photoId ? { ...r, decision: undoItem.from } : r
-    ))
-    setSelectedId(undoItem.photoId)
+    if (undoItem.kind === 'remove') {
+      setPhotos((prev) => {
+        const restored = [...prev]
+        restored.splice(undoItem.index, 0, undoItem.photo)
+        return restored
+      })
+    } else {
+      setResults((prev) => prev.map((r) =>
+        r.photo.id === undoItem.photoId ? { ...r, decision: undoItem.from } : r
+      ))
+      setSelectedId(undoItem.photoId)
+    }
     setUndoItem(null)
   }
 
@@ -422,7 +485,7 @@ export default function App() {
   const primaryLabel =
     readState === 'none'  ? 'Show priorities' :
     readState === 'stale' ? 'Update priorities' :
-    `Run Cull on ${photos.length} photos`
+    `Run Cull on ${photos.length} photo${photos.length === 1 ? '' : 's'}`
 
   const starredCount = results.filter((r) => starredIds.has(r.photo.id)).length
   // A re-run discards the result set, so warn about anything the user moved by hand.
@@ -441,6 +504,8 @@ export default function App() {
         className="hidden"
         onChange={(e) => handleFiles(e.target.files)}
       />
+
+      <UndoToast undoItem={undoItem} onUndo={handleUndo} />
 
       {step === 'upload' && (
         <>
@@ -469,16 +534,21 @@ export default function App() {
       {step === 'tasting' && (
         <>
           <Canvas modelPicker={modelPicker}>
-            <ThumbnailGrid photos={photos} />
+            <ThumbnailGrid photos={photos} onRemove={handleRemovePhoto} scrollRef={tasteGridRef} />
           </Canvas>
 
           <Console
+            collapsed={tasteCollapsed}
+            onToggle={() => changeTasteCollapsed(!tasteCollapsed)}
+            motionReady={tasteMotionReady}
+            panelRef={tastePanelRef}
+            summary={readState === 'none' ? '' : `${criteria.length} ${criteria.length === 1 ? 'priority' : 'priorities'} · ${readState === 'stale' ? 'needs update' : 'current'}`}
             label={<StepLabel prefix="Step 2 of 3:" name="Set taste" />}
             secondary={
               showRevert
                 // Names its scope: it restores the read snapshot, and manual
                 // photo moves were never in that snapshot.
-                ? <ConsoleLink onClick={handleRevert}>Revert priorities</ConsoleLink>
+                ? <ConsoleLink onClick={handleRevert}>Revert changes</ConsoleLink>
                 : null
             }
             description={<TasteInput value={cuiInput} onChange={setCuiInput} />}
@@ -509,7 +579,7 @@ export default function App() {
                 <div className="w-full flex items-center" style={{ gap: '16px' }}>
                 <PrimaryButton
                   minWidth={157}
-                  disabled={!hasInput || isBuildingCriteria}
+                  disabled={!hasInput || isBuildingCriteria || photos.length === 0}
                   onClick={readState === 'current' ? () => handleRunCull() : runRead}
                 >
                   {isBuildingCriteria ? 'Reading…' : primaryLabel}
@@ -572,8 +642,6 @@ export default function App() {
               starredIds={starredIds}
               onMove={handleMove}
               onStar={handleStar}
-              undoItem={undoItem}
-              onUndo={handleUndo}
             />
           </Canvas>
 

@@ -222,7 +222,7 @@ function DetailPane({ item, activeTab, starred, onMove, onStar }) {
 
 export default function ResultsView({
   results, activeTab, onTabChange, selectedId, onSelect,
-  starredIds, onMove, onStar, undoItem, onUndo,
+  starredIds, onMove, onStar,
 }) {
   const keeps   = results.filter((r) => r.decision === 'keep')
   const cuts    = results.filter((r) => r.decision === 'cut')
@@ -283,23 +283,7 @@ export default function ResultsView({
         />
       </div>
 
-      {undoItem && (
-        <div
-          className="fixed z-20 flex items-center bg-surface rounded-lg"
-          style={{ left: '80px', bottom: '175px', gap: '16px', padding: '12px 16px' }}
-        >
-          <span className="text-[13px] text-primary">
-            Moved {undoItem.photoName} to {undoItem.to}
-          </span>
-          <button
-            type="button"
-            onClick={onUndo}
-            className="text-[13px] font-bold text-accent underline hover:opacity-70 transition-opacity"
-          >
-            Undo
-          </button>
-        </div>
-      )}
+
     </div>
   )
 }

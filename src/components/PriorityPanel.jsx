@@ -20,14 +20,14 @@ export default function PriorityPanel({ criteria, stale = false, staleMessage = 
       {/* The dim sits on the cards row only — the heading stays at full
           strength, so the panel still reads as a labelled section. */}
       <div
-        className="w-full flex items-start"
+        className="w-full flex items-stretch"
         style={{ gap: '16px', opacity: stale ? 0.6 : 1 }}
       >
         {criteria.length === 0 ? (
           // Reserved height so the console doesn't resize when cards arrive.
           <div
             className="flex flex-col bg-surface rounded-lg"
-            style={{ width: '416px', height: '64px', padding: '12px' }}
+            style={{ width: '416px', minHeight: '80px', padding: '12px' }}
           >
             <p className="text-[12px] font-medium text-primary">
               Describe your taste first to view and edit Cull’s priorities…
