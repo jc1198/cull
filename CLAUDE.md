@@ -297,8 +297,37 @@ Health requests time out after 5 seconds; stale requests cannot overwrite newer 
 
 ### Model
 
-`llava:7b` — switched from `moondream` after reliability issues with structured JSON
-output. Pull before first run: `ollama pull llava:7b`.
+The picker selects the photo evaluation model. `CRITERIA_MODEL` in `src/lib/models.js`
+is `qwen3:1.7b`: Demo bypasses inference; otherwise `buildCullCriteria` checks `/health`
+and uses the criteria model if installed, falling back to the selected vision model
+with a warning naming the missing criteria model. The criteria model is plumbing,
+not a second picker selection.
+
+On the 8GB M1, Qwen's approximately 1.4GB text weights avoid loading a 7B vision model
+for a text-only read. The vision catalog starts with `qwen3-vl:4b-instruct` (~3.3GB Q4)
+and `qwen3-vl:2b-instruct` (~1.9GB). The installed plain `qwen3-vl:4b` tag resolved to the
+thinking renderer/parser, so the 4B catalog entry explicitly uses instruct.
+On Ollama 0.34.0, 4B instruct measured 31% CPU / 69% GPU at 4096 context;
+plain 2B measured 100% GPU but returned JSON in `thinking` with empty `response`
+despite `think: false`. The user approved switching the fallback to 2B instruct; see measurements below.
+`llama3.2-vision` carries `requiresMoreThan8GB: true`; the picker does not render it yet.
+
+Criteria sends top-level `keep_alive: '5m'` so repeated priority reads reuse the model.
+Before the first unfinished photo of a real run/retry, App sends an empty-prompt
+`keep_alive: 0` request for the installed criteria model, inside the existing error
+handler. Demo skips this and image encoding. Evaluation uses `keep_alive: '10m'`.
+This frees criteria memory before the vision pass; keep-alive does not guarantee
+residency under memory pressure. Both generation requests send top-level `think: false`.
+
+Generation controls belong inside `options`, never at the request-body top level.
+The old top-level `num_predict: 1000` was inert; do not re-add it there.
+Criteria uses `options: { num_predict: 600, temperature: 0, num_ctx: 2048 }`;
+evaluation uses `{ num_predict: 120, temperature: 0, num_ctx: 4096 }`. Explicit context
+limits avoid dependence on version/hardware defaults and bound the criteria KV cache.
+Open question: what caused the old LLaVA JSON truncation? The inert cap did not fix it;
+context exhaustion has not been established as its cause.
+Client timeouts are 30s for criteria (including health lookup) and 90s for evaluation;
+the proxy timeout is 95s.
 
 ### Proxy
 
@@ -308,14 +337,50 @@ to avoid CORS from the Vite origin. Accepts up to 50 MB bodies.
 
 ### Base64 stripping
 
-`fileToBase64` returns a full data URL; `stripDataUrl` inside `evaluatePhoto` removes the
-prefix — Ollama's `images` field expects raw base64.
+`encodeForModel(file)` in `thumbnail.js` independently decodes each original during
+evaluation, fits its longest edge to 768px without upscaling, and encodes JPEG q0.85.
+It returns raw base64. The original File stays untouched. `fileToBase64` remains
+exported but unused; `evaluatePhoto` still accepts and strips a data URL prefix.
 
 ### JSON parsing robustness
 
-`llava:7b` sometimes wraps output in markdown fences or nests structures. `ollama.js` has
-`stripFences`, `parseJsonArray` / `parseJsonObject`, nested-array normalisation in
-`buildCullCriteria`, and a plain-text fallback in `evaluatePhoto`.
+Both requests pass top-level `format` JSON schemas and restate the shape in prompts.
+Criteria unwraps `{ criteria: [...] }` into the existing array contract. Legacy fences
+and normalization branches remain with warnings; invalid priorities still log/throw.
+Evaluation requires keep/cut plus string reason and throws on unusable output; there
+is no plain-text decision fallback. Schema decoding constrains generated shape but
+request errors, empty responses, or interrupted output can still fail validation.
+Both call sites log prompt/output token counts and all four duration counters from
+Ollama (durations are nanoseconds). The proxy forwards them unchanged.
+
+### Measurement checkpoint (2026-09-10, Ollama 0.34.0)
+
+Anchor: `test_photos/_DSC1403.jpg`, 4928×3264; encoded size 768×509.
+Full-res Qwen 4B instruct returned HTTP 400: 4206 requested tokens exceed 4096 context.
+No `prompt_eval_count` was returned on this failure. The 768px repeat with the same
+pre-schema prompt timed out at 90s, also without counters. Full-res LLaVA timed out
+at 90s with 4096 context, running 33% CPU / 67% GPU. Its count is unavailable.
+A 768px plain Qwen 2B call using the final prompt reported `prompt_eval_count: 1265`,
+`eval_count: 43`, but empty response/JSON in thinking caused the run to stop. This is
+a different model/prompt, not a controlled before/after token comparison.
+Three schema criteria reads returned identical arrays, 108 output tokens each, no
+normalization warnings, and elapsed 10085/3599/3324 ms with 5m residency.
+
+The approved 2B instruct fallback stayed at 100% GPU / 4096 context. Seven photos
+completed: median 13475 ms, nearest-rank p95 19237 ms, median prompt tokens 1265,
+median output tokens 68. Photo 8 failed with proxy 502 / `fetch failed`. All seven
+responses parsed; no normalization warnings. A full repeat failed at Chrome launch
+(180s timeout), so **there is no passing 10-photo measurement**. Applying the median
+to 116 photos gives ~26m03s of successful inference only; this is not a reliable
+end-to-end projection. No further settings were tuned.
+
+Demo completed all four states with ten photos and no inference requests/errors.
+The browser regression suite passed using generated, decodable PNG fixtures.
+A real LLaVA selection worked for the criteria read (Qwen text model), then its first
+768px evaluation failed without a response; real LLaVA compatibility is not validated.
+Full counters, three criteria arrays, raw responses, and errors are saved in
+`benchmarks/inference-2026-09-10.json`.
+
 
 ### Criteria weights as hard requirements
 
@@ -329,10 +394,9 @@ scoring.
 ## Performance
 
 - **Thumbnails are downscaled on ingest** (`lib/thumbnail.js`, 296×220 ≈ 2× the tile) and
-  the original `File` is kept for base64. Full-resolution decoded bitmaps are the real
-  memory cost of a 116-photo batch. This does **not** change what the model sees — the
-  "no compression before Ollama" decision was about the model's input, not the DOM's.
-  RAW files that the browser can't decode fall back to a plain object URL.
+  the original `File` is retained for export. Model input is a separate 768px pass
+  during evaluation. Thumbnail decode failures fall back to the original object URL;
+  model encoding failures throw through the existing run-failure path.
 - The **detail pane** creates a full-resolution object URL for the selected photo only,
   revoked on change — a 296px thumbnail painted at 484×280 is visibly soft.
 - `photo.id` is an independent sequence, **not** the object URL, because ids key results,
@@ -354,16 +418,68 @@ scoring.
 
 ---
 
+## Known issues
+
+- `src/lib/gemini.js`, `src/lib/cullPhoto.js`, and `src/lib/extractIntents.js` are
+  unreachable. Delete them along with `VITE_GEMINI_API_KEY` in `.env.local`,
+  `README.md`, and `CLAUDE.md`. Held until the benchmark is finished, since
+  `callGemini` is its reference implementation. Queued cleanup only; not part of
+  the benchmark work.
+- Vision correctness remains unverified: 2B instruct returned `keep` for one sign
+  while its own reason said the required warm light was absent; another reason
+  attributed facial expressions and sharp eyes to a sign. Schema shape is not
+  evidence of correct decisions. Do not tune prompts without user review.
+- On Ollama 0.34.0, plain Qwen 2B placed its JSON in `thinking` with empty `response`
+  despite `think: false`; use the approved instruct catalog variants.
+- Proxy errors hide Ollama's original response body. The full-res context error
+  appeared in the UI path as generic 502; direct inspection revealed the 4206/4096
+  token error. Diagnostic error forwarding remains outside this change.
+
+- `tasteProfile()` feeds chips into criteria generation. The build spec says chips
+  are an evaluation-time layer the model never infers, contradicting that decision.
+- Every evaluation error marks Ollama offline, including malformed model output.
+  Model errors and connection errors should not share a state, especially after schemas.
+- The criteria prompt asks for three criteria and demonstrates two.
+- `reason` is requested as one sentence, so the sentence splitter yields one bullet.
+  The build spec calls for four. Changing this costs generation time and waits for
+  real batch measurements.
+
 ## Not built
 
 - The expanded canvas view behind the `+N more` tile (tile renders, inert, marked TODO)
 - The export flow (`Export keeps` / `Export starred` render disabled)
+
+---
+
 ## Model picker
 
 `src/components/ModelPicker.jsx` supplies the top-right Running on pill and portal menu.
 `src/hooks/useOllamaHealth.js` owns health requests; `src/lib/models.js` owns the model
 catalog, tag matching, persistence key, and model-aware stale predicate. Original Figma
 SVG exports live in `src/assets/model-picker/`.
+
+### Typography, spacing, and motion
+
+- The complete label-and-pill row is **28px tall**: a 20px pill with **4px top and
+  bottom padding around the row**. The label and pill have an **8px horizontal gap**.
+- `Running on:` uses Kantumruy Pro **SemiBold (600), 16px, with a 19px line box**,
+  vertically centered beside the pill. Do not restore the earlier 24px line box or
+  top alignment. Chrome's rendered font was verified as `KantumruyProRoman-SemiBold`;
+  synthetic weight is disabled for this label.
+- The pill has an 8px radius and 4px internal padding. Its label uses Kantumruy Pro
+  Medium (500), 10px, with a 12px line box. Outer row padding and internal pill padding
+  are separate requirements.
+- Opening and closing use a **240ms** expand/collapse animation with
+  `cubic-bezier(0.22, 1, 0.36, 1)`. The portal menu reveals from the pill's bounds using
+  clip-path and opacity; the anchor width transitions with it so the label moves smoothly.
+  The trigger crossfades over 160ms. Closing retains the menu until the animation finishes,
+  while immediately removing its interactivity and accessibility exposure.
+- Interrupted transitions resume from their current visual state. Reduced-motion
+  preferences disable the menu animation and anchor/trigger transitions.
+- Picker motion and typography styles live in `src/index.css`; font families and weights
+  are loaded in `index.html` (including JetBrains Mono for command text).
+
+### Selection and recovery
 
 - Demo is always selectable. Installed models are selectable after the health response;
   missing models offer a persistent copy command only when Ollama is reachable.
@@ -376,7 +492,8 @@ SVG exports live in `src/assets/model-picker/`.
 - While analysis is active the pill is inert without visual dimming. A failed request stops
   the run rather than inventing a decision. The console offers retry from the failed photo,
   switching to Demo (returning to set taste), or viewing finished photos. Retry uses the
-  original run snapshot and appends only unfinished photos. Requests time out after 120s.
+  original run snapshot and appends only unfinished photos. Criteria requests time out
+  after 30s; photo evaluation after 90s (proxy: 95s).
 - Copy success shows the Figma toast for five seconds and leaves the menu open. Escape,
   outside click, focus departure, and model selection close the menu. Arrow keys navigate.
 
@@ -384,3 +501,30 @@ Validation: `node --test tests/models.test.mjs`; `npm run build`; and, with the 
 running, `node tests/model-picker.browser.mjs` using an installed Playwright and Chrome.
 Set `PLAYWRIGHT_MODULE` to an absolute Playwright module path to use a bundled installation.
 The browser suite intercepts health/inference requests; it does not require a live model.
+
+---
+
+## Drop zone glass treatment
+
+The reference is Figma frame `144:293`, rectangle `144:296` in `photography-assistant`.
+The rectangle uses a native **GLASS** effect: radius 4, depth 20, refraction 0.8,
+light angle -45°, light intensity 0.8, dispersion 0.5, and splay 0. Its fill is
+`rgba(209, 209, 209, 0.2)`, its corners are 12px, and it has no explicit Figma stroke.
+
+`DropZone.jsx` applies `.drop-zone-glass`, defined in `src/index.css`. This is a **CSS
+approximation** of Figma's native glass material: the translucent fill, 4px backdrop blur
+(including the WebKit prefix), and a soft 20px inset white shadow provide the surface.
+A masked, 1px gradient rim supplies upper-left illumination and a subtle opposite-edge
+highlight. The rim is an absolute pseudo-element with `pointer-events: none`, so it
+doesn't change layout or intercept file drops/clicks.
+
+Keep the existing flexible canvas sizing and 32px bottom clearance; the reference's
+459px height is not a fixed-height requirement. The glass update changes only the surface
+treatment, not upload behavior. It was visually checked in Chrome and the build passed.
+
+## Local benchmark photo fixtures
+
+Photo fixtures are not included in the repo. The benchmarks expect local photos in
+`test_photos/` (local-levers runs) and `applicability_probe/` (vision comparisons).
+`benchmarks/ground-truth.json` refers to the comparison photos by filename.
+The generated `benchmarks/vision-comparison-images.json` cache is also excluded.

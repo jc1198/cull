@@ -13,17 +13,18 @@ Figma file: `photography-assistant`, section `v2 UI updates` (node `125:1932`).
 
 Every screen uses two zones.
 
-- **Canvas** — the photos. Fills the space above the console and clips at the console's
-  top edge.
+- **Canvas** — the photos. Fills the space above the console. In set taste and analyzing,
+  only the photo grid scrolls; the wordmark, model picker, and photo count stay fixed.
+  A bottom gradient on the grid dissolves thumbnails at the console's top edge.
 - **Console** — a full-bleed frame anchored to the bottom of the viewport, 1440px wide.
   Contents sit on a 1280px column starting at x=80.
 
 Canvas and console carry the same fill (`#272727`). **The console's drop shadow —
-`0 -4px 2px rgba(0,0,0,0.25)` — is the only thing separating them.** There is no top
+`0 -4px 2px rgba(0,0,0,0.25)` — softly separates them, alongside the grid's bottom fade.** There is no top
 stroke on the console; an earlier draft of this spec called for a white one, which was a
 mistake and was never in the Figma frames. It reads as a soft 5px darkening above the
 console edge, and a thumbnail row clipping there passes under it rather than being cut by
-a line. If the boundary ever needs strengthening, deepen the shadow — don't add a stroke.
+a line. Tune the grid fade and shadow together if the boundary needs strengthening; don't add a stroke.
 
 The canvas persists across steps. Don't clear or replace the grid on a step transition —
 only the console changes. The one exception is review results, where the canvas splits
@@ -37,8 +38,8 @@ nothing reorders:
 
 1. Step label, with a right-aligned secondary control on the same row
 2. Description input
-3. Priorities panel
-4. Constraint chips
+3. Constraint chips
+4. Priorities panel
 5. Buttons
 
 ## Step labels
@@ -48,7 +49,7 @@ The label slot carries a step when the user can act, and a status when they can'
 | Screen | Label | Right-aligned |
 |---|---|---|
 | Empty drop zone | `Step 1 of 3: Add photos` | — |
-| Set taste | `Step 2 of 3: Set taste` | `Revert priorities` |
+| Set taste | `Step 2 of 3: Set taste` | `Revert changes` |
 | Analyzing | `Analyzing 12 of 116` | — |
 | Review results | `Step 3 of 3: Review results` | `116 photos` |
 
@@ -66,13 +67,59 @@ the console's top padding, the same clearance the detail pane holds. The frame's
 a viewport, not a constraint — the zone taking the remaining height is fine, but running
 edge to edge with no clearance is not.
 
-On upload the canvas fills with a thumbnail grid at 148 × 110, 8 columns, 8px gutters.
-Show 23 thumbnails plus a `+N more` tile that opens the expanded view.
-
-The expanded view is a scrolling grid of the full batch. Once expanded, it stays expanded
-across steps — the canvas honors whatever view the user set.
+On upload the canvas fills with a scrolling thumbnail grid at 148 × 110, 8 columns,
+8px gutters. Render the entire batch in one grid, with no cap, `+N more` tile, or
+separate expanded-view mode. Thumbnails remain memoized and keyed by photo id.
 
 ## Screen 2 — Set taste
+
+### Remove a photo
+
+Each thumbnail offers a corner X on hover and keyboard focus. Every X is reachable
+with Tab, has an accessible photo-specific name, and shows a visible focus ring.
+Remove immediately without a confirmation modal. Show `Photo removed · Undo` for
+five seconds using the shared result-move undo toast. A new undo replaces the pending
+one. Undo restores the original photo at its original grid index. Both the photo count
+and `Run Cull on N photos` reflect the current batch. An empty batch cannot run.
+
+### Collapse Cull's interpretation
+
+Step 2 alone has a collapsible console. Collapse hides **only the priorities panel**.
+The step label, caret, state summary, description input, constraint chips, and buttons
+remain visible, in that order. The full label/caret/summary bar is a keyboard-accessible
+button; `Revert changes` remains a separate control at the right of that row.
+
+Evaluate the initial state once on entering step 2, before the first paint: collapsed
+when the photo grid's natural height exceeds its available space with the console
+expanded; expanded when it fits. A real batch will usually open collapsed. Subsequent
+resizes, photo additions/removals, focus, clicks into the input, typing, and scrolling
+never change this choice. Manual toggles persist for the rest of the step, except that
+`Show priorities` / `Update priorities` explicitly expand to reveal their named content.
+Neither a read completing nor a revert changes the collapse state.
+
+The collapsed bar has no summary before the first successful read. Afterwards it shows
+the actual priority count and status:
+
+| State | Example summary |
+|---|---|
+| Before the first read | none |
+| Current | `4 priorities · current` |
+| Stale | `4 priorities · needs update` |
+
+Reserve the panel's normal height for empty/loading content even when hidden; expanding
+on `Show priorities` must keep that height while the read is in flight.
+
+Animate the panel wrapper with `grid-template-rows: 0fr` to `1fr`, clipping overflow
+while it moves. Inner cards keep their natural height; fade the content over 160ms.
+Rotate the same caret 180 degrees. All movement uses **240ms** and
+`cubic-bezier(0.22, 1, 0.36, 1)`, matching the model picker. The canvas follows the
+console's layout animation, with no independent resize transition. The initial state
+has no animation; `prefers-reduced-motion: reduce` disables all new transitions.
+Expanded, settled content permits the weight menus to extend outside the panel.
+
+Keep the grid's scroll offset through collapse/expand, including at the last row:
+retain trailing scroll space when needed so a larger viewport does not clamp the offset.
+The photos under the cursor must not jump.
 
 ### Description input
 
@@ -169,7 +216,7 @@ Reserve the panel's height in the empty and loading states so the console doesn'
 height when cards arrive.
 
 The stale note belongs **in** the `Cull will prioritize:` label row, right-aligned — the
-position `Revert priorities` holds on the step-label row. That row already exists and has
+position `Revert changes` holds on the step-label row. That row already exists and has
 empty space, so the note costs no height. As its own row below the cards it grew the
 console and pushed the console's top edge up the moment it appeared.
 
@@ -196,7 +243,7 @@ Match new criteria against existing ones by `signal` label:
 This requires tracking, per criterion, whether the current weight was set by the user or
 by the model. That flag isn't in the current state shape.
 
-### Revert priorities
+### Revert changes
 
 One control, one meaning: restore the console to the last state a read ran on.
 
@@ -210,10 +257,10 @@ One control, one meaning: restore the console to the last state a read ran on.
 Don't label it `Undo` — in a frame containing a text field, undo reads as "undo my last
 keystroke," which is what the keyboard shortcut already does.
 
-Name the scope. It restores the description, the chips and the criteria — the read
-snapshot — and deliberately leaves manual photo moves alone, since those were never in
-that snapshot. Sitting inches from the re-run warning, an unscoped `Revert changes` reads
-as a promise to undo the moves too, and then as a bug when it doesn't.
+It resets the whole console, not only the priorities: description text, chips, and
+criteria return to the last successful read snapshot. It leaves manual photo moves and
+photo-library removals alone. Exactly one `Revert changes` control appears on the
+step-label row; do not add another to the priorities panel header.
 
 ## Screen 3 — Analyzing
 
@@ -227,7 +274,7 @@ Console contents:
 2. A 6px progress bar across the full 1280px column
 3. `Cancel`
 
-`Revert priorities` is hidden — there's nothing to revert into.
+`Revert changes` is hidden — there's nothing to revert into.
 
 ### Live feedback on the canvas
 
@@ -403,6 +450,14 @@ placeholder a pixel down and right at the moment the user commits to typing.
 ## Reversed decisions
 
 Cut from `cull-case-study-reference.md`:
+
+- **Priorities before constraint chips.** The collapse requirement exposed that the
+  original order grouped by position rather than by authorship. Description and chips
+  are the user’s input; the priorities are Cull’s interpretation. Keeping the user’s
+  inputs together above the interpretation makes that distinction explicit.
+- **Capped grid plus expanded view.** A scrolling canvas makes the capped-grid-plus-
+  expanded-view distinction unnecessary. The mode switch was solving a problem that
+  scroll solves more simply; all photos now live in one scrolling grid.
 
 - **Dynamic chip updates.** Chips no longer repopulate as the user types. The debounced
   model call was the source of the flicker bug.
