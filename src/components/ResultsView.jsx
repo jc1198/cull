@@ -48,7 +48,7 @@ function MovedBadge() {
   )
 }
 
-const GridTile = memo(function GridTile({ item, isSelected, starred, moved, onSelect }) {
+const GridTile = memo(function GridTile({ item, isSelected, starred, moved, cutLabel, onSelect }) {
   return (
     <button
       type="button"
@@ -67,6 +67,7 @@ const GridTile = memo(function GridTile({ item, isSelected, starred, moved, onSe
       />
       {starred && <StarBadge />}
       {moved && <MovedBadge />}
+      {cutLabel && <span className="absolute bottom-1 left-1 rounded bg-canvas/80 px-1 text-[10px] text-primary">Cut</span>}
     </button>
   )
 })
@@ -252,7 +253,7 @@ export default function ResultsView({
             // Centered on the canvas column, not the full viewport width.
             <div className="flex items-center justify-center w-full" style={{ height: '280px' }}>
               <p className="text-[13px] text-primary">
-                No starred photos yet. Star a photo to collect it here.
+                {activeTab === 'keeps' ? 'No keeps yet.' : activeTab === 'cuts' ? 'No cuts yet.' : 'No starred photos yet. Star a photo to collect it here.'}
               </p>
             </div>
           ) : (
@@ -267,6 +268,7 @@ export default function ResultsView({
                   isSelected={selectedId === item.photo.id}
                   starred={starredIds.has(item.photo.id)}
                   moved={item.decision !== item.originalDecision}
+                  cutLabel={activeTab === 'starred' && item.decision === 'cut'}
                   onSelect={onSelect}
                 />
               ))}

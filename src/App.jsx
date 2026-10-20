@@ -9,6 +9,7 @@ import { PrimaryButton, SecondaryButton, TextLink } from './components/Button'
 import DropZone from './components/DropZone'
 import ThumbnailGrid from './components/ThumbnailGrid'
 import ResultsView from './components/ResultsView'
+import ExportDialog from './components/ExportDialog'
 import ChipRow from './components/ChipRow'
 import { buildCullCriteria, evaluatePhoto, unloadCriteriaModel } from './lib/ollama'
 import ModelPicker from './components/ModelPicker'
@@ -76,6 +77,7 @@ export default function App() {
 
   // Results
   const [selectedId, setSelectedId] = useState(null)
+  const [exportKind, setExportKind] = useState(null)
   const [activeTab, setActiveTab]   = useState('keeps') // 'keeps' | 'cuts' | 'starred'
   const [undoItem, setUndoItem]     = useState(null)
   const undoTimer = useRef(null)
@@ -436,6 +438,9 @@ export default function App() {
   }
 
   function handleStar(photoId) {
+    if (activeTab === 'starred' && selectedId === photoId && starredIds.has(photoId)) {
+      setSelectedId(nextSelectionAfterRemoval(visibleSet(activeTab, results, starredIds), photoId))
+    }
     setStarredIds((prev) => {
       const next = new Set(prev)
       next.has(photoId) ? next.delete(photoId) : next.add(photoId)
@@ -506,6 +511,9 @@ export default function App() {
       />
 
       <UndoToast undoItem={undoItem} onUndo={handleUndo} />
+      {exportKind && <ExportDialog kind={exportKind}
+        photos={results.map((entry) => ({ ...entry, starred: starredIds.has(entry.photo.id) }))}
+        onClose={() => setExportKind(null)} />}
 
       {step === 'upload' && (
         <>
@@ -654,9 +662,8 @@ export default function App() {
             }
             buttons={
               <div className="w-full flex items-center" style={{ gap: '16px' }}>
-                {/* TODO: export flow is unspecified — inert for now. */}
-                <PrimaryButton minWidth={157} disabled>Export keeps</PrimaryButton>
-                <SecondaryButton disabled={starredCount === 0}>Export starred</SecondaryButton>
+                <PrimaryButton minWidth={157} disabled={keepCount === 0} onClick={() => setExportKind('keeps')}>Export keeps</PrimaryButton>
+                <SecondaryButton disabled={starredCount === 0} onClick={() => setExportKind('starred')}>Export starred</SecondaryButton>
                 <TextLink onClick={handleBackToSetTaste}>Back to set taste</TextLink>
               </div>
             }

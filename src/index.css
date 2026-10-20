@@ -88,3 +88,11 @@ body {
 @media (prefers-reduced-motion: reduce) {
   .model-picker-anchor, .model-trigger { transition: none; }
 }
+
+.export-dialog { width: min(640px, calc(100vw - 32px)); max-height: calc(100vh - 48px); overflow-y: auto; border: 1px solid white; border-radius: 12px; padding: 0; background: #272727; color: white; }
+.export-dialog::backdrop { background: rgba(0,0,0,.65); }
+.export-dialog footer { box-shadow: none; }
+.export-dialog footer > div { padding: 24px 32px 32px !important; }
+.export-dialog input { background: transparent; border: 1px solid rgba(255,255,255,.6); border-radius: 8px; padding: 8px; }
+.export-dialog input:focus { border-color: white; outline: none; }
+.export-dialog button:focus-visible { outline: 2px solid white; outline-offset: 3px; }

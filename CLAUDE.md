@@ -447,7 +447,7 @@ scoring.
 ## Not built
 
 - The expanded canvas view behind the `+N more` tile (tile renders, inert, marked TODO)
-- The export flow (`Export keeps` / `Export starred` render disabled)
+- Desktop export (browser export is implemented)
 
 ---
 
@@ -528,3 +528,13 @@ Photo fixtures are not included in the repo. The benchmarks expect local photos 
 `test_photos/` (local-levers runs) and `applicability_probe/` (vision comparisons).
 `benchmarks/ground-truth.json` refers to the comparison photos by filename.
 The generated `benchmarks/vision-comparison-images.json` cache is also excluded.
+
+## Browser export
+
+`src/lib/export/index.js` provides set selection, collision resolution, the sequential abortable export loop, original-byte sources, and `getExportWriter()`. `browserWriter.js` alone owns the directory picker API; replace the factory writer and source adapter for desktop. The writer contract is documented in the export module. `ExportDialog.jsx` imports only the export module and reuses console, button, status, and progress components. Cancel completes any in-flight file and stops before the next file; already written files remain. Native modal dialog behavior traps focus and Escape cancels export while writing.
+
+A Tauri migration must also replace the existing File-based reads in `App.jsx` (model encoding) and `ResultsView.jsx` (full preview). Those reads remain unchanged here. No Tauri installation or Rust is included.
+
+Verify mocks by selecting the runtime Demo model. `VITE_MOCK_API` still does not override runtime model selection. Run unit tests with `node --test tests/*.test.mjs` and build with `npm run build`.
+
+Export verification includes an App-state harness using the real Demo fixtures and an in-memory writer for both sets, plus writer API fakes. It does not replace browser visual/focus testing or a real folder-picker test. Browser directory APIs do not provide atomic create-if-absent: collision checks avoid existing names, and exclusive writable mode prevents simultaneous writable streams where supported, but an external process creating the same name between checking and creating remains a race. Failed writes may leave an empty destination file; exports do not delete files.

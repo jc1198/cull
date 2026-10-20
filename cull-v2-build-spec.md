@@ -337,7 +337,7 @@ grid must still clip rather than push the detail pane off-screen.
 
 - Selected photo at 484 × 280
 - Reasoning card on a dark elevated surface, one step lighter than the canvas
-- Card title reads `Why Cull kept this` on keeps and `Why Cull cut this` on cuts
+- Card title reflects Cull’s original decision (`originalDecision`): `Why Cull kept this` or `Why Cull cut this`, independent of the current tab or manual moves. Preserve the `You moved this photo` line on moved photos.
 - Four bullets from the `reason` field
 - Actions below: `Move to cuts` and the star toggle
 
@@ -473,3 +473,7 @@ Cut from `cull-case-study-reference.md`:
   nothing in the UI communicates that. Either show the difference or drop the claim.
 - No user testing has been done.
 - The model picker described in the reference doc is unbuilt, as is the export flow.
+
+### Browser export
+
+Export keeps is enabled when keeps is nonempty; Export starred is enabled when starred is nonempty. Starred includes keeps and cuts, with a small Cut label on cut thumbnails and no dimming. Export copies original bytes through the export writer interface, with collision suffixes and sequential writes. The dialog chooses a destination and validates a subfolder; progress uses the shared 6px bar and an independent AbortSignal. Completion reports written files and per-file failures. No ZIP fallback.
