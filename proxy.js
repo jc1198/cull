@@ -25,7 +25,7 @@ app.post('/evaluate', async (req, res) => {
   try {
     const r = await fetch(`${OLLAMA}/api/generate`, {
       method: 'POST',
-      signal: AbortSignal.timeout(120000),
+      signal: AbortSignal.timeout(95000),
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(req.body),
     })

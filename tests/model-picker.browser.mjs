@@ -1,5 +1,6 @@
 // Run against npm run dev. PLAYWRIGHT_MODULE may point to a bundled Playwright installation.
 import assert from 'node:assert/strict'
+import { makePrioritiesResponse } from './fixtures/priorities.mjs'
 const { chromium } = await import(process.env.PLAYWRIGHT_MODULE || 'playwright')
 console.log('Launching Chrome')
 const browser = await chromium.launch({ headless: true, channel: 'chrome' })
@@ -29,7 +30,7 @@ await page.route('**/evaluate', async (route) => {
     return route.fulfill({ json: { response: JSON.stringify({ decision: 'keep', reason: 'Warm light matches.' }) } })
   }
   if (readDelay) await new Promise((r) => setTimeout(r, readDelay))
-  return route.fulfill({ json: { response: JSON.stringify([{ signal: 'Warm light', weight: 'high', description: 'Warm tones' }]) } })
+  return route.fulfill({ json: { response: JSON.stringify(makePrioritiesResponse()) } })
 })
 const button = (name) => page.getByRole('button', { name, exact: true })
 async function open() {
@@ -59,7 +60,7 @@ try {
 
   health = { connected: true, models: [] }
   await open()
-  assert.equal(await page.getByRole('button', { name: /^Copy command for/ }).count(), 3)
+  assert.equal(await page.getByRole('button', { name: /^Copy command for/ }).count(), 5)
   await page.keyboard.press('Escape')
   health = { connected: false, models: [] }
   await open()
@@ -80,7 +81,12 @@ try {
   await button('Re-check').waitFor()
   await page.keyboard.press('Escape')
 
-  const png = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+aWQAAAABJRU5ErkJggg==', 'base64')
+  const png = Buffer.from(await page.evaluate(() => {
+    const canvas = document.createElement('canvas')
+    canvas.width = canvas.height = 16
+    canvas.getContext('2d').fillRect(0, 0, 16, 16)
+    return canvas.toDataURL('image/png').split(',')[1]
+  }), 'base64')
   await page.locator('input[type=file]').setInputFiles([1, 2, 3].map(i => ({ name: `${i}.png`, mimeType: 'image/png', buffer: png })))
   await page.getByRole('textbox').fill('warm light')
   await button('Show priorities').click()
