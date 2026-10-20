@@ -16,3 +16,22 @@ dist/
 .DS_Store
 .vscode/
 .idea/
+
+# Local photo fixtures and generated image cache
+test_photos/
+applicability_probe/*.[jJ][pP][gG]
+applicability_probe/*.[jJ][pP][eE][gG]
+applicability_probe/*.[pP][nN][gG]
+applicability_probe/*.[wW][eE][bB][pP]
+applicability_probe/*.[gG][iI][fF]
+applicability_probe/*.[aA][vV][iI][fF]
+applicability_probe/*.[hH][eE][iI][cC]
+applicability_probe/*.[hH][eE][iI][fF]
+applicability_probe/*.[tT][iI][fF]
+applicability_probe/*.[tT][iI][fF][fF]
+applicability_probe/*.[bB][mM][pP]
+applicability_probe/*.[sS][vV][gG]
+benchmarks/vision-comparison-images.json
+
+# Machine-local tool permissions
+.claude/settings.local.json
