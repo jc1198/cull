@@ -143,21 +143,21 @@ export default function ModelPicker({ model, health, refresh, locked, onSelect, 
   }
 
   return <>
-    <div className="model-picker flex shrink-0 items-center gap-2 py-1 h-7">
-      <span className="model-picker-label text-[16px] font-semibold leading-[19px] whitespace-nowrap">Running on:</span>
-      <div ref={anchor} className="model-picker-anchor relative h-5" style={{ width: open ? menuWidth ?? pillWidth : pillWidth }}>
+    <div className="model-picker flex min-w-0 items-center gap-2 py-1 h-7">
+      <span className="model-picker-label shrink-0 text-[16px] font-semibold leading-[19px] whitespace-nowrap">Running on:</span>
+      <div ref={anchor} className="model-picker-anchor relative inline-flex min-w-0 max-w-full justify-end h-5" style={{ width: open ? menuWidth ?? pillWidth : undefined }}>
         <button ref={trigger} type="button" disabled={locked} aria-haspopup="dialog" aria-expanded={open}
           aria-controls={open ? menuId : undefined} aria-label={`Running on ${isDemo ? 'Demo mode' : model}${!isDemo && !connected ? health.checking ? ', checking' : ', offline' : ''}`}
-          className="model-trigger absolute right-0 top-0 flex h-5 items-center gap-1 rounded-lg bg-white p-1 text-[10px] leading-[12px] text-black whitespace-nowrap"
+          className="model-trigger inline-flex min-w-0 max-w-full h-5 items-center gap-1 rounded-lg bg-white p-1 text-[10px] leading-[12px] text-black whitespace-nowrap"
           aria-hidden={open || undefined}
           tabIndex={open ? -1 : undefined}
           style={{ opacity: open ? 0 : 1, pointerEvents: open ? 'none' : undefined }}
           onClick={showMenu} onKeyDown={(event) => {
             if (event.key === 'ArrowDown' || event.key === 'ArrowUp') { event.preventDefault(); showMenu() }
           }}>
-          <span className="font-medium">{isDemo ? 'Demo mode' : model}</span>
-          {!isDemo && (health.checking ? <span>checking<span className="checking-dots" aria-hidden="true">...</span></span>
-            : connected ? <img src={connectedIcon} width="8" height="8" alt="Connected" /> : <span>offline</span>)}
+          <span className="min-w-0 truncate font-medium" title={isDemo ? 'Demo mode' : model}>{isDemo ? 'Demo mode' : model}</span>
+          {!isDemo && (health.checking ? <span className="shrink-0">checking<span className="checking-dots" aria-hidden="true">...</span></span>
+            : connected ? <img className="shrink-0" src={connectedIcon} width="8" height="8" alt="Connected" /> : <span className="shrink-0">offline</span>)}
         </button>
       </div>
     </div>
