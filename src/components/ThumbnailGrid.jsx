@@ -19,7 +19,10 @@ const Thumbnail = memo(function Thumbnail({ photo, state = 'idle', onRemove }) {
       className="relative photo-thumbnail"
       style={{ width: `${TILE_W}px`, height: `${TILE_H}px` }}
     >
-      <img
+      {photo.noPreview ? <div className="flex h-full w-full flex-col items-center justify-center gap-2 rounded-md bg-surface px-3 text-center">
+        <span className="w-full break-all text-[12px]">{photo.name}</span>
+        <span className="text-[10px]">No preview</span>
+      </div> : <img
         src={photo.thumbUrl}
         alt={photo.name}
         className="object-cover transition-opacity duration-200"
@@ -30,7 +33,7 @@ const Thumbnail = memo(function Thumbnail({ photo, state = 'idle', onRemove }) {
           opacity: state === 'cut' ? 0.4 : 1,
         }}
         draggable={false}
-      />
+      />}
       {onRemove && (
         <button type="button" className="photo-remove" aria-label={`Remove ${photo.name}`}
           onClick={() => onRemove(photo.id)}>×</button>

@@ -1,5 +1,6 @@
 import { memo, useState, useEffect } from 'react'
 import { SecondaryButton } from './Button'
+import { getDetailPreviewBlob } from '../lib/thumbnail'
 
 const TILE_W = 148
 const TILE_H = 110
@@ -110,15 +111,21 @@ function reasonToBullets(reason) {
   return reason.split(/\.\s+/).map((s) => s.trim().replace(/\.$/, '')).filter(Boolean)
 }
 
-function useFullPreview(file) {
-  const [url, setUrl] = useState(null)
+function useFullPreview(photo) {
+  const [preview, setPreview] = useState(null)
   useEffect(() => {
-    if (!file) { setUrl(null); return }
-    const u = URL.createObjectURL(file)
-    setUrl(u)
-    return () => URL.revokeObjectURL(u)
-  }, [file])
-  return url
+    let disposed = false
+    let url
+    if (photo) {
+      getDetailPreviewBlob(photo).then((blob) => {
+        if (disposed) return
+        url = URL.createObjectURL(blob)
+        setPreview({ photo, url })
+      }).catch(() => { if (!disposed) setPreview(null) })
+    }
+    return () => { disposed = true; if (url) URL.revokeObjectURL(url) }
+  }, [photo])
+  return preview && preview.photo === photo ? preview.url : null
 }
 
 // Clearance between the actions and the console's top border. Matches the
@@ -133,7 +140,7 @@ const ACTIONS_CLEARANCE = 32
 const REASON_CARD_MIN_H = 152
 
 function DetailPane({ item, activeTab, starred, onMove, onStar }) {
-  const previewUrl = useFullPreview(item?.photo.file)
+  const previewUrl = useFullPreview(item?.photo)
   if (!item) return null
 
   // The move action follows where the photo is now; the card title follows

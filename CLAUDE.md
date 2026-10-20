@@ -337,7 +337,7 @@ to avoid CORS from the Vite origin. Accepts up to 50 MB bodies.
 
 ### Base64 stripping
 
-`encodeForModel(file)` in `thumbnail.js` independently decodes each original during
+`encodeForModel(photo)` in `thumbnail.js` independently decodes `getDisplayBlob(photo)` during
 evaluation, fits its longest edge to 768px without upscaling, and encodes JPEG q0.85.
 It returns raw base64. The original File stays untouched. `fileToBase64` remains
 exported but unused; `evaluatePhoto` still accepts and strips a data URL prefix.
@@ -395,8 +395,9 @@ scoring.
 
 - **Thumbnails are downscaled on ingest** (`lib/thumbnail.js`, 296×220 ≈ 2× the tile) and
   the original `File` is retained for export. Model input is a separate 768px pass
-  during evaluation. Thumbnail decode failures fall back to the original object URL;
-  model encoding failures throw through the existing run-failure path.
+  during evaluation. Thumbnail decode failures fall back to the original object URL only
+  for non-RAW photos. RAW failures show No preview and are excluded from analysis.
+  Model encoding failures for non-RAW photos retain the existing run-failure path.
 - The **detail pane** creates a full-resolution object URL for the selected photo only,
   revoked on change — a 296px thumbnail painted at 484×280 is visibly soft.
 - `photo.id` is an independent sequence, **not** the object URL, because ids key results,
@@ -533,8 +534,18 @@ The generated `benchmarks/vision-comparison-images.json` cache is also excluded.
 
 `src/lib/export/index.js` provides set selection, collision resolution, the sequential abortable export loop, original-byte sources, and `getExportWriter()`. `browserWriter.js` alone owns the directory picker API; replace the factory writer and source adapter for desktop. The writer contract is documented in the export module. `ExportDialog.jsx` imports only the export module and reuses console, button, status, and progress components. Cancel completes any in-flight file and stops before the next file; already written files remain. Native modal dialog behavior traps focus and Escape cancels export while writing.
 
-A Tauri migration must also replace the existing File-based reads in `App.jsx` (model encoding) and `ResultsView.jsx` (full preview). Those reads remain unchanged here. No Tauri installation or Rust is included.
+A Tauri migration must replace `getPreviewRange` with a native extractor and must also replace browser `photo.file` reads in `rawPreview.js`, `thumbnail.js`, the export source adapter, and the legacy `cullPhoto.js` path if retained. App model encoding and ResultsView detail previews now pass photo objects through the display adapter. No Tauri installation or Rust is included.
 
 Verify mocks by selecting the runtime Demo model. `VITE_MOCK_API` still does not override runtime model selection. Run unit tests with `node --test tests/*.test.mjs` and build with `npm run build`.
 
 Export verification includes an App-state harness using the real Demo fixtures and an in-memory writer for both sets, plus writer API fakes. It does not replace browser visual/focus testing or a real folder-picker test. Browser directory APIs do not provide atomic create-if-absent: collision checks avoid existing names, and exclusive writable mode prevents simultaneous writable streams where supported, but an external process creating the same name between checking and creating remains a race. Failed writes may leave an empty destination file; exports do not delete files.
+
+## RAW support
+
+`src/lib/rawPreview.js` is the browser extraction boundary. `isRawFile` matches existing ingest RAW extensions; `getPreviewRange` reads classic TIFF in either byte order using bounded `file.slice()` reads. It follows IFD0 SubIFDs (including nested SubIFDs) and selects the largest valid JPEG range from tags 0x0201/0x0202. It never parses Nikon maker notes. The original File remains on the photo, alongside `previewRange` and `noPreview`. `getDisplayBlob` returns the original for non-RAW and a JPEG slice for RAW. Export still streams the original unchanged.
+
+Only the SubIFD JpgFromRaw source is supported. Maker-note PreviewImage and bodies storing their large JPEG only in maker notes are out of scope. A RAW with no range or a failed thumbnail decode shows its filename and No preview, remains removable in the library, and is excluded from analysis, results and exports. The taste console shows the skipped count; Run Cull and its batch total use only previewable photos.
+
+Four ingest workers preserve input order. Thumbnail decoding uses createImageBitmap resize options, so grid code does not retain full-size bitmaps. `thumbnail.js` handles the thumbnail, model encode, and selected detail derivative. JPEG EXIF orientation takes precedence (including orientation 1); createImageBitmap applies it via from-image. Only when JPEG EXIF orientation is absent is IFD0 orientation applied on the canvas. Detail RAW derivatives omit EXIF to avoid double rotation; their object URLs are created only for the selected photo and revoked on selection changes.
+
+Synthetic TIFF tests cover both byte orders, ranges, SubIFDs, and orientation. No real NEF is committed. Real-file validation (2026-10-20): `/Users/jcazares/Desktop/nef-test` contains 16 NEFs, all Nikon D7000. The extractor found a 4928×3264 SubIFD JPEG in all 16. ExifTool independently confirmed that none of the extracted JPEGs has an EXIF Orientation tag, while every outer IFD0 Orientation is 1. Thus these files use outer IFD0 orientation; this set contains no portrait-orientation examples. For `_DSC4040.NEF`, the extracted range is offset 180736, length 2390965, and its SHA-1 matches `exiftool -b -JpgFromRaw FILE | shasum`: `278272b067f4fd2c716ca59b59188ce8e5fa1a50`. Only the derived JPEG was written under `/tmp`; no real NEF was added to the repository. Chrome native automation timed out, so rendered thumbnail count, ingest time, memory behavior, and browser portrait rendering remain unverified. The requested 181-file run also requires the remaining files; only 16 were present.

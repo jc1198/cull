@@ -16,6 +16,7 @@ import ModelPicker from './components/ModelPicker'
 import useOllamaHealth from './hooks/useOllamaHealth'
 import { CRITERIA_MODEL, DEMO_MODEL, MODEL_STORAGE_KEY, readSavedModel, prioritiesAreStale } from './lib/models'
 import { makeThumbnail, encodeForModel } from './lib/thumbnail'
+import { isRawFile, getPreviewRange, mapIngestPhotos } from './lib/rawPreview'
 
 const TASTING_CHIPS = ['Exclude blurry shots', 'Best of duplicates', 'Faces in focus']
 
@@ -152,17 +153,19 @@ export default function App() {
     setIsIngesting(true)
     // ids are independent of the thumbnail URL — they key results, selection
     // and the memoized thumbnail, so they can't be a URL that gets revoked.
-    const photoObjects = await Promise.all(
-      files.map(async (file, i) => ({
-        id:       `${ingestSeq.current++}-${file.name}-${file.size}`,
-        thumbUrl: await makeThumbnail(file),
-        file,
-        name: file.name,
-        size: file.size,
-        type: file.type,
-      }))
-    )
-    photoObjects.forEach((photo) => thumbnailUrls.current.add(photo.thumbUrl))
+    const photoObjects = await mapIngestPhotos(files, async (file) => {
+      const photo = {
+        id: `${ingestSeq.current++}-${file.name}-${file.size}`,
+        file, name: file.name, size: file.size, type: file.type,
+        previewRange: isRawFile(file) ? await getPreviewRange(file) : null,
+      }
+      photo.thumbUrl = await makeThumbnail(photo)
+      photo.noPreview = isRawFile(file) && !photo.thumbUrl
+      return photo
+    })
+    photoObjects.forEach((photo) => {
+      if (photo.thumbUrl) thumbnailUrls.current.add(photo.thumbUrl)
+    })
     setIsIngesting(false)
 
     setPhotos((prev) => [...prev, ...photoObjects])
@@ -300,7 +303,7 @@ export default function App() {
     clearTimeout(undoTimer.current)
     setUndoItem(null)
     if (!resume) {
-      runSnapshot.current = { criteria, chips: [...selectedChips], model, photos: [...photos], finished: [] }
+      runSnapshot.current = { criteria, chips: [...selectedChips], model, photos: photos.filter((photo) => !photo.noPreview), finished: [] }
       setResults([])
       setDecisions(new Map())
     }
@@ -319,7 +322,7 @@ export default function App() {
       let entry
       try {
         if (i === firstIndex && snapshot.model !== DEMO_MODEL && health.models.includes(CRITERIA_MODEL)) await unloadCriteriaModel(controller.signal)
-        const base64 = snapshot.model === DEMO_MODEL ? '' : await encodeForModel(photo.file)
+        const base64 = snapshot.model === DEMO_MODEL ? '' : await encodeForModel(photo)
         if (cancelRef.current) break
         const result = await evaluatePhoto(base64, snapshot.criteria, i, snapshot.chips, snapshot.model, controller.signal)
         entry = { photo, decision: result.decision, originalDecision: result.decision, reason: result.reason }
@@ -487,10 +490,13 @@ export default function App() {
 
   const showRevert = lastRead !== null && (cuiInput.trim() !== lastRead.description || chipsDiffer || criteriaDiffer)
 
+  const skippedCount = photos.filter((photo) => photo.noPreview).length
+  const analysisCount = photos.length - skippedCount
+
   const primaryLabel =
     readState === 'none'  ? 'Show priorities' :
     readState === 'stale' ? 'Update priorities' :
-    `Run Cull on ${photos.length} photo${photos.length === 1 ? '' : 's'}`
+    `Run Cull on ${analysisCount} photo${analysisCount === 1 ? '' : 's'}`
 
   const starredCount = results.filter((r) => starredIds.has(r.photo.id)).length
   // A re-run discards the result set, so warn about anything the user moved by hand.
@@ -578,6 +584,9 @@ export default function App() {
             }
             buttons={
               <div className="w-full flex flex-col items-start" style={{ gap: '12px' }}>
+                {skippedCount > 0 && <p className="text-[12px] leading-[14px]">
+                  {skippedCount} {skippedCount === 1 ? "photo can't be previewed and will be skipped" : "photos can't be previewed and will be skipped"}
+                </p>}
                 {readError && <p role="alert" className="text-[12px] leading-[14px]">{readError}</p>}
                 {manuallyMovedCount > 0 && (
                   <p className="text-[12px] font-normal text-primary leading-[14px]">
@@ -587,7 +596,7 @@ export default function App() {
                 <div className="w-full flex items-center" style={{ gap: '16px' }}>
                 <PrimaryButton
                   minWidth={157}
-                  disabled={!hasInput || isBuildingCriteria || photos.length === 0}
+                  disabled={!hasInput || isBuildingCriteria || isIngesting || analysisCount === 0}
                   onClick={readState === 'current' ? () => handleRunCull() : runRead}
                 >
                   {isBuildingCriteria ? 'Reading…' : primaryLabel}

@@ -1,55 +1,74 @@
-// Downscale on ingest. The canvas paints 148 x 110 tiles; holding 116 full-
-// resolution decoded bitmaps to do that is the real memory cost of a batch.
-//
-// The original photo.file is retained; model encoding is a separate decode.
+import { getDisplayBlob, isRawFile } from './rawPreview.js'
 
-const THUMB_W = 296 // 2x the 148px tile, for retina
+const THUMB_W = 296
 const THUMB_H = 220
 
-/**
- * Returns a blob URL for a downscaled copy of `file`, cover-cropped to the
- * tile's aspect ratio. Falls back to a plain object URL of the original when
- * the browser can't decode the file (RAW formats), so a batch never breaks —
- * it just doesn't get the memory win for those frames.
- */
-export async function makeThumbnail(file) {
-  try {
-    const bitmap = await createImageBitmap(file)
-
-    const scale = Math.max(THUMB_W / bitmap.width, THUMB_H / bitmap.height)
-    // Never upscale a photo that's already smaller than the tile.
-    const w = Math.min(bitmap.width, Math.round(bitmap.width * scale))
-    const h = Math.min(bitmap.height, Math.round(bitmap.height * scale))
-
-    const canvas = document.createElement('canvas')
-    canvas.width = w
-    canvas.height = h
-    canvas.getContext('2d').drawImage(bitmap, 0, 0, w, h)
-    bitmap.close()
-
-    const blob = await new Promise((resolve) =>
-      canvas.toBlob(resolve, 'image/jpeg', 0.85)
-    )
-    if (!blob) return URL.createObjectURL(file)
-    return URL.createObjectURL(blob)
-  } catch {
-    return URL.createObjectURL(file)
+async function displayCanvas(photo, thumbnail = false, maxEdge = null) {
+  const raw = isRawFile(photo.file)
+  const range = photo.previewRange
+  // Embedded JPEG EXIF is handled by the decoder exactly once. Use outer TIFF
+  // orientation only when the JPEG has none, then apply it on the canvas.
+  const orientation = raw && range?.jpegOrientation == null ? range?.orientation || 1 : 1
+  const options = { imageOrientation: orientation === 1 ? 'from-image' : 'none' }
+  if (thumbnail) {
+    if (raw && range) {
+      const decoderSwapsAxes = range.jpegOrientation >= 5
+      const width = decoderSwapsAxes ? range.height : range.width
+      const height = decoderSwapsAxes ? range.width : range.height
+      const scale = Math.min(1, Math.max(THUMB_W / width, THUMB_H / height))
+      options.resizeWidth = Math.max(1, Math.round(width * scale))
+      options.resizeHeight = Math.max(1, Math.round(height * scale))
+    } else options.resizeWidth = THUMB_W
+    options.resizeQuality = 'high'
   }
+  const bitmap = await createImageBitmap(getDisplayBlob(photo), options)
+  try {
+    const swapped = orientation >= 5
+    const width = swapped ? bitmap.height : bitmap.width
+    const height = swapped ? bitmap.width : bitmap.height
+    const scale = maxEdge ? Math.min(1, maxEdge / Math.max(width, height)) : 1
+    const canvas = document.createElement('canvas')
+    canvas.width = Math.max(1, Math.round(width * scale))
+    canvas.height = Math.max(1, Math.round(height * scale))
+    const ctx = canvas.getContext('2d')
+    ctx.scale(canvas.width / width, canvas.height / height)
+    const transforms = {
+      2: [-1, 0, 0, 1, width, 0], 3: [-1, 0, 0, -1, width, height],
+      4: [1, 0, 0, -1, 0, height], 5: [0, 1, 1, 0, 0, 0],
+      6: [0, 1, -1, 0, width, 0], 7: [0, -1, -1, 0, width, height],
+      8: [0, -1, 1, 0, 0, height],
+    }
+    if (transforms[orientation]) ctx.transform(...transforms[orientation])
+    ctx.drawImage(bitmap, 0, 0)
+    return canvas
+  } finally { bitmap.close() }
 }
 
-// Longest edge 768px, JPEG q0.85, raw base64 with no data: prefix.
-export async function encodeForModel(file) {
-  const bitmap = await createImageBitmap(file)
-  const canvas = document.createElement('canvas')
+function jpegBlob(canvas) {
+  return new Promise((resolve) => canvas.toBlob(resolve, 'image/jpeg', 0.85))
+}
+
+export async function makeThumbnail(photo) {
+  const raw = isRawFile(photo.file)
+  if (raw && !photo.previewRange) return null
   try {
-    const scale = Math.min(1, 768 / Math.max(bitmap.width, bitmap.height))
-    canvas.width = Math.max(1, Math.round(bitmap.width * scale))
-    canvas.height = Math.max(1, Math.round(bitmap.height * scale))
-    canvas.getContext('2d').drawImage(bitmap, 0, 0, canvas.width, canvas.height)
-  } finally {
-    bitmap.close()
-  }
-  const blob = await new Promise((resolve) => canvas.toBlob(resolve, 'image/jpeg', 0.85))
+    const blob = await jpegBlob(await displayCanvas(photo, true))
+    if (blob) return URL.createObjectURL(blob)
+  } catch { /* Non-RAW retains its existing original URL fallback. */ }
+  return raw ? null : URL.createObjectURL(getDisplayBlob(photo))
+}
+
+export async function getDetailPreviewBlob(photo) {
+  if (!isRawFile(photo.file)) return getDisplayBlob(photo)
+  // Canvas consumes the chosen orientation and emits a JPEG without EXIF, so
+  // the detail <img> cannot apply a second rotation.
+  const blob = await jpegBlob(await displayCanvas(photo))
+  if (!blob) throw new Error('Could not prepare preview')
+  return blob
+}
+
+export async function encodeForModel(photo) {
+  const blob = await jpegBlob(await displayCanvas(photo, false, 768))
   if (!blob) throw new Error('Could not encode photo for the model')
   return new Promise((resolve, reject) => {
     const reader = new FileReader()

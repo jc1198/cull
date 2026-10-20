@@ -300,7 +300,7 @@ cheap. Two things that aren't:
 
 - Memoize the thumbnail component and key it by photo id. Without that, each streamed
   decision re-renders all 116.
-- Downscale to thumbnails on ingest and keep the original `File` for base64 encoding.
+- Downscale to thumbnails on ingest and keep the original `File` untouched for export; model encoding uses the display source.
   Full-resolution blobs held as decoded bitmaps are the real memory cost.
 
 ### Cancel
@@ -477,3 +477,13 @@ Cut from `cull-case-study-reference.md`:
 ### Browser export
 
 Export keeps is enabled when keeps is nonempty; Export starred is enabled when starred is nonempty. Starred includes keeps and cuts, with a small Cut label on cut thumbnails and no dimming. Export copies original bytes through the export writer interface, with collision suffixes and sequential writes. The dialog chooses a destination and validates a subfolder; progress uses the shared 6px bar and an independent AbortSignal. Completion reports written files and per-file failures. No ZIP fallback.
+
+### RAW support (browser)
+
+The supported RAW preview source is the full-size JpgFromRaw JPEG in TIFF SubIFDs referenced by IFD0. Read either II or MM byte order, JPEGInterchangeFormat/Length, and IFD0 orientation using bounded file slices. Select the largest valid JPEG range. Do not parse maker notes or use Nikon PreviewImage. Known limitation: bodies storing the large preview only in maker notes show No preview.
+
+Store the JPEG range on the library photo and retain the original File. All thumbnails, detail previews and model encodes use the display source; export continues to copy original bytes. JPEG EXIF orientation, when present, takes precedence over outer IFD0 orientation, and is applied by the image decoder. Otherwise apply IFD0 orientation once on the canvas. Detail RAW derivatives carry no orientation metadata, preventing a second rotation.
+
+Limit ingest preparation to four concurrent photos and retain input grid order. Decode thumbnails with createImageBitmap resize options. RAW thumbnail failures never fall back to original-file URLs. A RAW without a usable preview stays in the library as a tile with its filename and a small No preview label, and can be removed. It has no result entry and appears in no results tab or export. Do not create an automatic keep or cut for it.
+
+Before Run Cull, show “N photos can't be previewed and will be skipped” only when N is positive (use singular wording for one). Recompute on removal/undo. Run Cull's count and analysis batch total exclude skipped photos; disable running when none remain. Demo follows the same exclusion rules.
