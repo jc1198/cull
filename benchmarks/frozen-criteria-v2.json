@@ -1,0 +1,17 @@
+[
+  {
+    "signal": "golden hour light",
+    "weight": "high",
+    "description": "photo has warm, soft light with golden tones"
+  },
+  {
+    "signal": "candid expression",
+    "weight": "medium",
+    "description": "subject has natural, unposed facial expression"
+  },
+  {
+    "signal": "sharp eyes",
+    "weight": "high",
+    "description": "subject's eyes are focused and expressive"
+  }
+]

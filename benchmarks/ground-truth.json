@@ -1,0 +1,66 @@
+{
+  "tasteString": "Golden hour portraits with candid expressions and sharp eyes",
+  "labelledAt": "2026-09-22",
+  "photos": [
+    {
+      "file": "tphoto1.jpg",
+      "label": "keep",
+      "category": "portrait-warm",
+      "note": "golden hour portrait and candid expression detected. doesn't have sharp eyes, but meets the other criteria"
+    },
+    {
+      "file": "tphoto2.jpg",
+      "label": "keep",
+      "category": "portrait-warm",
+      "note": "sharp eyes, golden hour lighting, candid expression"
+    },
+    {
+      "file": "tphoto3.jpg",
+      "label": "keep",
+      "category": "portrait-warm",
+      "note": "this portrait has golden hour lighting and sharp eyes and candid expression"
+    },
+    {
+      "file": "tphoto4.jpeg",
+      "label": "cut",
+      "category": "portrait-poor",
+      "note": "shadow over phase and bad lighting"
+    },
+    {
+      "file": "tphoto5.jpeg",
+      "label": "cut",
+      "category": "portrait-poor",
+      "note": "bad lighting, eyes are not in focus"
+    },
+    {
+      "file": "tphoto6.JPG",
+      "label": "cut",
+      "category": "flat-cold",
+      "note": "cold light"
+    },
+    {
+      "file": "tphoto7.jpeg",
+      "label": "cut",
+      "category": "flat-cold",
+      "note": "cold light, no portrait and no subjects in photo"
+    },
+    {
+      "file": "tphoto8.jpg",
+      "label": "cut",
+      "category": "nonportrait-warm",
+      "note": "golden light but no person as a subject"
+    },
+    {
+      "file": "tphoto9.jpg",
+      "label": "cut",
+      "category": "nonportrait-warm",
+      "note": "golden light but no person as subject"
+    },
+    {
+      "file": "tphoto10.jpg",
+      "label": "cut",
+      "category": "nonportrait-warm",
+      "note": "golden light but no subject"
+    }
+  ]
+}

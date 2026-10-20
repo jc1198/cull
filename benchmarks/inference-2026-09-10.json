@@ -1,0 +1,537 @@
+{
+  "date": "2026-09-10",
+  "ollamaVersion": "0.34.0",
+  "anchor": {
+    "file": "test_photos/_DSC1403.jpg",
+    "fullDimensions": [
+      4928,
+      3264
+    ],
+    "encodedDimensions": [
+      768,
+      509
+    ]
+  },
+  "fullResolution": {
+    "qwen3-vl:4b-instruct": {
+      "error": "request (4206 tokens) exceeds available context size (4096 tokens)",
+      "prompt_eval_count": null,
+      "num_ctx": 4096,
+      "processor": "31% CPU / 69% GPU"
+    },
+    "llava:7b": {
+      "error": "90-second client timeout",
+      "prompt_eval_count": null,
+      "num_ctx": 4096,
+      "processor": "33% CPU / 67% GPU"
+    }
+  },
+  "scaled4B": {
+    "dims": [
+      768,
+      509
+    ],
+    "elapsedMs": 90637,
+    "error": "signal timed out",
+    "calls": [
+      {
+        "model": "qwen3:1.7b",
+        "images": false,
+        "unload": true,
+        "status": 200,
+        "ms": 14,
+        "created_at": "2026-09-11T00:55:14.043939Z",
+        "response": "",
+        "done": true,
+        "done_reason": "unload"
+      }
+    ]
+  },
+  "criteriaCheckpoint": {
+    "reports": [
+      {
+        "elapsedMs": 10085,
+        "criteria": [
+          {
+            "signal": "warm light",
+            "weight": "high",
+            "description": "photo has orange or golden toned light"
+          },
+          {
+            "signal": "candid expressions",
+            "weight": "high",
+            "description": "subject has natural, unposed facial expressions"
+          },
+          {
+            "signal": "sharp eyes",
+            "weight": "high",
+            "description": "subject's eyes are focused and clear"
+          }
+        ],
+        "eval_count": 108,
+        "prompt_eval_count": 248,
+        "load_duration": 4783740292
+      },
+      {
+        "elapsedMs": 3599,
+        "criteria": [
+          {
+            "signal": "warm light",
+            "weight": "high",
+            "description": "photo has orange or golden toned light"
+          },
+          {
+            "signal": "candid expressions",
+            "weight": "high",
+            "description": "subject has natural, unposed facial expressions"
+          },
+          {
+            "signal": "sharp eyes",
+            "weight": "high",
+            "description": "subject's eyes are focused and clear"
+          }
+        ],
+        "eval_count": 108,
+        "prompt_eval_count": 248,
+        "load_duration": 23203833
+      },
+      {
+        "elapsedMs": 3324,
+        "criteria": [
+          {
+            "signal": "warm light",
+            "weight": "high",
+            "description": "photo has orange or golden toned light"
+          },
+          {
+            "signal": "candid expressions",
+            "weight": "high",
+            "description": "subject has natural, unposed facial expressions"
+          },
+          {
+            "signal": "sharp eyes",
+            "weight": "high",
+            "description": "subject's eyes are focused and clear"
+          }
+        ],
+        "eval_count": 108,
+        "prompt_eval_count": 248,
+        "load_duration": 5588500
+      }
+    ],
+    "warnings": []
+  },
+  "plain2B": {
+    "error": "Run failed: []",
+    "elapsed": [],
+    "warnings": [],
+    "errors": [],
+    "calls": [
+      {
+        "model": "qwen3:1.7b",
+        "images": false,
+        "unload": false,
+        "options": {
+          "num_predict": 600,
+          "temperature": 0,
+          "num_ctx": 2048
+        },
+        "status": 200,
+        "ms": 5567,
+        "created_at": "2026-09-11T00:59:34.53998Z",
+        "response": "{\n  \"criteria\": [\n    {\n      \"signal\": \"warm light\",\n      \"weight\": \"high\",\n      \"description\": \"photo has orange or golden toned light\"\n    },\n    {\n      \"signal\": \"candid expressions\",\n      \"weight\": \"high\",\n      \"description\": \"subject has natural, unposed facial expressions\"\n    },\n    {\n      \"signal\": \"sharp eyes\",\n      \"weight\": \"high\",\n      \"description\": \"subject's eyes are focused and clear\"\n    }\n  ]\n}",
+        "done": true,
+        "done_reason": "stop",
+        "total_duration": 5546075083,
+        "load_duration": 2355408916,
+        "prompt_eval_count": 248,
+        "prompt_eval_cached_count": 0,
+        "prompt_eval_duration": 480723000,
+        "eval_count": 108,
+        "eval_duration": 2693647000
+      },
+      {
+        "model": "qwen3:1.7b",
+        "images": false,
+        "unload": true,
+        "status": 200,
+        "ms": 14,
+        "created_at": "2026-09-11T00:59:34.863065Z",
+        "response": "",
+        "done": true,
+        "done_reason": "unload"
+      },
+      {
+        "model": "qwen3-vl:2b",
+        "images": true,
+        "unload": false,
+        "options": {
+          "num_predict": 120,
+          "temperature": 0,
+          "num_ctx": 4096
+        },
+        "status": 200,
+        "ms": 13844,
+        "created_at": "2026-09-11T00:59:48.858418Z",
+        "response": "",
+        "thinking": "{\"decision\": \"keep\", \"reason\": \"The photo features warm, golden light illuminating the Wyoming welcome sign and landscape, creating a natural and inviting atmosphere that aligns with the warm light requirement.\"}",
+        "done": true,
+        "done_reason": "stop",
+        "total_duration": 13807547333,
+        "load_duration": 5470368042,
+        "prompt_eval_count": 1265,
+        "prompt_eval_cached_count": 0,
+        "prompt_eval_duration": 6974152000,
+        "eval_count": 43,
+        "eval_duration": 1318673000
+      }
+    ]
+  },
+  "instruct2B": {
+    "summary": {
+      "completedPhotos": 7,
+      "requestedPhotos": 10,
+      "medianMs": 13475,
+      "p95NearestRankMs": 19237,
+      "medianPromptEvalCount": 1265,
+      "medianEvalCount": 68,
+      "projected116MsFromSuccessfulMedian": 1563100,
+      "qualification": "Seven successful photos only; not a completed 10-photo batch. Photo 8 returned proxy 502/fetch failed. Retry failed at Chrome launch."
+    },
+    "processor": "100% GPU, context 4096",
+    "elapsed": [
+      {
+        "photo": "_DSC1403.jpg",
+        "elapsedMs": 13475
+      },
+      {
+        "photo": "_DSC1426.jpg",
+        "elapsedMs": 8690
+      },
+      {
+        "photo": "_DSC1697.jpg",
+        "elapsedMs": 8576
+      },
+      {
+        "photo": "_DSC1701.jpg",
+        "elapsedMs": 8807
+      },
+      {
+        "photo": "_DSC1736.jpg",
+        "elapsedMs": 17276
+      },
+      {
+        "photo": "_DSC1824.jpg",
+        "elapsedMs": 19237
+      },
+      {
+        "photo": "_DSC1901.jpg",
+        "elapsedMs": 17826
+      }
+    ],
+    "calls": [
+      {
+        "model": "qwen3:1.7b",
+        "images": false,
+        "unload": false,
+        "options": {
+          "num_predict": 600,
+          "temperature": 0,
+          "num_ctx": 2048
+        },
+        "status": 200,
+        "ms": 5825,
+        "created_at": "2026-09-11T01:08:29.112379Z",
+        "response": "{\n  \"criteria\": [\n    {\n      \"signal\": \"warm light\",\n      \"weight\": \"high\",\n      \"description\": \"photo has orange or golden toned light\"\n    },\n    {\n      \"signal\": \"candid expressions\",\n      \"weight\": \"high\",\n      \"description\": \"subject has natural, unposed facial expressions\"\n    },\n    {\n      \"signal\": \"sharp eyes\",\n      \"weight\": \"high\",\n      \"description\": \"subject's eyes are focused and clear\"\n    }\n  ]\n}",
+        "done": true,
+        "done_reason": "stop",
+        "total_duration": 5787145375,
+        "load_duration": 2597847166,
+        "prompt_eval_count": 248,
+        "prompt_eval_cached_count": 0,
+        "prompt_eval_duration": 457742000,
+        "eval_count": 108,
+        "eval_duration": 2721945000
+      },
+      {
+        "model": "qwen3:1.7b",
+        "images": false,
+        "unload": true,
+        "status": 200,
+        "ms": 29,
+        "created_at": "2026-09-11T01:08:29.73437Z",
+        "response": "",
+        "done": true,
+        "done_reason": "unload"
+      },
+      {
+        "model": "qwen3-vl:2b-instruct",
+        "images": true,
+        "unload": false,
+        "options": {
+          "num_predict": 120,
+          "temperature": 0,
+          "num_ctx": 4096
+        },
+        "status": 200,
+        "ms": 13233,
+        "created_at": "2026-09-11T01:08:43.074058Z",
+        "response": "{\"decision\": \"keep\", \"reason\": \"The photo has warm, golden-toned light, which is characteristic of a natural, unposed scene. The subject, the sign, is not a person and therefore does not have facial expressions to evaluate. The primary requirement is met.\"}",
+        "done": true,
+        "done_reason": "stop",
+        "total_duration": 13141915917,
+        "load_duration": 5195908542,
+        "prompt_eval_count": 1265,
+        "prompt_eval_cached_count": 0,
+        "prompt_eval_duration": 6375832000,
+        "eval_count": 59,
+        "eval_duration": 1524300000
+      },
+      {
+        "model": "qwen3-vl:2b-instruct",
+        "images": true,
+        "unload": false,
+        "options": {
+          "num_predict": 120,
+          "temperature": 0,
+          "num_ctx": 4096
+        },
+        "status": 200,
+        "ms": 8338,
+        "created_at": "2026-09-11T01:08:51.79893Z",
+        "response": "{\"decision\": \"keep\", \"reason\": \"The photo features a sign for Yellowstone Grand Teton, with a natural, unposed facial expression of the subject (the sign) and sharp eyes. The lighting is bright and even, with no orange or golden tones, so it does not meet the primary requirement of warm light.\"}",
+        "done": true,
+        "done_reason": "stop",
+        "total_duration": 8241069958,
+        "load_duration": 13403083,
+        "prompt_eval_count": 1265,
+        "prompt_eval_cached_count": 4,
+        "prompt_eval_duration": 6321240000,
+        "eval_count": 68,
+        "eval_duration": 1802358000
+      },
+      {
+        "model": "qwen3-vl:2b-instruct",
+        "images": true,
+        "unload": false,
+        "options": {
+          "num_predict": 120,
+          "temperature": 0,
+          "num_ctx": 4096
+        },
+        "status": 200,
+        "ms": 8152,
+        "created_at": "2026-09-11T01:09:00.356704Z",
+        "response": "{\n  \"decision\": \"keep\",\n  \"reason\": \"The photo features a bison in a natural, grassy field under warm, golden-toned light, which satisfies the primary requirement. The bison's expression appears natural and unposed, and its eyes are focused and clear, meeting the secondary criteria as well.\"\n}",
+        "done": true,
+        "done_reason": "stop",
+        "total_duration": 8031964167,
+        "load_duration": 16290917,
+        "prompt_eval_count": 1265,
+        "prompt_eval_cached_count": 4,
+        "prompt_eval_duration": 6251312000,
+        "eval_count": 68,
+        "eval_duration": 1686266000
+      },
+      {
+        "model": "qwen3-vl:2b-instruct",
+        "images": true,
+        "unload": false,
+        "options": {
+          "num_predict": 120,
+          "temperature": 0,
+          "num_ctx": 4096
+        },
+        "status": 200,
+        "ms": 8414,
+        "created_at": "2026-09-11T01:09:08.762679Z",
+        "response": "{\n  \"decision\": \"keep\",\n  \"reason\": \"The photo features a bison walking on a gravel path with a natural, unposed facial expression and focused, clear eyes. The lighting appears to be warm and golden, suggesting a natural, candid light source, which aligns with the primary requirement.\"\n}",
+        "done": true,
+        "done_reason": "stop",
+        "total_duration": 7912714917,
+        "load_duration": 12199542,
+        "prompt_eval_count": 1265,
+        "prompt_eval_cached_count": 4,
+        "prompt_eval_duration": 6084049000,
+        "eval_count": 65,
+        "eval_duration": 1709212000
+      },
+      {
+        "model": "qwen3-vl:2b-instruct",
+        "images": true,
+        "unload": false,
+        "options": {
+          "num_predict": 120,
+          "temperature": 0,
+          "num_ctx": 4096
+        },
+        "status": 200,
+        "ms": 16692,
+        "created_at": "2026-09-11T01:09:24.835586Z",
+        "response": "{\n  \"decision\": \"keep\",\n  \"reason\": \"The photo features a canyon with a river flowing through it, illuminated by warm, golden-toned light that suggests a natural, unposed setting. The lighting is consistent with the description of 'warm light,' and the subject, the landscape, is not a person, so the criteria for 'candid expressions' and 'sharp eyes' are not applicable. Therefore, the photo meets the primary requirement.\"\n}",
+        "done": true,
+        "done_reason": "stop",
+        "total_duration": 14992563000,
+        "load_duration": 42640709,
+        "prompt_eval_count": 1265,
+        "prompt_eval_cached_count": 4,
+        "prompt_eval_duration": 10659856000,
+        "eval_count": 95,
+        "eval_duration": 4114756999
+      },
+      {
+        "model": "qwen3-vl:2b-instruct",
+        "images": true,
+        "unload": false,
+        "options": {
+          "num_predict": 120,
+          "temperature": 0,
+          "num_ctx": 4096
+        },
+        "status": 200,
+        "ms": 13016,
+        "created_at": "2026-09-11T01:09:44.661835Z",
+        "response": "{\n  \"decision\": \"keep\",\n  \"reason\": \"The photo features warm, golden-toned light, particularly from the sun breaking through the clouds, which satisfies the 'warm light' requirement. The subjects, including the people on the wooden walkway, appear to have natural, unposed facial expressions and their eyes are focused and clear, meeting the 'candid expressions' and 'sharp eyes' criteria. Therefore, the photo is kept.\"\n}",
+        "done": true,
+        "done_reason": "stop",
+        "total_duration": 11478881291,
+        "load_duration": 36116333,
+        "prompt_eval_count": 1265,
+        "prompt_eval_cached_count": 4,
+        "prompt_eval_duration": 8022627000,
+        "eval_count": 93,
+        "eval_duration": 3193355000
+      },
+      {
+        "model": "qwen3-vl:2b-instruct",
+        "images": true,
+        "unload": false,
+        "options": {
+          "num_predict": 120,
+          "temperature": 0,
+          "num_ctx": 4096
+        },
+        "status": 200,
+        "ms": 13277,
+        "created_at": "2026-09-11T01:10:02.612191Z",
+        "response": "{\"decision\": \"cut\", \"reason\": \"The photo does not have warm light; it appears to be under bright, even daylight with a clear blue sky, which is not orange or golden toned light. Therefore, it does not meet the primary requirement.\"}",
+        "done": true,
+        "done_reason": "stop",
+        "total_duration": 11936129292,
+        "load_duration": 85610542,
+        "prompt_eval_count": 1265,
+        "prompt_eval_cached_count": 4,
+        "prompt_eval_duration": 9755248000,
+        "eval_count": 54,
+        "eval_duration": 1757082000
+      },
+      {
+        "model": "qwen3-vl:2b-instruct",
+        "images": true,
+        "unload": false,
+        "options": {
+          "num_predict": 120,
+          "temperature": 0,
+          "num_ctx": 4096
+        },
+        "status": 502,
+        "ms": 11694,
+        "error": "Ollama unreachable",
+        "detail": "fetch failed"
+      }
+    ],
+    "warnings": [],
+    "errors": []
+  },
+  "demo": {
+    "mode": "demo",
+    "model": "qwen3-vl:4b-instruct",
+    "elapsed": [
+      {
+        "photo": "_DSC1403.jpg",
+        "elapsedMs": 457
+      },
+      {
+        "photo": "_DSC1426.jpg",
+        "elapsedMs": 518
+      },
+      {
+        "photo": "_DSC1697.jpg",
+        "elapsedMs": 467
+      },
+      {
+        "photo": "_DSC1701.jpg",
+        "elapsedMs": 441
+      },
+      {
+        "photo": "_DSC1736.jpg",
+        "elapsedMs": 469
+      },
+      {
+        "photo": "_DSC1824.jpg",
+        "elapsedMs": 536
+      },
+      {
+        "photo": "_DSC1901.jpg",
+        "elapsedMs": 330
+      },
+      {
+        "photo": "_DSC1959.jpg",
+        "elapsedMs": 439
+      },
+      {
+        "photo": "_DSC2032.jpg",
+        "elapsedMs": 337
+      },
+      {
+        "photo": "_DSC2038.jpg",
+        "elapsedMs": 466
+      }
+    ],
+    "calls": [],
+    "warnings": [],
+    "errors": []
+  },
+  "llavaCompatibility": {
+    "error": "Run failed: []",
+    "elapsed": [],
+    "warnings": [],
+    "errors": [],
+    "calls": [
+      {
+        "model": "qwen3:1.7b",
+        "images": false,
+        "unload": false,
+        "options": {
+          "num_predict": 600,
+          "temperature": 0,
+          "num_ctx": 2048
+        },
+        "status": 200,
+        "ms": 5596,
+        "created_at": "2026-09-11T01:01:07.795592Z",
+        "response": "{\n  \"criteria\": [\n    {\n      \"signal\": \"warm light\",\n      \"weight\": \"high\",\n      \"description\": \"photo has orange or golden toned light\"\n    },\n    {\n      \"signal\": \"candid expressions\",\n      \"weight\": \"high\",\n      \"description\": \"subject has natural, unposed facial expressions\"\n    },\n    {\n      \"signal\": \"sharp eyes\",\n      \"weight\": \"high\",\n      \"description\": \"subject's eyes are focused and clear\"\n    }\n  ]\n}",
+        "done": true,
+        "done_reason": "stop",
+        "total_duration": 5536747542,
+        "load_duration": 2223587667,
+        "prompt_eval_count": 248,
+        "prompt_eval_cached_count": 0,
+        "prompt_eval_duration": 456410000,
+        "eval_count": 108,
+        "eval_duration": 2851023000
+      },
+      {
+        "model": "qwen3:1.7b",
+        "images": false,
+        "unload": true,
+        "status": 200,
+        "ms": 15,
+        "created_at": "2026-09-11T01:01:07.853513Z",
+        "response": "",
+        "done": true,
+        "done_reason": "unload"
+      }
+    ]
+  }
+}

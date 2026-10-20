@@ -1,0 +1,1180 @@
+{
+  "model": "qwen3-vl:2b-instruct",
+  "seed": 42,
+  "taste": "Golden hour portraits with candid expressions and sharp eyes.",
+  "criteria": [
+    {
+      "signal": "warm light",
+      "weight": "high",
+      "description": "photo has orange or golden toned light"
+    },
+    {
+      "signal": "candid expressions",
+      "weight": "high",
+      "description": "subject has natural, unposed facial expressions"
+    },
+    {
+      "signal": "sharp eyes",
+      "weight": "high",
+      "description": "subject's eyes are focused and clear"
+    }
+  ],
+  "startedAt": "2026-09-15T00:48:50.488Z",
+  "encoderHash": "5540775434a17f3c59b0ee4d175f388faeb1160dcbac5c4d7d810c594ac0c9dd",
+  "six": [
+    "_DSC1403.jpg",
+    "_DSC1426.jpg",
+    "_DSC1697.jpg",
+    "_DSC1701.jpg",
+    "_DSC1736.jpg",
+    "_DSC1901.jpg"
+  ],
+  "template": {
+    "model": "qwen3-vl:2b-instruct",
+    "prompt": "Look at this photo carefully.\n\nYou are a photo culling assistant. The PRIMARY requirement is:\nwarm light: photo has orange or golden toned light, candid expressions: subject has natural, unposed facial expressions, sharp eyes: subject's eyes are focused and clear\n\nIf the photo does NOT satisfy the primary requirement, it must be cut regardless of anything else.\n\nSecondary criteria (only considered if primary is met):\n\n\nReply with ONLY JSON matching this schema: {\"type\":\"object\",\"properties\":{\"reason\":{\"type\":\"string\"},\"decision\":{\"type\":\"string\",\"enum\":[\"keep\",\"cut\"]}},\"required\":[\"reason\",\"decision\"]}.\n{\"reason\": \"one sentence describing what you see and why it meets or fails the primary requirement\", \"decision\": \"keep\"}\n\nUse \"keep\" only if the primary requirement is satisfied.\nUse \"cut\" if the primary requirement is not satisfied.",
+    "stream": false,
+    "think": false,
+    "keep_alive": "10m",
+    "format": {
+      "type": "object",
+      "properties": {
+        "reason": {
+          "type": "string"
+        },
+        "decision": {
+          "type": "string",
+          "enum": [
+            "keep",
+            "cut"
+          ]
+        }
+      },
+      "required": [
+        "reason",
+        "decision"
+      ]
+    },
+    "options": {
+      "num_predict": 120,
+      "temperature": 0,
+      "num_ctx": 4096
+    }
+  },
+  "timing": [
+    {
+      "name": "_DSC1403.jpg",
+      "order": "new",
+      "edge": 768,
+      "image": true,
+      "dimensions": [
+        768,
+        509
+      ],
+      "elapsedMs": 8379,
+      "status": 200,
+      "result": {
+        "reason": "The photo does not meet the primary requirement because it does not have warm light or golden tones. The lighting is natural daylight, and the scene is evenly illuminated with no visible orange or golden tint. The subject, the sign, is not a person and therefore does not have facial expressions to evaluate. The image is a landscape with a sign, and the primary requirement is not met.",
+        "decision": "cut"
+      },
+      "data": {
+        "model": "qwen3-vl:2b-instruct",
+        "created_at": "2026-09-15T00:49:03.960404Z",
+        "response": "{\n  \"reason\": \"The photo does not meet the primary requirement because it does not have warm light or golden tones. The lighting is natural daylight, and the scene is evenly illuminated with no visible orange or golden tint. The subject, the sign, is not a person and therefore does not have facial expressions to evaluate. The image is a landscape with a sign, and the primary requirement is not met.\",\n  \"decision\": \"cut\"\n}",
+        "done": true,
+        "done_reason": "stop",
+        "total_duration": 8355022917,
+        "load_duration": 6152000,
+        "prompt_eval_count": 1265,
+        "prompt_eval_cached_count": 3,
+        "prompt_eval_duration": 6156296000,
+        "eval_count": 91,
+        "eval_duration": 2165521000
+      }
+    },
+    {
+      "name": "_DSC1403.jpg",
+      "order": "new",
+      "edge": 768,
+      "image": false,
+      "elapsedMs": 1206,
+      "status": 200,
+      "result": {
+        "reason": "The photo features warm, golden-toned lighting, which aligns with the primary requirement. The subject has natural, unposed facial expressions and sharp, focused eyes, meeting the secondary criteria as well.",
+        "decision": "keep"
+      },
+      "data": {
+        "model": "qwen3-vl:2b-instruct",
+        "created_at": "2026-09-15T00:49:05.179141Z",
+        "response": "{\"reason\": \"The photo features warm, golden-toned lighting, which aligns with the primary requirement. The subject has natural, unposed facial expressions and sharp, focused eyes, meeting the secondary criteria as well.\", \"decision\": \"keep\"}",
+        "done": true,
+        "done_reason": "stop",
+        "total_duration": 1200023584,
+        "load_duration": 2046709,
+        "prompt_eval_count": 183,
+        "prompt_eval_cached_count": 182,
+        "prompt_eval_duration": 24472000,
+        "eval_count": 51,
+        "eval_duration": 1122034000
+      }
+    }
+  ],
+  "sweep": [
+    {
+      "name": "_DSC1403.jpg",
+      "order": "old",
+      "edge": 768,
+      "image": true,
+      "dimensions": [
+        768,
+        509
+      ],
+      "elapsedMs": 1629,
+      "status": 200,
+      "result": {
+        "decision": "keep",
+        "reason": "The photo has warm, golden-toned light, which is characteristic of a natural, unposed scene. The subject, the sign, is not a person and therefore does not have facial expressions to evaluate. The primary requirement is met."
+      },
+      "data": {
+        "model": "qwen3-vl:2b-instruct",
+        "created_at": "2026-09-15T00:49:06.803406Z",
+        "response": "{\"decision\": \"keep\", \"reason\": \"The photo has warm, golden-toned light, which is characteristic of a natural, unposed scene. The subject, the sign, is not a person and therefore does not have facial expressions to evaluate. The primary requirement is met.\"}",
+        "done": true,
+        "done_reason": "stop",
+        "total_duration": 1619228958,
+        "load_duration": 1988291,
+        "prompt_eval_count": 1265,
+        "prompt_eval_cached_count": 1183,
+        "prompt_eval_duration": 186251000,
+        "eval_count": 59,
+        "eval_duration": 1394367000
+      }
+    },
+    {
+      "name": "_DSC1403.jpg",
+      "order": "new",
+      "edge": 768,
+      "image": true,
+      "dimensions": [
+        768,
+        509
+      ],
+      "elapsedMs": 2453,
+      "status": 200,
+      "result": {
+        "reason": "The photo does not meet the primary requirement because it does not have warm light or golden tones. The lighting is natural daylight, and the scene is evenly illuminated with no visible orange or golden tint. The subject, the sign, is not a person and therefore does not have facial expressions to evaluate. The image is a landscape with a sign, and the primary requirement is not met.",
+        "decision": "cut"
+      },
+      "data": {
+        "model": "qwen3-vl:2b-instruct",
+        "created_at": "2026-09-15T00:49:09.258407Z",
+        "response": "{\n  \"reason\": \"The photo does not meet the primary requirement because it does not have warm light or golden tones. The lighting is natural daylight, and the scene is evenly illuminated with no visible orange or golden tint. The subject, the sign, is not a person and therefore does not have facial expressions to evaluate. The image is a landscape with a sign, and the primary requirement is not met.\",\n  \"decision\": \"cut\"\n}",
+        "done": true,
+        "done_reason": "stop",
+        "total_duration": 2444569458,
+        "load_duration": 1399041,
+        "prompt_eval_count": 1265,
+        "prompt_eval_cached_count": 1183,
+        "prompt_eval_duration": 189918000,
+        "eval_count": 91,
+        "eval_duration": 2234485000
+      }
+    },
+    {
+      "name": "_DSC1426.jpg",
+      "order": "new",
+      "edge": 768,
+      "image": true,
+      "dimensions": [
+        768,
+        509
+      ],
+      "elapsedMs": 8776,
+      "status": 200,
+      "result": {
+        "reason": "The photo does not meet the primary requirement as it is not illuminated by warm, golden-toned light. The scene is captured under bright, even daylight, which is typical of a clear, sunny day. The lighting is not orange or golden in tone, and there are no indications of a warm light source or atmospheric conditions that would create such a tone. The subject, the sign, is not a person and therefore does not have facial expressions to evaluate.",
+        "decision": "cut"
+      },
+      "data": {
+        "model": "qwen3-vl:2b-instruct",
+        "created_at": "2026-09-15T00:49:17.999753Z",
+        "response": "{\n  \"reason\": \"The photo does not meet the primary requirement as it is not illuminated by warm, golden-toned light. The scene is captured under bright, even daylight, which is typical of a clear, sunny day. The lighting is not orange or golden in tone, and there are no indications of a warm light source or atmospheric conditions that would create such a tone. The subject, the sign, is not a person and therefore does not have facial expressions to evaluate.\",\n  \"decision\": \"cut\"\n}",
+        "done": true,
+        "done_reason": "stop",
+        "total_duration": 8731857792,
+        "load_duration": 5319875,
+        "prompt_eval_count": 1265,
+        "prompt_eval_cached_count": 4,
+        "prompt_eval_duration": 6075419000,
+        "eval_count": 106,
+        "eval_duration": 2579630000
+      }
+    },
+    {
+      "name": "_DSC1426.jpg",
+      "order": "old",
+      "edge": 768,
+      "image": true,
+      "dimensions": [
+        768,
+        509
+      ],
+      "elapsedMs": 1927,
+      "status": 200,
+      "result": {
+        "decision": "keep",
+        "reason": "The photo features a sign for Yellowstone Grand Teton, with a natural, unposed facial expression of the subject (the sign) and sharp eyes. The lighting is bright and even, with no orange or golden tones, so it does not meet the primary requirement of warm light."
+      },
+      "data": {
+        "model": "qwen3-vl:2b-instruct",
+        "created_at": "2026-09-15T00:49:19.966152Z",
+        "response": "{\"decision\": \"keep\", \"reason\": \"The photo features a sign for Yellowstone Grand Teton, with a natural, unposed facial expression of the subject (the sign) and sharp eyes. The lighting is bright and even, with no orange or golden tones, so it does not meet the primary requirement of warm light.\"}",
+        "done": true,
+        "done_reason": "stop",
+        "total_duration": 1911713542,
+        "load_duration": 7075292,
+        "prompt_eval_count": 1265,
+        "prompt_eval_cached_count": 1183,
+        "prompt_eval_duration": 189303000,
+        "eval_count": 68,
+        "eval_duration": 1687074000
+      }
+    },
+    {
+      "name": "_DSC1697.jpg",
+      "order": "old",
+      "edge": 768,
+      "image": true,
+      "dimensions": [
+        768,
+        509
+      ],
+      "elapsedMs": 8046,
+      "status": 200,
+      "result": {
+        "decision": "keep",
+        "reason": "The photo features a bison in a natural, grassy field under warm, golden-toned light, which satisfies the primary requirement. The bison's expression appears natural and unposed, and its eyes are focused and clear, meeting the secondary criteria as well."
+      },
+      "data": {
+        "model": "qwen3-vl:2b-instruct",
+        "created_at": "2026-09-15T00:49:28.008408Z",
+        "response": "{\n  \"decision\": \"keep\",\n  \"reason\": \"The photo features a bison in a natural, grassy field under warm, golden-toned light, which satisfies the primary requirement. The bison's expression appears natural and unposed, and its eyes are focused and clear, meeting the secondary criteria as well.\"\n}",
+        "done": true,
+        "done_reason": "stop",
+        "total_duration": 8034601042,
+        "load_duration": 3003584,
+        "prompt_eval_count": 1265,
+        "prompt_eval_cached_count": 4,
+        "prompt_eval_duration": 6304372000,
+        "eval_count": 68,
+        "eval_duration": 1658669000
+      }
+    },
+    {
+      "name": "_DSC1697.jpg",
+      "order": "new",
+      "edge": 768,
+      "image": true,
+      "dimensions": [
+        768,
+        509
+      ],
+      "elapsedMs": 2366,
+      "status": 200,
+      "result": {
+        "reason": "The photo features a bison in a grassy field under warm, golden-toned light, which aligns with the primary requirement. The bison's facial expression appears natural and unposed, and its eyes are focused and clear. The lighting is consistent with the golden hue, and the subject is captured in a candid moment, meeting all the criteria.",
+        "decision": "keep"
+      },
+      "data": {
+        "model": "qwen3-vl:2b-instruct",
+        "created_at": "2026-09-15T00:49:30.380976Z",
+        "response": "{\n  \"reason\": \"The photo features a bison in a grassy field under warm, golden-toned light, which aligns with the primary requirement. The bison's facial expression appears natural and unposed, and its eyes are focused and clear. The lighting is consistent with the golden hue, and the subject is captured in a candid moment, meeting all the criteria.\",\n  \"decision\": \"keep\"\n}",
+        "done": true,
+        "done_reason": "stop",
+        "total_duration": 2355852083,
+        "load_duration": 3113125,
+        "prompt_eval_count": 1265,
+        "prompt_eval_cached_count": 1183,
+        "prompt_eval_duration": 189448000,
+        "eval_count": 86,
+        "eval_duration": 2138922000
+      }
+    },
+    {
+      "name": "_DSC1701.jpg",
+      "order": "new",
+      "edge": 768,
+      "image": true,
+      "dimensions": [
+        768,
+        509
+      ],
+      "elapsedMs": 8165,
+      "status": 200,
+      "result": {
+        "reason": "The photo features a bison walking on a gravel path with a natural, unposed facial expression and sharp eyes. The lighting appears to be warm and golden, suggesting a natural, possibly late afternoon light. The overall scene is candid and captures the bison in a natural environment, which aligns with the primary requirement.",
+        "decision": "keep"
+      },
+      "data": {
+        "model": "qwen3-vl:2b-instruct",
+        "created_at": "2026-09-15T00:49:38.536532Z",
+        "response": "{\n  \"reason\": \"The photo features a bison walking on a gravel path with a natural, unposed facial expression and sharp eyes. The lighting appears to be warm and golden, suggesting a natural, possibly late afternoon light. The overall scene is candid and captures the bison in a natural environment, which aligns with the primary requirement.\",\n  \"decision\": \"keep\"\n}",
+        "done": true,
+        "done_reason": "stop",
+        "total_duration": 8148574667,
+        "load_duration": 1946959,
+        "prompt_eval_count": 1265,
+        "prompt_eval_cached_count": 4,
+        "prompt_eval_duration": 6120885000,
+        "eval_count": 79,
+        "eval_duration": 1949757000
+      }
+    },
+    {
+      "name": "_DSC1701.jpg",
+      "order": "old",
+      "edge": 768,
+      "image": true,
+      "dimensions": [
+        768,
+        509
+      ],
+      "elapsedMs": 1779,
+      "status": 200,
+      "result": {
+        "decision": "keep",
+        "reason": "The photo features a bison walking on a gravel path with a natural, unposed facial expression and focused, clear eyes. The lighting appears to be warm and golden, suggesting a natural, candid light source, which aligns with the primary requirement."
+      },
+      "data": {
+        "model": "qwen3-vl:2b-instruct",
+        "created_at": "2026-09-15T00:49:40.325096Z",
+        "response": "{\n  \"decision\": \"keep\",\n  \"reason\": \"The photo features a bison walking on a gravel path with a natural, unposed facial expression and focused, clear eyes. The lighting appears to be warm and golden, suggesting a natural, candid light source, which aligns with the primary requirement.\"\n}",
+        "done": true,
+        "done_reason": "stop",
+        "total_duration": 1770228833,
+        "load_duration": 7130625,
+        "prompt_eval_count": 1265,
+        "prompt_eval_cached_count": 1183,
+        "prompt_eval_duration": 191071000,
+        "eval_count": 65,
+        "eval_duration": 1547862000
+      }
+    },
+    {
+      "name": "_DSC1736.jpg",
+      "order": "old",
+      "edge": 768,
+      "image": true,
+      "dimensions": [
+        768,
+        509
+      ],
+      "elapsedMs": 8773,
+      "status": 200,
+      "result": {
+        "decision": "keep",
+        "reason": "The photo features a canyon with a river flowing through it, illuminated by warm, golden-toned light that suggests a natural, unposed setting. The lighting is consistent with the description of 'warm light,' and the subject, the landscape, is not a person, so the criteria for 'candid expressions' and 'sharp eyes' are not applicable. Therefore, the photo meets the primary requirement."
+      },
+      "data": {
+        "model": "qwen3-vl:2b-instruct",
+        "created_at": "2026-09-15T00:49:49.069749Z",
+        "response": "{\n  \"decision\": \"keep\",\n  \"reason\": \"The photo features a canyon with a river flowing through it, illuminated by warm, golden-toned light that suggests a natural, unposed setting. The lighting is consistent with the description of 'warm light,' and the subject, the landscape, is not a person, so the criteria for 'candid expressions' and 'sharp eyes' are not applicable. Therefore, the photo meets the primary requirement.\"\n}",
+        "done": true,
+        "done_reason": "stop",
+        "total_duration": 8737890250,
+        "load_duration": 1905709,
+        "prompt_eval_count": 1265,
+        "prompt_eval_cached_count": 4,
+        "prompt_eval_duration": 6208931000,
+        "eval_count": 95,
+        "eval_duration": 2435714000
+      }
+    },
+    {
+      "name": "_DSC1736.jpg",
+      "order": "new",
+      "edge": 768,
+      "image": true,
+      "dimensions": [
+        768,
+        509
+      ],
+      "elapsedMs": 3146,
+      "status": 200,
+      "result": {
+        "reason": "The photo depicts a scenic canyon with a river flowing through it, illuminated by warm, golden light. The lighting is consistent with a natural, unposed scene, and the subject is the landscape itself, not a person. The primary requirement is not met because the photo does not feature a subject with natural, unposed facial expressions or sharp eyes. The image is of a landscape, not a person, so the criteria for 'candid expressions' and 'sharp eyes' are not applicable.",
+        "decision": "cut"
+      },
+      "data": {
+        "model": "qwen3-vl:2b-instruct",
+        "created_at": "2026-09-15T00:49:52.244665Z",
+        "response": "{\n  \"reason\": \"The photo depicts a scenic canyon with a river flowing through it, illuminated by warm, golden light. The lighting is consistent with a natural, unposed scene, and the subject is the landscape itself, not a person. The primary requirement is not met because the photo does not feature a subject with natural, unposed facial expressions or sharp eyes. The image is of a landscape, not a person, so the criteria for 'candid expressions' and 'sharp eyes' are not applicable.\",\n  \"decision\": \"cut\"\n}",
+        "done": true,
+        "done_reason": "stop",
+        "total_duration": 3134036042,
+        "load_duration": 10076417,
+        "prompt_eval_count": 1265,
+        "prompt_eval_cached_count": 1183,
+        "prompt_eval_duration": 191625000,
+        "eval_count": 113,
+        "eval_duration": 2903290000
+      }
+    },
+    {
+      "name": "_DSC1901.jpg",
+      "order": "new",
+      "edge": 768,
+      "image": true,
+      "dimensions": [
+        768,
+        509
+      ],
+      "elapsedMs": 8571,
+      "status": 200,
+      "result": {
+        "reason": "The photo depicts a serene landscape of a body of water with distant mountains under a clear blue sky. The lighting is natural and appears to be bright daylight, but there is no visible orange or golden tone in the scene. The image does not have any subjects with natural, unposed facial expressions or sharp eyes. Therefore, it does not meet the primary requirement.",
+        "decision": "cut"
+      },
+      "data": {
+        "model": "qwen3-vl:2b-instruct",
+        "created_at": "2026-09-15T00:50:00.809597Z",
+        "response": "{\n  \"reason\": \"The photo depicts a serene landscape of a body of water with distant mountains under a clear blue sky. The lighting is natural and appears to be bright daylight, but there is no visible orange or golden tone in the scene. The image does not have any subjects with natural, unposed facial expressions or sharp eyes. Therefore, it does not meet the primary requirement.\",\n  \"decision\": \"cut\"\n}",
+        "done": true,
+        "done_reason": "stop",
+        "total_duration": 8553516625,
+        "load_duration": 4023667,
+        "prompt_eval_count": 1265,
+        "prompt_eval_cached_count": 4,
+        "prompt_eval_duration": 6206548000,
+        "eval_count": 87,
+        "eval_duration": 2271393000
+      }
+    },
+    {
+      "name": "_DSC1901.jpg",
+      "order": "old",
+      "edge": 768,
+      "image": true,
+      "dimensions": [
+        768,
+        509
+      ],
+      "elapsedMs": 1617,
+      "status": 200,
+      "result": {
+        "decision": "cut",
+        "reason": "The photo does not have warm light; it appears to be under bright, even daylight with a clear blue sky, which is not orange or golden toned light. Therefore, it does not meet the primary requirement."
+      },
+      "data": {
+        "model": "qwen3-vl:2b-instruct",
+        "created_at": "2026-09-15T00:50:02.435755Z",
+        "response": "{\"decision\": \"cut\", \"reason\": \"The photo does not have warm light; it appears to be under bright, even daylight with a clear blue sky, which is not orange or golden toned light. Therefore, it does not meet the primary requirement.\"}",
+        "done": true,
+        "done_reason": "stop",
+        "total_duration": 1606716333,
+        "load_duration": 9794041,
+        "prompt_eval_count": 1265,
+        "prompt_eval_cached_count": 1183,
+        "prompt_eval_duration": 203021000,
+        "eval_count": 54,
+        "eval_duration": 1370233000
+      }
+    },
+    {
+      "name": "_DSC1403.jpg",
+      "order": "new",
+      "edge": 512,
+      "image": true,
+      "dimensions": [
+        512,
+        339
+      ],
+      "elapsedMs": 8328,
+      "status": 200,
+      "result": {
+        "reason": "The photo does not meet the primary requirement because it does not have warm light or golden tones. The lighting is bright and even, typical of a sunny day, and there is no indication of orange or golden light. The scene is clearly a daytime outdoor shot, but the lighting is not described as warm or golden.",
+        "decision": "cut"
+      },
+      "data": {
+        "model": "qwen3-vl:2b-instruct",
+        "created_at": "2026-09-15T00:50:10.761145Z",
+        "response": "{\n  \"reason\": \"The photo does not meet the primary requirement because it does not have warm light or golden tones. The lighting is bright and even, typical of a sunny day, and there is no indication of orange or golden light. The scene is clearly a daytime outdoor shot, but the lighting is not described as warm or golden.\",\n  \"decision\": \"cut\"\n}",
+        "done": true,
+        "done_reason": "stop",
+        "total_duration": 8311952042,
+        "load_duration": 1385375,
+        "prompt_eval_count": 1265,
+        "prompt_eval_cached_count": 4,
+        "prompt_eval_duration": 6238768000,
+        "eval_count": 78,
+        "eval_duration": 2008069000
+      }
+    },
+    {
+      "name": "_DSC1426.jpg",
+      "order": "new",
+      "edge": 512,
+      "image": true,
+      "dimensions": [
+        512,
+        339
+      ],
+      "elapsedMs": 8261,
+      "status": 200,
+      "result": {
+        "reason": "The photo does not meet the primary requirement as it is not illuminated by warm light; the lighting is neutral and even, typical of a clear day, and there are no indications of orange or golden tones. The subject, the sign, is not a person and therefore does not have facial expressions to evaluate.",
+        "decision": "cut"
+      },
+      "data": {
+        "model": "qwen3-vl:2b-instruct",
+        "created_at": "2026-09-15T00:50:19.015552Z",
+        "response": "{\n  \"reason\": \"The photo does not meet the primary requirement as it is not illuminated by warm light; the lighting is neutral and even, typical of a clear day, and there are no indications of orange or golden tones. The subject, the sign, is not a person and therefore does not have facial expressions to evaluate.\",\n  \"decision\": \"cut\"\n}",
+        "done": true,
+        "done_reason": "stop",
+        "total_duration": 8237202875,
+        "load_duration": 1792458,
+        "prompt_eval_count": 1265,
+        "prompt_eval_cached_count": 4,
+        "prompt_eval_duration": 6271114000,
+        "eval_count": 76,
+        "eval_duration": 1897577000
+      }
+    },
+    {
+      "name": "_DSC1697.jpg",
+      "order": "new",
+      "edge": 512,
+      "image": true,
+      "dimensions": [
+        512,
+        339
+      ],
+      "elapsedMs": 8132,
+      "status": 200,
+      "result": {
+        "reason": "The photo features a bison in a natural, grassy environment under warm, golden-toned light, which aligns with the primary requirement. The bison's facial expression appears natural and unposed, and its eyes are focused and clear. The lighting and subject are well-captured, meeting the criteria for a successful culling.",
+        "decision": "keep"
+      },
+      "data": {
+        "model": "qwen3-vl:2b-instruct",
+        "created_at": "2026-09-15T00:50:27.159384Z",
+        "response": "{\n  \"reason\": \"The photo features a bison in a natural, grassy environment under warm, golden-toned light, which aligns with the primary requirement. The bison's facial expression appears natural and unposed, and its eyes are focused and clear. The lighting and subject are well-captured, meeting the criteria for a successful culling.\",\n  \"decision\": \"keep\"\n}",
+        "done": true,
+        "done_reason": "stop",
+        "total_duration": 8108613333,
+        "load_duration": 2880666,
+        "prompt_eval_count": 1265,
+        "prompt_eval_cached_count": 4,
+        "prompt_eval_duration": 6062908000,
+        "eval_count": 82,
+        "eval_duration": 1971856000
+      }
+    },
+    {
+      "name": "_DSC1701.jpg",
+      "order": "new",
+      "edge": 512,
+      "image": true,
+      "dimensions": [
+        512,
+        339
+      ],
+      "elapsedMs": 8210,
+      "status": 200,
+      "result": {
+        "reason": "The photo features a bison in a natural setting with a warm, golden-toned light, which is consistent with the description of 'warm light'. The bison's facial expression appears natural and unposed, with its eyes focused and clear, meeting the criteria for 'candid expressions' and 'sharp eyes'. Therefore, the photo satisfies the primary requirement.",
+        "decision": "keep"
+      },
+      "data": {
+        "model": "qwen3-vl:2b-instruct",
+        "created_at": "2026-09-15T00:50:35.370456Z",
+        "response": "{\n  \"reason\": \"The photo features a bison in a natural setting with a warm, golden-toned light, which is consistent with the description of 'warm light'. The bison's facial expression appears natural and unposed, with its eyes focused and clear, meeting the criteria for 'candid expressions' and 'sharp eyes'. Therefore, the photo satisfies the primary requirement.\",\n  \"decision\": \"keep\"\n}",
+        "done": true,
+        "done_reason": "stop",
+        "total_duration": 8193920375,
+        "load_duration": 2250209,
+        "prompt_eval_count": 1265,
+        "prompt_eval_cached_count": 4,
+        "prompt_eval_duration": 6019436000,
+        "eval_count": 87,
+        "eval_duration": 2107688000
+      }
+    },
+    {
+      "name": "_DSC1736.jpg",
+      "order": "new",
+      "edge": 512,
+      "image": true,
+      "dimensions": [
+        512,
+        339
+      ],
+      "elapsedMs": 8491,
+      "status": 200,
+      "result": {
+        "reason": "The photo depicts a scenic canyon with a river flowing through it, illuminated by warm, golden-toned light. The lighting appears natural and consistent with a sunny day, casting shadows that enhance the texture of the rock formations. The subject, the canyon and river, is not a person, so the criteria for 'candid expressions' and 'sharp eyes' are not applicable. Therefore, the photo does not meet the primary requirement.",
+        "decision": "cut"
+      },
+      "data": {
+        "model": "qwen3-vl:2b-instruct",
+        "created_at": "2026-09-15T00:50:43.86061Z",
+        "response": "{\n  \"reason\": \"The photo depicts a scenic canyon with a river flowing through it, illuminated by warm, golden-toned light. The lighting appears natural and consistent with a sunny day, casting shadows that enhance the texture of the rock formations. The subject, the canyon and river, is not a person, so the criteria for 'candid expressions' and 'sharp eyes' are not applicable. Therefore, the photo does not meet the primary requirement.\",\n  \"decision\": \"cut\"\n}",
+        "done": true,
+        "done_reason": "stop",
+        "total_duration": 8473432708,
+        "load_duration": 5234125,
+        "prompt_eval_count": 1265,
+        "prompt_eval_cached_count": 4,
+        "prompt_eval_duration": 6014349000,
+        "eval_count": 101,
+        "eval_duration": 2386203000
+      }
+    },
+    {
+      "name": "_DSC1901.jpg",
+      "order": "new",
+      "edge": 512,
+      "image": true,
+      "dimensions": [
+        512,
+        339
+      ],
+      "elapsedMs": 7873,
+      "status": 200,
+      "result": {
+        "reason": "The photo depicts a serene landscape of a body of water under a clear blue sky with distant mountains. The lighting is natural and bright, but there is no visible orange or golden toned light, and the subject is not a person. Therefore, the photo does not meet the primary requirement.",
+        "decision": "cut"
+      },
+      "data": {
+        "model": "qwen3-vl:2b-instruct",
+        "created_at": "2026-09-15T00:50:51.735897Z",
+        "response": "{\n  \"reason\": \"The photo depicts a serene landscape of a body of water under a clear blue sky with distant mountains. The lighting is natural and bright, but there is no visible orange or golden toned light, and the subject is not a person. Therefore, the photo does not meet the primary requirement.\",\n  \"decision\": \"cut\"\n}",
+        "done": true,
+        "done_reason": "stop",
+        "total_duration": 7858269208,
+        "load_duration": 1995750,
+        "prompt_eval_count": 1265,
+        "prompt_eval_cached_count": 4,
+        "prompt_eval_duration": 6093451000,
+        "eval_count": 72,
+        "eval_duration": 1692507000
+      }
+    }
+  ],
+  "batch": [
+    {
+      "name": "_DSC1403.jpg",
+      "order": "new",
+      "edge": 768,
+      "image": true,
+      "dimensions": [
+        768,
+        509
+      ],
+      "elapsedMs": 2701,
+      "status": 200,
+      "result": {
+        "reason": "The photo does not meet the primary requirement because it does not have warm light or golden tones. The lighting is natural daylight, and the scene is evenly illuminated with no visible orange or golden tint. The subject, the sign, is not a person and therefore does not have facial expressions to evaluate. The image is a landscape with a sign, and the primary requirement is not met.",
+        "decision": "cut"
+      },
+      "data": {
+        "model": "qwen3-vl:2b-instruct",
+        "created_at": "2026-09-15T00:50:54.442776Z",
+        "response": "{\n  \"reason\": \"The photo does not meet the primary requirement because it does not have warm light or golden tones. The lighting is natural daylight, and the scene is evenly illuminated with no visible orange or golden tint. The subject, the sign, is not a person and therefore does not have facial expressions to evaluate. The image is a landscape with a sign, and the primary requirement is not met.\",\n  \"decision\": \"cut\"\n}",
+        "done": true,
+        "done_reason": "stop",
+        "total_duration": 2691642291,
+        "load_duration": 2813166,
+        "prompt_eval_count": 1265,
+        "prompt_eval_cached_count": 1264,
+        "prompt_eval_duration": 32912000,
+        "eval_count": 91,
+        "eval_duration": 2189256000
+      }
+    },
+    {
+      "name": "_DSC1426.jpg",
+      "order": "new",
+      "edge": 768,
+      "image": true,
+      "dimensions": [
+        768,
+        509
+      ],
+      "elapsedMs": 3309,
+      "status": 200,
+      "result": {
+        "reason": "The photo does not meet the primary requirement as it is not illuminated by warm, golden-toned light. The scene is captured under bright, even daylight, which is typical of a clear, sunny day. The lighting is not orange or golden in tone, and there are no indications of a warm light source or atmospheric conditions that would create such a tone. The subject, the sign, is not a person and therefore does not have facial expressions to evaluate.",
+        "decision": "cut"
+      },
+      "data": {
+        "model": "qwen3-vl:2b-instruct",
+        "created_at": "2026-09-15T00:50:57.746055Z",
+        "response": "{\n  \"reason\": \"The photo does not meet the primary requirement as it is not illuminated by warm, golden-toned light. The scene is captured under bright, even daylight, which is typical of a clear, sunny day. The lighting is not orange or golden in tone, and there are no indications of a warm light source or atmospheric conditions that would create such a tone. The subject, the sign, is not a person and therefore does not have facial expressions to evaluate.\",\n  \"decision\": \"cut\"\n}",
+        "done": true,
+        "done_reason": "stop",
+        "total_duration": 3292464459,
+        "load_duration": 1753417,
+        "prompt_eval_count": 1265,
+        "prompt_eval_cached_count": 1183,
+        "prompt_eval_duration": 194691000,
+        "eval_count": 106,
+        "eval_duration": 2576997000
+      }
+    },
+    {
+      "name": "_DSC1697.jpg",
+      "order": "new",
+      "edge": 768,
+      "image": true,
+      "dimensions": [
+        768,
+        509
+      ],
+      "elapsedMs": 2666,
+      "status": 200,
+      "result": {
+        "reason": "The photo features a bison in a grassy field under warm, golden-toned light, which aligns with the primary requirement. The bison's facial expression appears natural and unposed, and its eyes are focused and clear. The lighting is consistent with the golden hue, and the subject is captured in a candid moment, meeting all the criteria.",
+        "decision": "keep"
+      },
+      "data": {
+        "model": "qwen3-vl:2b-instruct",
+        "created_at": "2026-09-15T00:51:00.414461Z",
+        "response": "{\n  \"reason\": \"The photo features a bison in a grassy field under warm, golden-toned light, which aligns with the primary requirement. The bison's facial expression appears natural and unposed, and its eyes are focused and clear. The lighting is consistent with the golden hue, and the subject is captured in a candid moment, meeting all the criteria.\",\n  \"decision\": \"keep\"\n}",
+        "done": true,
+        "done_reason": "stop",
+        "total_duration": 2651963083,
+        "load_duration": 1954833,
+        "prompt_eval_count": 1265,
+        "prompt_eval_cached_count": 1264,
+        "prompt_eval_duration": 30423000,
+        "eval_count": 86,
+        "eval_duration": 2084371999
+      }
+    },
+    {
+      "name": "_DSC1701.jpg",
+      "order": "new",
+      "edge": 768,
+      "image": true,
+      "dimensions": [
+        768,
+        509
+      ],
+      "elapsedMs": 2889,
+      "status": 200,
+      "result": {
+        "reason": "The photo features a bison walking on a gravel path with a natural, unposed facial expression and sharp eyes. The lighting appears to be warm and golden, suggesting a natural, possibly late afternoon light. The overall scene is candid and captures the bison in a natural environment, which aligns with the primary requirement.",
+        "decision": "keep"
+      },
+      "data": {
+        "model": "qwen3-vl:2b-instruct",
+        "created_at": "2026-09-15T00:51:03.303804Z",
+        "response": "{\n  \"reason\": \"The photo features a bison walking on a gravel path with a natural, unposed facial expression and sharp eyes. The lighting appears to be warm and golden, suggesting a natural, possibly late afternoon light. The overall scene is candid and captures the bison in a natural environment, which aligns with the primary requirement.\",\n  \"decision\": \"keep\"\n}",
+        "done": true,
+        "done_reason": "stop",
+        "total_duration": 2873560625,
+        "load_duration": 2138083,
+        "prompt_eval_count": 1265,
+        "prompt_eval_cached_count": 1183,
+        "prompt_eval_duration": 200879000,
+        "eval_count": 79,
+        "eval_duration": 2028612000
+      }
+    },
+    {
+      "name": "_DSC1736.jpg",
+      "order": "new",
+      "edge": 768,
+      "image": true,
+      "dimensions": [
+        768,
+        509
+      ],
+      "elapsedMs": 3453,
+      "status": 200,
+      "result": {
+        "reason": "The photo depicts a scenic canyon with a river flowing through it, illuminated by warm, golden light. The lighting is consistent with a natural, unposed scene, and the subject is the landscape itself, not a person. The primary requirement is not met because the photo does not feature a subject with natural, unposed facial expressions or sharp eyes. The image is of a landscape, not a person, so the criteria for 'candid expressions' and 'sharp eyes' are not applicable.",
+        "decision": "cut"
+      },
+      "data": {
+        "model": "qwen3-vl:2b-instruct",
+        "created_at": "2026-09-15T00:51:06.757699Z",
+        "response": "{\n  \"reason\": \"The photo depicts a scenic canyon with a river flowing through it, illuminated by warm, golden light. The lighting is consistent with a natural, unposed scene, and the subject is the landscape itself, not a person. The primary requirement is not met because the photo does not feature a subject with natural, unposed facial expressions or sharp eyes. The image is of a landscape, not a person, so the criteria for 'candid expressions' and 'sharp eyes' are not applicable.\",\n  \"decision\": \"cut\"\n}",
+        "done": true,
+        "done_reason": "stop",
+        "total_duration": 3439271541,
+        "load_duration": 3523166,
+        "prompt_eval_count": 1265,
+        "prompt_eval_cached_count": 1264,
+        "prompt_eval_duration": 35647000,
+        "eval_count": 113,
+        "eval_duration": 2842198000
+      }
+    },
+    {
+      "name": "_DSC1824.jpg",
+      "order": "new",
+      "edge": 768,
+      "image": true,
+      "dimensions": [
+        768,
+        509
+      ],
+      "elapsedMs": 9564,
+      "status": 200,
+      "result": {
+        "reason": "The photo features warm, golden light coming from the sun, which is positioned behind the landscape and illuminating the scene with a soft, orange-toned glow. This lighting is consistent with the description of 'warm light'. The subject, a person on a wooden walkway, appears to have a natural, unposed facial expression and their eyes are focused and clear, meeting the criteria for 'candid expressions' and 'sharp eyes'. Therefore, the photo satisfies the primary requirement.",
+        "decision": "keep"
+      },
+      "data": {
+        "model": "qwen3-vl:2b-instruct",
+        "created_at": "2026-09-15T00:51:16.28481Z",
+        "response": "{\n  \"reason\": \"The photo features warm, golden light coming from the sun, which is positioned behind the landscape and illuminating the scene with a soft, orange-toned glow. This lighting is consistent with the description of 'warm light'. The subject, a person on a wooden walkway, appears to have a natural, unposed facial expression and their eyes are focused and clear, meeting the criteria for 'candid expressions' and 'sharp eyes'. Therefore, the photo satisfies the primary requirement.\",\n  \"decision\": \"keep\"\n}",
+        "done": true,
+        "done_reason": "stop",
+        "total_duration": 9508526334,
+        "load_duration": 3197917,
+        "prompt_eval_count": 1265,
+        "prompt_eval_cached_count": 4,
+        "prompt_eval_duration": 6161183000,
+        "eval_count": 111,
+        "eval_duration": 3259767000
+      }
+    },
+    {
+      "name": "_DSC1901.jpg",
+      "order": "new",
+      "edge": 768,
+      "image": true,
+      "dimensions": [
+        768,
+        509
+      ],
+      "elapsedMs": 3037,
+      "status": 200,
+      "result": {
+        "reason": "The photo depicts a serene landscape of a body of water with distant mountains under a clear blue sky. The lighting is natural and appears to be bright daylight, but there is no visible orange or golden tone in the scene. The image does not have any subjects with natural, unposed facial expressions or sharp eyes. Therefore, it does not meet the primary requirement.",
+        "decision": "cut"
+      },
+      "data": {
+        "model": "qwen3-vl:2b-instruct",
+        "created_at": "2026-09-15T00:51:19.357269Z",
+        "response": "{\n  \"reason\": \"The photo depicts a serene landscape of a body of water with distant mountains under a clear blue sky. The lighting is natural and appears to be bright daylight, but there is no visible orange or golden tone in the scene. The image does not have any subjects with natural, unposed facial expressions or sharp eyes. Therefore, it does not meet the primary requirement.\",\n  \"decision\": \"cut\"\n}",
+        "done": true,
+        "done_reason": "stop",
+        "total_duration": 3009555334,
+        "load_duration": 7343750,
+        "prompt_eval_count": 1265,
+        "prompt_eval_cached_count": 1183,
+        "prompt_eval_duration": 209786000,
+        "eval_count": 87,
+        "eval_duration": 2251492000
+      }
+    },
+    {
+      "name": "_DSC1959.jpg",
+      "order": "new",
+      "edge": 768,
+      "image": true,
+      "dimensions": [
+        768,
+        509
+      ],
+      "elapsedMs": 8458,
+      "status": 200,
+      "result": {
+        "reason": "The photo features a close-up of a purple flower with a yellow center growing in gravel, with several dried, withered flowers in the background. The lighting appears to be natural sunlight, but the overall tone of the image is not distinctly orange or golden, and the subject is not a face. Therefore, the primary requirement is not satisfied.",
+        "decision": "cut"
+      },
+      "data": {
+        "model": "qwen3-vl:2b-instruct",
+        "created_at": "2026-09-15T00:51:27.816671Z",
+        "response": "{\n  \"reason\": \"The photo features a close-up of a purple flower with a yellow center growing in gravel, with several dried, withered flowers in the background. The lighting appears to be natural sunlight, but the overall tone of the image is not distinctly orange or golden, and the subject is not a face. Therefore, the primary requirement is not satisfied.\",\n  \"decision\": \"cut\"\n}",
+        "done": true,
+        "done_reason": "stop",
+        "total_duration": 8437122500,
+        "load_duration": 2706667,
+        "prompt_eval_count": 1265,
+        "prompt_eval_cached_count": 4,
+        "prompt_eval_duration": 6282113000,
+        "eval_count": 83,
+        "eval_duration": 2073860999
+      }
+    },
+    {
+      "name": "_DSC2032.jpg",
+      "order": "new",
+      "edge": 768,
+      "image": true,
+      "dimensions": [
+        768,
+        509
+      ],
+      "elapsedMs": 8599,
+      "status": 200,
+      "result": {
+        "reason": "The photo depicts a geyser eruption with a plume of steam against a blue sky with clouds. The lighting is bright and natural, with no visible orange or golden tones. The subject is a geyser, not a person, so the criteria for 'candid expressions' and 'sharp eyes' are not applicable. Therefore, the photo does not meet the primary requirement.",
+        "decision": "cut"
+      },
+      "data": {
+        "model": "qwen3-vl:2b-instruct",
+        "created_at": "2026-09-15T00:51:36.380656Z",
+        "response": "{\n  \"reason\": \"The photo depicts a geyser eruption with a plume of steam against a blue sky with clouds. The lighting is bright and natural, with no visible orange or golden tones. The subject is a geyser, not a person, so the criteria for 'candid expressions' and 'sharp eyes' are not applicable. Therefore, the photo does not meet the primary requirement.\",\n  \"decision\": \"cut\"\n}",
+        "done": true,
+        "done_reason": "stop",
+        "total_duration": 8542589917,
+        "load_duration": 4546083,
+        "prompt_eval_count": 1265,
+        "prompt_eval_cached_count": 4,
+        "prompt_eval_duration": 6191556000,
+        "eval_count": 92,
+        "eval_duration": 2278105000
+      }
+    },
+    {
+      "name": "_DSC2038.jpg",
+      "order": "new",
+      "edge": 768,
+      "image": true,
+      "dimensions": [
+        768,
+        509
+      ],
+      "elapsedMs": 8405,
+      "status": 200,
+      "result": {
+        "reason": "The photo features a bison in a natural landscape with a warm, golden-toned light, which is characteristic of the lighting in a natural setting during the golden hour. The bison appears to be in a natural, unposed state with its eyes focused and clear, meeting the criteria for warm light and candid expressions. Therefore, the photo satisfies the primary requirement.",
+        "decision": "keep"
+      },
+      "data": {
+        "model": "qwen3-vl:2b-instruct",
+        "created_at": "2026-09-15T00:51:44.828259Z",
+        "response": "{\n  \"reason\": \"The photo features a bison in a natural landscape with a warm, golden-toned light, which is characteristic of the lighting in a natural setting during the golden hour. The bison appears to be in a natural, unposed state with its eyes focused and clear, meeting the criteria for warm light and candid expressions. Therefore, the photo satisfies the primary requirement.\",\n  \"decision\": \"keep\"\n}",
+        "done": true,
+        "done_reason": "stop",
+        "total_duration": 8379663084,
+        "load_duration": 12237125,
+        "prompt_eval_count": 1265,
+        "prompt_eval_cached_count": 4,
+        "prompt_eval_duration": 6103639000,
+        "eval_count": 88,
+        "eval_duration": 2180481000
+      }
+    }
+  ],
+  "warmup": {
+    "name": "_DSC1403.jpg",
+    "order": "new",
+    "edge": 768,
+    "image": false,
+    "elapsedMs": 5099,
+    "status": 200,
+    "result": {
+      "reason": "The photo features warm, golden-toned lighting, which aligns with the primary requirement. The subject has natural, unposed facial expressions and sharp, focused eyes, meeting the secondary criteria as well.",
+      "decision": "keep"
+    },
+    "data": {
+      "model": "qwen3-vl:2b-instruct",
+      "created_at": "2026-09-15T00:48:55.525662Z",
+      "response": "{\"reason\": \"The photo features warm, golden-toned lighting, which aligns with the primary requirement. The subject has natural, unposed facial expressions and sharp, focused eyes, meeting the secondary criteria as well.\", \"decision\": \"keep\"}",
+      "done": true,
+      "done_reason": "stop",
+      "total_duration": 4954833833,
+      "load_duration": 3468121041,
+      "prompt_eval_count": 183,
+      "prompt_eval_cached_count": 0,
+      "prompt_eval_duration": 359276000,
+      "eval_count": 51,
+      "eval_duration": 1116507000
+    }
+  },
+  "finishedAt": "2026-09-15T00:51:44.841Z",
+  "coldTiming": [
+    {
+      "name": "_DSC1403.jpg",
+      "order": "new",
+      "edge": 768,
+      "image": true,
+      "dimensions": [
+        768,
+        509
+      ],
+      "elapsedMs": 10479,
+      "status": 200,
+      "result": {
+        "reason": "The photo does not meet the primary requirement because it does not have warm light or golden tones. The lighting is natural daylight, and the scene is evenly illuminated with no visible orange or golden tint. The subject, the sign, is not a person and therefore does not have facial expressions to evaluate. The image is a landscape with a sign, and the primary requirement is not met.",
+        "decision": "cut"
+      },
+      "data": {
+        "model": "qwen3-vl:2b-instruct",
+        "created_at": "2026-09-15T00:52:01.50932Z",
+        "response": "{\n  \"reason\": \"The photo does not meet the primary requirement because it does not have warm light or golden tones. The lighting is natural daylight, and the scene is evenly illuminated with no visible orange or golden tint. The subject, the sign, is not a person and therefore does not have facial expressions to evaluate. The image is a landscape with a sign, and the primary requirement is not met.\",\n  \"decision\": \"cut\"\n}",
+        "done": true,
+        "done_reason": "stop",
+        "total_duration": 10469679333,
+        "load_duration": 2189003458,
+        "prompt_eval_count": 1265,
+        "prompt_eval_cached_count": 0,
+        "prompt_eval_duration": 6100819000,
+        "eval_count": 91,
+        "eval_duration": 2157421000
+      }
+    },
+    {
+      "name": "_DSC1403.jpg",
+      "order": "new",
+      "edge": 768,
+      "image": false,
+      "elapsedMs": 2810,
+      "status": 200,
+      "result": {
+        "reason": "The photo features warm, golden-toned lighting, which aligns with the primary requirement. The subject has natural, unposed facial expressions and sharp, focused eyes, meeting the secondary criteria as well.",
+        "decision": "keep"
+      },
+      "data": {
+        "model": "qwen3-vl:2b-instruct",
+        "created_at": "2026-09-15T00:52:04.327295Z",
+        "response": "{\"reason\": \"The photo features warm, golden-toned lighting, which aligns with the primary requirement. The subject has natural, unposed facial expressions and sharp, focused eyes, meeting the secondary criteria as well.\", \"decision\": \"keep\"}",
+        "done": true,
+        "done_reason": "stop",
+        "total_duration": 2802806291,
+        "load_duration": 1344713458,
+        "prompt_eval_count": 183,
+        "prompt_eval_cached_count": 0,
+        "prompt_eval_duration": 349416000,
+        "eval_count": 51,
+        "eval_duration": 1106611000
+      }
+    }
+  ],
+  "summary": {
+    "Old order, 768px": {
+      "n": 6,
+      "medianMs": 1853.0,
+      "p95NearestRankMs": 8773,
+      "totalMs": 23771,
+      "errors": 0,
+      "promptEvalCounts": [
+        1265,
+        1265,
+        1265,
+        1265,
+        1265,
+        1265
+      ],
+      "cachedPromptTokens": [
+        1183,
+        1183,
+        4,
+        1183,
+        4,
+        1183
+      ]
+    },
+    "Reason first, 768px": {
+      "n": 6,
+      "medianMs": 5655.5,
+      "p95NearestRankMs": 8776,
+      "totalMs": 33477,
+      "errors": 0,
+      "promptEvalCounts": [
+        1265,
+        1265,
+        1265,
+        1265,
+        1265,
+        1265
+      ],
+      "cachedPromptTokens": [
+        1183,
+        4,
+        1183,
+        4,
+        1183,
+        4
+      ]
+    },
+    "Reason first, 512px": {
+      "n": 6,
+      "medianMs": 8235.5,
+      "p95NearestRankMs": 8491,
+      "totalMs": 49295,
+      "errors": 0,
+      "promptEvalCounts": [
+        1265,
+        1265,
+        1265,
+        1265,
+        1265,
+        1265
+      ],
+      "cachedPromptTokens": [
+        4,
+        4,
+        4,
+        4,
+        4,
+        4
+      ]
+    },
+    "10-photo repeat, reason first 768px": {
+      "n": 10,
+      "medianMs": 3381.0,
+      "p95NearestRankMs": 9564,
+      "totalMs": 53081,
+      "errors": 0,
+      "promptEvalCounts": [
+        1265,
+        1265,
+        1265,
+        1265,
+        1265,
+        1265,
+        1265,
+        1265,
+        1265,
+        1265
+      ],
+      "cachedPromptTokens": [
+        1264,
+        1183,
+        1264,
+        1183,
+        1264,
+        4,
+        1183,
+        4,
+        4,
+        4
+      ]
+    }
+  },
+  "assessment": {
+    "definition": "A keep contradicts an acknowledged absent/failed HIGH requirement, or a cut contradicts a reason stating all requirements are satisfied. Separately count explicit failure-verdict contradictions versus waived required facial features. Agreement is not visual ground truth.",
+    "old768": {
+      "contradictions": 3,
+      "explicitContradictions": 1,
+      "photos": {
+        "_DSC1403.jpg": "Keep despite acknowledging a sign has no facial expressions; candid expressions is HIGH.",
+        "_DSC1426.jpg": "Keep despite explicitly saying required warm light is absent. Also invents facial expression and sharp eyes on a sign.",
+        "_DSC1736.jpg": "Keep while treating HIGH candid expressions/sharp eyes requirements as not applicable to the landscape."
+      }
+    },
+    "new768": {
+      "contradictions": 0,
+      "explicitContradictions": 0
+    },
+    "new512": {
+      "contradictions": 0,
+      "explicitContradictions": 0
+    }
+  },
+  "methodNotes": [
+    "Chrome was closed; pgrep found no Chrome/Vite processes before run; only proxy ran alongside the Node harness and Ollama.",
+    "JPEGs precomputed using actual encodeForModel; 512px uses a harness-local source copy with only 768 replaced by 512. No product encoder change.",
+    "Same saved criteria, no chips, model qwen3-vl:2b-instruct, seed 42, temperature 0, num_predict 120, num_ctx 4096, think false, keep_alive 10m.",
+    "Order alternated across paired photos. Anchor was already cached from image-cost probe. Cache hits differ between variants; timing medians are observed values, not a fair speed ranking. Encoding/preparation and warmup excluded.",
+    "Cold timing pair unloads same model before each call: cached prompt tokens zero for both; prompt_eval_duration excludes model loading. Delta includes vision processing AND extra language-model prefill, not isolated encoder time.",
+    "10-photo run repeats earlier inputs; cache reuse affects timing. No errors occurred. Prior 502 cause is not proven by one successful rerun."
+  ]
+}

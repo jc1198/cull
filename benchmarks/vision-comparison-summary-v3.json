@@ -1,0 +1,108 @@
+{
+  "local": {
+    "majorityCorrect": 9,
+    "retries": 0,
+    "invalidCalls": 0,
+    "unresolvedPhotos": [],
+    "keepsFound": 3,
+    "falseKeeps": 1,
+    "selfConsistency": 10,
+    "consistency": {
+      "tphoto1.jpg": true,
+      "tphoto2.jpg": true,
+      "tphoto3.jpg": true,
+      "tphoto4.jpeg": true,
+      "tphoto5.jpeg": true,
+      "tphoto6.JPG": true,
+      "tphoto7.jpeg": true,
+      "tphoto8.jpg": true,
+      "tphoto9.jpg": true,
+      "tphoto10.jpg": true
+    },
+    "categories": {
+      "portrait-warm": {
+        "correct": 3,
+        "total": 3,
+        "kept": 3
+      },
+      "portrait-poor": {
+        "correct": 1,
+        "total": 2,
+        "kept": 1
+      },
+      "flat-cold": {
+        "correct": 2,
+        "total": 2,
+        "kept": 0
+      },
+      "nonportrait-warm": {
+        "correct": 3,
+        "total": 3,
+        "kept": 0
+      }
+    },
+    "medianMs": 8227.5,
+    "p95Ms": 17345,
+    "usage": {},
+    "runScores": [
+      9,
+      9,
+      9
+    ]
+  },
+  "cloud": {
+    "majorityCorrect": 9,
+    "retries": 0,
+    "invalidCalls": 0,
+    "unresolvedPhotos": [],
+    "keepsFound": 3,
+    "falseKeeps": 1,
+    "selfConsistency": 9,
+    "consistency": {
+      "tphoto1.jpg": true,
+      "tphoto2.jpg": true,
+      "tphoto3.jpg": true,
+      "tphoto4.jpeg": true,
+      "tphoto5.jpeg": false,
+      "tphoto6.JPG": true,
+      "tphoto7.jpeg": true,
+      "tphoto8.jpg": true,
+      "tphoto9.jpg": true,
+      "tphoto10.jpg": true
+    },
+    "categories": {
+      "portrait-warm": {
+        "correct": 3,
+        "total": 3,
+        "kept": 3
+      },
+      "portrait-poor": {
+        "correct": 1,
+        "total": 2,
+        "kept": 1
+      },
+      "flat-cold": {
+        "correct": 2,
+        "total": 2,
+        "kept": 0
+      },
+      "nonportrait-warm": {
+        "correct": 3,
+        "total": 3,
+        "kept": 0
+      }
+    },
+    "medianMs": 1583.5,
+    "p95Ms": 12298,
+    "usage": {
+      "promptTokenCount": 38736,
+      "candidatesTokenCount": 1291,
+      "totalTokenCount": 40027
+    },
+    "runScores": [
+      8,
+      9,
+      9
+    ]
+  }
+}

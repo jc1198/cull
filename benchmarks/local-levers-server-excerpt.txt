@@ -1,0 +1,12 @@
+load_tensors: offloaded 29/29 layers to GPU
+clip_model_loader: has vision encoder
+clip_ctx: CLIP using MTL0 backend
+load_hparams: projector:          qwen3vl_merger
+load_hparams: n_layer:            24
+load_hparams: image_size:         768
+load_hparams: patch_size:         16
+load_hparams: image_min_pixels:   1048576 (custom value)
+load_hparams: image_max_pixels:   4194304
+reserve_compute_meta:       MTL0 compute buffer size =   355.55 MiB
+reserve_compute_meta:        CPU compute buffer size =    24.93 MiB
+reserve_compute_meta: graph splits = 1, nodes = 766

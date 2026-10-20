@@ -1,0 +1,2535 @@
+{
+  "metadata": {
+    "localModel": "qwen3-vl:2b-instruct",
+    "cloudModel": "gemini-flash-lite-latest",
+    "criteria": [
+      {
+        "signal": "portrait",
+        "weight": "high",
+        "description": "photo shows a human subject with a face and eyes"
+      },
+      {
+        "signal": "golden hour light",
+        "weight": "high",
+        "description": "photo has warm, golden light casting soft shadows"
+      },
+      {
+        "signal": "candid expression",
+        "weight": "medium",
+        "description": "subject's face shows natural, unposed emotion"
+      },
+      {
+        "signal": "sharp eyes",
+        "weight": "high",
+        "description": "subject's eyes are focused and expressive"
+      }
+    ],
+    "prompt": "Look at this photo carefully.\n\nYou are a photo culling assistant. The PRIMARY requirement is:\nportrait: photo shows a human subject with a face and eyes, golden hour light: photo has warm, golden light casting soft shadows, sharp eyes: subject's eyes are focused and expressive\n\nIf the photo does NOT satisfy the primary requirement, it must be cut regardless of anything else.\n\nSecondary criteria (only considered if primary is met):\n- candid expression: subject's face shows natural, unposed emotion\n\nReply with ONLY JSON matching this schema: {\"type\":\"object\",\"properties\":{\"reason\":{\"type\":\"string\"},\"decision\":{\"type\":\"string\",\"enum\":[\"keep\",\"cut\"]}},\"required\":[\"reason\",\"decision\"]}.\n{\"reason\": \"one sentence describing what you see and why it meets or fails the primary requirement\", \"decision\": \"keep\"}\n\nUse \"keep\" only if the primary requirement is satisfied.\nUse \"cut\" if the primary requirement is not satisfied.",
+    "localTemplate": {
+      "model": "qwen3-vl:2b-instruct",
+      "prompt": "Look at this photo carefully.\n\nYou are a photo culling assistant. The PRIMARY requirement is:\nportrait: photo shows a human subject with a face and eyes, golden hour light: photo has warm, golden light casting soft shadows, sharp eyes: subject's eyes are focused and expressive\n\nIf the photo does NOT satisfy the primary requirement, it must be cut regardless of anything else.\n\nSecondary criteria (only considered if primary is met):\n- candid expression: subject's face shows natural, unposed emotion\n\nReply with ONLY JSON matching this schema: {\"type\":\"object\",\"properties\":{\"reason\":{\"type\":\"string\"},\"decision\":{\"type\":\"string\",\"enum\":[\"keep\",\"cut\"]}},\"required\":[\"reason\",\"decision\"]}.\n{\"reason\": \"one sentence describing what you see and why it meets or fails the primary requirement\", \"decision\": \"keep\"}\n\nUse \"keep\" only if the primary requirement is satisfied.\nUse \"cut\" if the primary requirement is not satisfied.",
+      "stream": false,
+      "think": false,
+      "keep_alive": "10m",
+      "format": {
+        "type": "object",
+        "properties": {
+          "reason": {
+            "type": "string"
+          },
+          "decision": {
+            "type": "string",
+            "enum": [
+              "keep",
+              "cut"
+            ]
+          }
+        },
+        "required": [
+          "reason",
+          "decision"
+        ]
+      },
+      "options": {
+        "num_predict": 250,
+        "temperature": 0,
+        "num_ctx": 4096
+      }
+    },
+    "cloudConfig": {
+      "temperature": 0,
+      "responseMimeType": "application/json",
+      "responseSchema": {
+        "type": "object",
+        "properties": {
+          "reason": {
+            "type": "string"
+          },
+          "decision": {
+            "type": "string",
+            "enum": [
+              "keep",
+              "cut"
+            ]
+          }
+        },
+        "required": [
+          "reason",
+          "decision"
+        ],
+        "propertyOrdering": [
+          "reason",
+          "decision"
+        ]
+      }
+    },
+    "sourceHash": "ab6cf3852c543dd6174470f64303e38178bb9dbbd1a7c5d5876e893a3d50cb36",
+    "encoderHash": "5540775434a17f3c59b0ee4d175f388faeb1160dcbac5c4d7d810c594ac0c9dd",
+    "imageHashes": {
+      "tphoto1.jpg": {
+        "dimensions": [
+          768,
+          768
+        ],
+        "sha256": "4ead6db0451af282c67f87dab3a3a2df73170ef5f9728029873edb15ac0c03c2"
+      },
+      "tphoto2.jpg": {
+        "dimensions": [
+          768,
+          438
+        ],
+        "sha256": "6ca3d0cd2239ca2099992183b421c64948cc3adb9a7038603271bb616670c5fa"
+      },
+      "tphoto3.jpg": {
+        "dimensions": [
+          768,
+          512
+        ],
+        "sha256": "b67ff27579cf03fa70e296c50ed8a4c7e53a7705d1f819052140a4eb3ad6ba24"
+      },
+      "tphoto4.jpeg": {
+        "dimensions": [
+          576,
+          768
+        ],
+        "sha256": "d213cbdc1f29e75f0c03d1843e638820b173e2af585c5e76b36be5eea2c538dd"
+      },
+      "tphoto5.jpeg": {
+        "dimensions": [
+          768,
+          576
+        ],
+        "sha256": "894a4982e851c3cd649aadbccdd741e31a56711fe6984bd6c0eadb021425475a"
+      },
+      "tphoto6.JPG": {
+        "dimensions": [
+          432,
+          768
+        ],
+        "sha256": "ccd1ffdac144b92ba83f777d5124c3bb04ba9f63a2c0cb9796ce5a516cbd31b9"
+      },
+      "tphoto7.jpeg": {
+        "dimensions": [
+          576,
+          768
+        ],
+        "sha256": "be32f81bc4b4014e06a53fc39b63326f937af84647a514302b3da841341485aa"
+      },
+      "tphoto8.jpg": {
+        "dimensions": [
+          768,
+          509
+        ],
+        "sha256": "7cacdae0cd8fb27707ef15082ea5daf6e092f89bf6015bc43e5ebbe903250871"
+      },
+      "tphoto9.jpg": {
+        "dimensions": [
+          768,
+          509
+        ],
+        "sha256": "2af098a1be914a9f35d1a530c5976624e0a98ac80b609bdf889c71a3884f9784"
+      },
+      "tphoto10.jpg": {
+        "dimensions": [
+          768,
+          509
+        ],
+        "sha256": "d44ed627a2a04b51ac4c351611252bb0b596671ab65596545bad5b91f3f40fdc"
+      }
+    }
+  },
+  "startedAt": "2026-09-23T23:49:57.535Z",
+  "calls": [
+    {
+      "run": 1,
+      "file": "tphoto1.jpg",
+      "arm": "local",
+      "retries": 0,
+      "retryAttempts": [],
+      "startedAt": "2026-09-23T23:49:57.579Z",
+      "status": 200,
+      "data": {
+        "model": "qwen3-vl:2b-instruct",
+        "created_at": "2026-09-23T23:50:08.337938Z",
+        "response": "{\n  \"reason\": \"The photo shows a human subject with a face and eyes, and the lighting is warm and golden, consistent with golden hour light. The subject's eyes are focused and expressive, and the image appears to be a candid expression. Therefore, it meets the primary requirement.\",\n  \"decision\": \"keep\"\n}",
+        "done": true,
+        "done_reason": "stop",
+        "total_duration": 10739450000,
+        "load_duration": 3380025708,
+        "prompt_eval_count": 1226,
+        "prompt_eval_cached_count": 0,
+        "prompt_eval_duration": 5699900000,
+        "eval_count": 68,
+        "eval_duration": 1620926000
+      },
+      "elapsedMs": 10839,
+      "raw": "{\n  \"reason\": \"The photo shows a human subject with a face and eyes, and the lighting is warm and golden, consistent with golden hour light. The subject's eyes are focused and expressive, and the image appears to be a candid expression. Therefore, it meets the primary requirement.\",\n  \"decision\": \"keep\"\n}",
+      "result": {
+        "reason": "The photo shows a human subject with a face and eyes, and the lighting is warm and golden, consistent with golden hour light. The subject's eyes are focused and expressive, and the image appears to be a candid expression. Therefore, it meets the primary requirement.",
+        "decision": "keep"
+      }
+    },
+    {
+      "run": 1,
+      "file": "tphoto1.jpg",
+      "arm": "cloud",
+      "retries": 0,
+      "retryAttempts": [],
+      "startedAt": "2026-09-23T23:50:08.574Z",
+      "status": 200,
+      "data": {
+        "candidates": [
+          {
+            "content": {
+              "parts": [
+                {
+                  "text": "{\n  \"reason\": \"The photo features a human subject bathed in warm golden hour light with closed, peaceful eyes, perfectly satisfying the primary portrait requirement.\",\n  \"decision\": \"keep\"\n}",
+                  "thoughtSignature": "El4KXAFpFH0TtDbIRm2FEvuttSFmP3kJIWfOywa31TCTQBgNzlzUtVMeVQEaeINGMcD9QUfCPJ8W6L0cZM+zMcktxMC3nbQE+1yTXFeTN13O2b4KB5Q757qO6dE+hIYw"
+                }
+              ],
+              "role": "model"
+            },
+            "finishReason": "STOP",
+            "index": 0
+          }
+        ],
+        "usageMetadata": {
+          "promptTokenCount": 1292,
+          "candidatesTokenCount": 42,
+          "totalTokenCount": 1334,
+          "promptTokensDetails": [
+            {
+              "modality": "TEXT",
+              "tokenCount": 203
+            },
+            {
+              "modality": "IMAGE",
+              "tokenCount": 1089
+            }
+          ],
+          "serviceTier": "standard"
+        },
+        "modelVersion": "gemini-3.5-flash-lite",
+        "responseId": "sWW0aq36NOCEjrEP4OuDiQc"
+      },
+      "elapsedMs": 1103,
+      "raw": "{\n  \"reason\": \"The photo features a human subject bathed in warm golden hour light with closed, peaceful eyes, perfectly satisfying the primary portrait requirement.\",\n  \"decision\": \"keep\"\n}",
+      "result": {
+        "reason": "The photo features a human subject bathed in warm golden hour light with closed, peaceful eyes, perfectly satisfying the primary portrait requirement.",
+        "decision": "keep"
+      }
+    },
+    {
+      "run": 1,
+      "file": "tphoto2.jpg",
+      "arm": "cloud",
+      "retries": 0,
+      "retryAttempts": [],
+      "startedAt": "2026-09-23T23:50:10.753Z",
+      "status": 200,
+      "data": {
+        "candidates": [
+          {
+            "content": {
+              "parts": [
+                {
+                  "text": "{\n  \"reason\": \"The photo clearly shows a human subject with sharp, focused eyes in warm golden hour light, satisfying the primary requirement.\",\n  \"decision\": \"keep\"\n}",
+                  "thoughtSignature": "El4KXAFpFH0TpVeGP09ioORJqsUoaMS1EAuNPvHcKv54xuq4vfErW1nn/+QJ26PS9dMU1YFHw5yLJDamSVhlBv+kV/BILdU206guEnFw/AhliNYfVWCEZGlDpYFJKzGP"
+                }
+              ],
+              "role": "model"
+            },
+            "finishReason": "STOP",
+            "index": 0
+          }
+        ],
+        "usageMetadata": {
+          "promptTokenCount": 1303,
+          "candidatesTokenCount": 40,
+          "totalTokenCount": 1343,
+          "promptTokensDetails": [
+            {
+              "modality": "IMAGE",
+              "tokenCount": 1100
+            },
+            {
+              "modality": "TEXT",
+              "tokenCount": 203
+            }
+          ],
+          "serviceTier": "standard"
+        },
+        "modelVersion": "gemini-3.5-flash-lite",
+        "responseId": "s2W0atr-NuDG-8YP9cfi0AI"
+      },
+      "elapsedMs": 1578,
+      "raw": "{\n  \"reason\": \"The photo clearly shows a human subject with sharp, focused eyes in warm golden hour light, satisfying the primary requirement.\",\n  \"decision\": \"keep\"\n}",
+      "result": {
+        "reason": "The photo clearly shows a human subject with sharp, focused eyes in warm golden hour light, satisfying the primary requirement.",
+        "decision": "keep"
+      }
+    },
+    {
+      "run": 1,
+      "file": "tphoto2.jpg",
+      "arm": "local",
+      "retries": 0,
+      "retryAttempts": [],
+      "startedAt": "2026-09-23T23:50:13.408Z",
+      "status": 200,
+      "data": {
+        "model": "qwen3-vl:2b-instruct",
+        "created_at": "2026-09-23T23:50:22.460902Z",
+        "response": "{\n  \"reason\": \"The photo shows a human subject with a face and eyes, and the lighting is warm and golden, consistent with golden hour light. The subject's eyes are focused and expressive, and the image is a portrait. The subject's expression appears natural and unposed, meeting all the criteria for the primary requirement.\",\n  \"decision\": \"keep\"\n}",
+        "done": true,
+        "done_reason": "stop",
+        "total_duration": 9020214417,
+        "load_duration": 27741667,
+        "prompt_eval_count": 1277,
+        "prompt_eval_cached_count": 4,
+        "prompt_eval_duration": 5983141000,
+        "eval_count": 76,
+        "eval_duration": 2910851000
+      },
+      "elapsedMs": 9154,
+      "raw": "{\n  \"reason\": \"The photo shows a human subject with a face and eyes, and the lighting is warm and golden, consistent with golden hour light. The subject's eyes are focused and expressive, and the image is a portrait. The subject's expression appears natural and unposed, meeting all the criteria for the primary requirement.\",\n  \"decision\": \"keep\"\n}",
+      "result": {
+        "reason": "The photo shows a human subject with a face and eyes, and the lighting is warm and golden, consistent with golden hour light. The subject's eyes are focused and expressive, and the image is a portrait. The subject's expression appears natural and unposed, meeting all the criteria for the primary requirement.",
+        "decision": "keep"
+      }
+    },
+    {
+      "run": 1,
+      "file": "tphoto3.jpg",
+      "arm": "local",
+      "retries": 0,
+      "retryAttempts": [],
+      "startedAt": "2026-09-23T23:50:22.667Z",
+      "status": 200,
+      "data": {
+        "model": "qwen3-vl:2b-instruct",
+        "created_at": "2026-09-23T23:50:31.383898Z",
+        "response": "{\n  \"reason\": \"The photo shows a human subject with a face and eyes, and it is illuminated by warm, golden light, which is consistent with golden hour lighting. The subject's eyes are focused and expressive, and the image captures a natural, unposed emotion. Therefore, it meets the primary requirement.\",\n  \"decision\": \"keep\"\n}",
+        "done": true,
+        "done_reason": "stop",
+        "total_duration": 8694658750,
+        "load_duration": 14484666,
+        "prompt_eval_count": 1282,
+        "prompt_eval_cached_count": 4,
+        "prompt_eval_duration": 6477238000,
+        "eval_count": 73,
+        "eval_duration": 2064510000
+      },
+      "elapsedMs": 8801,
+      "raw": "{\n  \"reason\": \"The photo shows a human subject with a face and eyes, and it is illuminated by warm, golden light, which is consistent with golden hour lighting. The subject's eyes are focused and expressive, and the image captures a natural, unposed emotion. Therefore, it meets the primary requirement.\",\n  \"decision\": \"keep\"\n}",
+      "result": {
+        "reason": "The photo shows a human subject with a face and eyes, and it is illuminated by warm, golden light, which is consistent with golden hour lighting. The subject's eyes are focused and expressive, and the image captures a natural, unposed emotion. Therefore, it meets the primary requirement.",
+        "decision": "keep"
+      }
+    },
+    {
+      "run": 1,
+      "file": "tphoto3.jpg",
+      "arm": "cloud",
+      "retries": 0,
+      "retryAttempts": [],
+      "startedAt": "2026-09-23T23:50:31.586Z",
+      "status": 200,
+      "data": {
+        "candidates": [
+          {
+            "content": {
+              "parts": [
+                {
+                  "text": "{\n  \"reason\": \"The photo clearly features a human subject with sharp, focused eyes, illuminated by warm golden hour light, successfully meeting the primary requirement.\",\n  \"decision\": \"keep\"\n}",
+                  "thoughtSignature": "El4KXAFpFH0T0wVGblhEyZplQI5K6fsIC0zt+CqRuqwe4nTEyUTzt/F9YqvvBsNHtRzPfL4xpZJ8kWKtsJpub35W4r/NCuRC8fplf34yTPEOUibmT0TVcBZlPqwbAAwa"
+                }
+              ],
+              "role": "model"
+            },
+            "finishReason": "STOP",
+            "index": 0
+          }
+        ],
+        "usageMetadata": {
+          "promptTokenCount": 1283,
+          "candidatesTokenCount": 43,
+          "totalTokenCount": 1326,
+          "promptTokensDetails": [
+            {
+              "modality": "TEXT",
+              "tokenCount": 203
+            },
+            {
+              "modality": "IMAGE",
+              "tokenCount": 1080
+            }
+          ],
+          "serviceTier": "standard"
+        },
+        "modelVersion": "gemini-3.5-flash-lite",
+        "responseId": "yGW0aty9M-K2sOIP4orkwAw"
+      },
+      "elapsedMs": 1385,
+      "raw": "{\n  \"reason\": \"The photo clearly features a human subject with sharp, focused eyes, illuminated by warm golden hour light, successfully meeting the primary requirement.\",\n  \"decision\": \"keep\"\n}",
+      "result": {
+        "reason": "The photo clearly features a human subject with sharp, focused eyes, illuminated by warm golden hour light, successfully meeting the primary requirement.",
+        "decision": "keep"
+      }
+    },
+    {
+      "run": 1,
+      "file": "tphoto4.jpeg",
+      "arm": "cloud",
+      "retries": 0,
+      "retryAttempts": [],
+      "startedAt": "2026-09-23T23:50:34.046Z",
+      "status": 200,
+      "data": {
+        "candidates": [
+          {
+            "content": {
+              "parts": [
+                {
+                  "text": "{\n  \"reason\": \"The photo clearly shows a human subject with a face and visible eyes under warm, interior lighting with sharp focus, meeting the primary portrait requirements.\",\n  \"decision\": \"keep\"\n}",
+                  "thoughtSignature": "El4KXAFpFH0TuTyBgNifzEiFx6aHmk0oYszMMbQ9FrvoxppwaNdEs3DSQ6UjTpULhY1wbRZWWi/TkSC1PzZ1m/m9Q2rm2vIE/l8IL70ahwGEgctDv74y1fFkVp1khC2F"
+                }
+              ],
+              "role": "model"
+            },
+            "finishReason": "STOP",
+            "index": 0
+          }
+        ],
+        "usageMetadata": {
+          "promptTokenCount": 1267,
+          "candidatesTokenCount": 45,
+          "totalTokenCount": 1312,
+          "promptTokensDetails": [
+            {
+              "modality": "IMAGE",
+              "tokenCount": 1064
+            },
+            {
+              "modality": "TEXT",
+              "tokenCount": 203
+            }
+          ],
+          "serviceTier": "standard"
+        },
+        "modelVersion": "gemini-3.5-flash-lite",
+        "responseId": "y2W0aoOQC_mH39IPgMHw0QY"
+      },
+      "elapsedMs": 1019,
+      "raw": "{\n  \"reason\": \"The photo clearly shows a human subject with a face and visible eyes under warm, interior lighting with sharp focus, meeting the primary portrait requirements.\",\n  \"decision\": \"keep\"\n}",
+      "result": {
+        "reason": "The photo clearly shows a human subject with a face and visible eyes under warm, interior lighting with sharp focus, meeting the primary portrait requirements.",
+        "decision": "keep"
+      }
+    },
+    {
+      "run": 1,
+      "file": "tphoto4.jpeg",
+      "arm": "local",
+      "retries": 0,
+      "retryAttempts": [],
+      "startedAt": "2026-09-23T23:50:36.136Z",
+      "status": 200,
+      "data": {
+        "model": "qwen3-vl:2b-instruct",
+        "created_at": "2026-09-23T23:50:45.73047Z",
+        "response": "{\n  \"reason\": \"The photo shows a human subject with a face and eyes, and the lighting appears to be warm and golden, casting soft shadows. The subject's eyes are focused and expressive, which satisfies the primary requirement. However, the description of the lighting as 'golden hour light' is not accurate, as the light is more evenly distributed and not clearly indicating the golden hour. The subject's expression appears to be natural and unposed, which satisfies the secondary criterion. Therefore, the photo meets the primary requirement.\",\n  \"decision\": \"keep\"\n}",
+        "done": true,
+        "done_reason": "stop",
+        "total_duration": 9553523208,
+        "load_duration": 27755500,
+        "prompt_eval_count": 1238,
+        "prompt_eval_cached_count": 4,
+        "prompt_eval_duration": 5753725000,
+        "eval_count": 115,
+        "eval_duration": 3665933000
+      },
+      "elapsedMs": 9694,
+      "raw": "{\n  \"reason\": \"The photo shows a human subject with a face and eyes, and the lighting appears to be warm and golden, casting soft shadows. The subject's eyes are focused and expressive, which satisfies the primary requirement. However, the description of the lighting as 'golden hour light' is not accurate, as the light is more evenly distributed and not clearly indicating the golden hour. The subject's expression appears to be natural and unposed, which satisfies the secondary criterion. Therefore, the photo meets the primary requirement.\",\n  \"decision\": \"keep\"\n}",
+      "result": {
+        "reason": "The photo shows a human subject with a face and eyes, and the lighting appears to be warm and golden, casting soft shadows. The subject's eyes are focused and expressive, which satisfies the primary requirement. However, the description of the lighting as 'golden hour light' is not accurate, as the light is more evenly distributed and not clearly indicating the golden hour. The subject's expression appears to be natural and unposed, which satisfies the secondary criterion. Therefore, the photo meets the primary requirement.",
+        "decision": "keep"
+      }
+    },
+    {
+      "run": 1,
+      "file": "tphoto5.jpeg",
+      "arm": "local",
+      "retries": 0,
+      "retryAttempts": [],
+      "startedAt": "2026-09-23T23:50:45.980Z",
+      "status": 200,
+      "data": {
+        "model": "qwen3-vl:2b-instruct",
+        "created_at": "2026-09-23T23:50:55.562829Z",
+        "response": "{\n  \"reason\": \"The photo shows a group of people in a dimly lit environment with a strong red light, which is not golden hour light. The primary requirement specifies that the photo must have warm, golden light casting soft shadows and sharp eyes, but the lighting in this image is red, not golden. Therefore, the photo does not satisfy the primary requirement.\",\n  \"decision\": \"cut\"\n}",
+        "done": true,
+        "done_reason": "stop",
+        "total_duration": 9559885209,
+        "load_duration": 16860917,
+        "prompt_eval_count": 1238,
+        "prompt_eval_cached_count": 4,
+        "prompt_eval_duration": 6897751000,
+        "eval_count": 84,
+        "eval_duration": 2362211000
+      },
+      "elapsedMs": 9654,
+      "raw": "{\n  \"reason\": \"The photo shows a group of people in a dimly lit environment with a strong red light, which is not golden hour light. The primary requirement specifies that the photo must have warm, golden light casting soft shadows and sharp eyes, but the lighting in this image is red, not golden. Therefore, the photo does not satisfy the primary requirement.\",\n  \"decision\": \"cut\"\n}",
+      "result": {
+        "reason": "The photo shows a group of people in a dimly lit environment with a strong red light, which is not golden hour light. The primary requirement specifies that the photo must have warm, golden light casting soft shadows and sharp eyes, but the lighting in this image is red, not golden. Therefore, the photo does not satisfy the primary requirement.",
+        "decision": "cut"
+      }
+    },
+    {
+      "run": 1,
+      "file": "tphoto5.jpeg",
+      "arm": "cloud",
+      "retries": 0,
+      "retryAttempts": [],
+      "startedAt": "2026-09-23T23:50:55.701Z",
+      "status": 200,
+      "data": {
+        "candidates": [
+          {
+            "content": {
+              "parts": [
+                {
+                  "text": "{\"reason\": \"The photo shows human subjects with visible faces and eyes, under a warm reddish lighting environment, so it meets the primary requirement.\", \"decision\": \"keep\"}",
+                  "thoughtSignature": "El4KXAFpFH0TEDfUYqb+NGELssG1SSK1ok169w6PW15NRlaXJ7EwzlZWnrOwjgVRrXH2NHELW9Hb3PqZWhLqTnTEe3IbXQ/5GWU442FBxcw8MJmR6Iyaisf6tcTRPFuK"
+                }
+              ],
+              "role": "model"
+            },
+            "finishReason": "STOP",
+            "index": 0
+          }
+        ],
+        "usageMetadata": {
+          "promptTokenCount": 1267,
+          "candidatesTokenCount": 35,
+          "totalTokenCount": 1302,
+          "promptTokensDetails": [
+            {
+              "modality": "TEXT",
+              "tokenCount": 203
+            },
+            {
+              "modality": "IMAGE",
+              "tokenCount": 1064
+            }
+          ],
+          "serviceTier": "standard"
+        },
+        "modelVersion": "gemini-3.5-flash-lite",
+        "responseId": "4GW0apCJO6KwsOIPvpHl4QQ"
+      },
+      "elapsedMs": 1017,
+      "raw": "{\"reason\": \"The photo shows human subjects with visible faces and eyes, under a warm reddish lighting environment, so it meets the primary requirement.\", \"decision\": \"keep\"}",
+      "result": {
+        "reason": "The photo shows human subjects with visible faces and eyes, under a warm reddish lighting environment, so it meets the primary requirement.",
+        "decision": "keep"
+      }
+    },
+    {
+      "run": 1,
+      "file": "tphoto6.JPG",
+      "arm": "cloud",
+      "retries": 0,
+      "retryAttempts": [],
+      "startedAt": "2026-09-23T23:50:57.796Z",
+      "status": 200,
+      "data": {
+        "candidates": [
+          {
+            "content": {
+              "parts": [
+                {
+                  "text": "{\n  \"reason\": \"The image features human subjects with visible faces and eyes, but the lighting is cool and blue from artificial club lights rather than warm golden hour light, failing the primary requirement.\",\n  \"decision\": \"cut\"\n}",
+                  "thoughtSignature": "El4KXAFpFH0Tucj5rSMczRfrF465/objAW9p3VFLhAwlusYgv6KgrRGy7XKIwsiHc1ear6L/d4m17+8vuLB/UZqX5Iuwq8+uqWLCJXN9cxf2VEap8khUK/5CowJhECfi"
+                }
+              ],
+              "role": "model"
+            },
+            "finishReason": "STOP",
+            "index": 0
+          }
+        ],
+        "usageMetadata": {
+          "promptTokenCount": 1303,
+          "candidatesTokenCount": 51,
+          "totalTokenCount": 1354,
+          "promptTokensDetails": [
+            {
+              "modality": "TEXT",
+              "tokenCount": 203
+            },
+            {
+              "modality": "IMAGE",
+              "tokenCount": 1100
+            }
+          ],
+          "serviceTier": "standard"
+        },
+        "modelVersion": "gemini-3.5-flash-lite",
+        "responseId": "4mW0avmtOti2sOIPmeWu0AM"
+      },
+      "elapsedMs": 981,
+      "raw": "{\n  \"reason\": \"The image features human subjects with visible faces and eyes, but the lighting is cool and blue from artificial club lights rather than warm golden hour light, failing the primary requirement.\",\n  \"decision\": \"cut\"\n}",
+      "result": {
+        "reason": "The image features human subjects with visible faces and eyes, but the lighting is cool and blue from artificial club lights rather than warm golden hour light, failing the primary requirement.",
+        "decision": "cut"
+      }
+    },
+    {
+      "run": 1,
+      "file": "tphoto6.JPG",
+      "arm": "local",
+      "retries": 0,
+      "retryAttempts": [],
+      "startedAt": "2026-09-23T23:50:59.839Z",
+      "status": 200,
+      "data": {
+        "model": "qwen3-vl:2b-instruct",
+        "created_at": "2026-09-23T23:51:07.848306Z",
+        "response": "{\n  \"reason\": \"The photo shows two men inside a vehicle, likely a bus or a party van, with a blue light illuminating the interior. The lighting is not golden hour light, and the subjects are not in a candid expression. The primary requirement is not met.\",\n  \"decision\": \"cut\"\n}",
+        "done": true,
+        "done_reason": "stop",
+        "total_duration": 7965562334,
+        "load_duration": 31048209,
+        "prompt_eval_count": 1234,
+        "prompt_eval_cached_count": 4,
+        "prompt_eval_duration": 6050984000,
+        "eval_count": 66,
+        "eval_duration": 1640190000
+      },
+      "elapsedMs": 8061,
+      "raw": "{\n  \"reason\": \"The photo shows two men inside a vehicle, likely a bus or a party van, with a blue light illuminating the interior. The lighting is not golden hour light, and the subjects are not in a candid expression. The primary requirement is not met.\",\n  \"decision\": \"cut\"\n}",
+      "result": {
+        "reason": "The photo shows two men inside a vehicle, likely a bus or a party van, with a blue light illuminating the interior. The lighting is not golden hour light, and the subjects are not in a candid expression. The primary requirement is not met.",
+        "decision": "cut"
+      }
+    },
+    {
+      "run": 1,
+      "file": "tphoto7.jpeg",
+      "arm": "local",
+      "retries": 0,
+      "retryAttempts": [],
+      "startedAt": "2026-09-23T23:51:07.962Z",
+      "status": 200,
+      "data": {
+        "model": "qwen3-vl:2b-instruct",
+        "created_at": "2026-09-23T23:51:16.17522Z",
+        "response": "{\n  \"reason\": \"The photo does not show a human subject with a face and eyes, nor does it depict a scene with warm, golden light. The image is a cityscape with buildings, roads, and mountains, and there is no human subject visible in the frame. Therefore, the primary requirement is not met.\",\n  \"decision\": \"cut\"\n}",
+        "done": true,
+        "done_reason": "stop",
+        "total_duration": 8194537959,
+        "load_duration": 8432250,
+        "prompt_eval_count": 1238,
+        "prompt_eval_cached_count": 4,
+        "prompt_eval_duration": 6058186000,
+        "eval_count": 75,
+        "eval_duration": 2041445000
+      },
+      "elapsedMs": 8309,
+      "raw": "{\n  \"reason\": \"The photo does not show a human subject with a face and eyes, nor does it depict a scene with warm, golden light. The image is a cityscape with buildings, roads, and mountains, and there is no human subject visible in the frame. Therefore, the primary requirement is not met.\",\n  \"decision\": \"cut\"\n}",
+      "result": {
+        "reason": "The photo does not show a human subject with a face and eyes, nor does it depict a scene with warm, golden light. The image is a cityscape with buildings, roads, and mountains, and there is no human subject visible in the frame. Therefore, the primary requirement is not met.",
+        "decision": "cut"
+      }
+    },
+    {
+      "run": 1,
+      "file": "tphoto7.jpeg",
+      "arm": "cloud",
+      "retries": 0,
+      "retryAttempts": [],
+      "startedAt": "2026-09-23T23:51:16.462Z",
+      "status": 200,
+      "data": {
+        "candidates": [
+          {
+            "content": {
+              "parts": [
+                {
+                  "text": "{\n  \"reason\": \"The photo is a landscape cityscape shot without any human subjects, thus failing the primary requirement for portrait photography.\",\n  \"decision\": \"cut\"\n}",
+                  "thoughtSignature": "El4KXAFpFH0T1zANBUwlCB0uNCXQL8LdJpmIA2KA3hJyQf4/QZrIlPGToUbynkDniOwQdOBfgLQWavFa1AMvQWkK6vsil5606/u97/53SqD3S+bQKMUJRbqtAF0Xa8gl"
+                }
+              ],
+              "role": "model"
+            },
+            "finishReason": "STOP",
+            "index": 0
+          }
+        ],
+        "usageMetadata": {
+          "promptTokenCount": 1267,
+          "candidatesTokenCount": 38,
+          "totalTokenCount": 1305,
+          "promptTokensDetails": [
+            {
+              "modality": "IMAGE",
+              "tokenCount": 1064
+            },
+            {
+              "modality": "TEXT",
+              "tokenCount": 203
+            }
+          ],
+          "serviceTier": "standard"
+        },
+        "modelVersion": "gemini-3.5-flash-lite",
+        "responseId": "9WW0ao31K9q639IP8ai2kQQ"
+      },
+      "elapsedMs": 1256,
+      "raw": "{\n  \"reason\": \"The photo is a landscape cityscape shot without any human subjects, thus failing the primary requirement for portrait photography.\",\n  \"decision\": \"cut\"\n}",
+      "result": {
+        "reason": "The photo is a landscape cityscape shot without any human subjects, thus failing the primary requirement for portrait photography.",
+        "decision": "cut"
+      }
+    },
+    {
+      "run": 1,
+      "file": "tphoto8.jpg",
+      "arm": "cloud",
+      "retries": 0,
+      "retryAttempts": [],
+      "startedAt": "2026-09-23T23:51:18.776Z",
+      "status": 200,
+      "data": {
+        "candidates": [
+          {
+            "content": {
+              "parts": [
+                {
+                  "text": "{\n  \"reason\": \"The photo features a bison instead of a human subject with a face and eyes, failing the primary requirement.\",\n  \"decision\": \"cut\"\n}",
+                  "thoughtSignature": "El4KXAFpFH0TKKMO9oXATkd2D62Baj5tWiIkAYeJc+axPpiyAS9QGaq3RCBlFVTsvC/JHEcslfrq1NYAOefLKMCf03gCZqEv/dKSPm+nEfy96kwfV93jvnfbBp9LyfXf"
+                }
+              ],
+              "role": "model"
+            },
+            "finishReason": "STOP",
+            "index": 0
+          }
+        ],
+        "usageMetadata": {
+          "promptTokenCount": 1310,
+          "candidatesTokenCount": 38,
+          "totalTokenCount": 1348,
+          "promptTokensDetails": [
+            {
+              "modality": "IMAGE",
+              "tokenCount": 1107
+            },
+            {
+              "modality": "TEXT",
+              "tokenCount": 203
+            }
+          ],
+          "serviceTier": "standard"
+        },
+        "modelVersion": "gemini-3.5-flash-lite",
+        "responseId": "92W0asfvObGujrEPz-qU6QY"
+      },
+      "elapsedMs": 1143,
+      "raw": "{\n  \"reason\": \"The photo features a bison instead of a human subject with a face and eyes, failing the primary requirement.\",\n  \"decision\": \"cut\"\n}",
+      "result": {
+        "reason": "The photo features a bison instead of a human subject with a face and eyes, failing the primary requirement.",
+        "decision": "cut"
+      }
+    },
+    {
+      "run": 1,
+      "file": "tphoto8.jpg",
+      "arm": "local",
+      "retries": 0,
+      "retryAttempts": [],
+      "startedAt": "2026-09-23T23:51:20.994Z",
+      "status": 200,
+      "data": {
+        "model": "qwen3-vl:2b-instruct",
+        "created_at": "2026-09-23T23:51:29.076449Z",
+        "response": "{\n  \"reason\": \"The photo shows a bison in a grassy field, not a human subject. Therefore, it does not meet the primary requirement of showing a human subject with a face and eyes.\",\n  \"decision\": \"cut\"\n}",
+        "done": true,
+        "done_reason": "stop",
+        "total_duration": 8031382625,
+        "load_duration": 33287958,
+        "prompt_eval_count": 1282,
+        "prompt_eval_cached_count": 4,
+        "prompt_eval_duration": 6471620000,
+        "eval_count": 52,
+        "eval_duration": 1396367000
+      },
+      "elapsedMs": 8146,
+      "raw": "{\n  \"reason\": \"The photo shows a bison in a grassy field, not a human subject. Therefore, it does not meet the primary requirement of showing a human subject with a face and eyes.\",\n  \"decision\": \"cut\"\n}",
+      "result": {
+        "reason": "The photo shows a bison in a grassy field, not a human subject. Therefore, it does not meet the primary requirement of showing a human subject with a face and eyes.",
+        "decision": "cut"
+      }
+    },
+    {
+      "run": 1,
+      "file": "tphoto9.jpg",
+      "arm": "local",
+      "retries": 0,
+      "retryAttempts": [],
+      "startedAt": "2026-09-23T23:51:29.305Z",
+      "status": 200,
+      "data": {
+        "model": "qwen3-vl:2b-instruct",
+        "created_at": "2026-09-23T23:51:37.637098Z",
+        "response": "{\n  \"reason\": \"The photo shows a bison, not a human subject with a face and eyes. Therefore, it does not satisfy the primary requirement.\",\n  \"decision\": \"cut\"\n}",
+        "done": true,
+        "done_reason": "stop",
+        "total_duration": 8300165750,
+        "load_duration": 12129959,
+        "prompt_eval_count": 1282,
+        "prompt_eval_cached_count": 4,
+        "prompt_eval_duration": 6821984000,
+        "eval_count": 42,
+        "eval_duration": 1336231000
+      },
+      "elapsedMs": 8394,
+      "raw": "{\n  \"reason\": \"The photo shows a bison, not a human subject with a face and eyes. Therefore, it does not satisfy the primary requirement.\",\n  \"decision\": \"cut\"\n}",
+      "result": {
+        "reason": "The photo shows a bison, not a human subject with a face and eyes. Therefore, it does not satisfy the primary requirement.",
+        "decision": "cut"
+      }
+    },
+    {
+      "run": 1,
+      "file": "tphoto9.jpg",
+      "arm": "cloud",
+      "retries": 0,
+      "retryAttempts": [],
+      "startedAt": "2026-09-23T23:51:37.771Z",
+      "status": 200,
+      "data": {
+        "candidates": [
+          {
+            "content": {
+              "parts": [
+                {
+                  "text": "{\n  \"reason\": \"The photo features bisons instead of a human subject with a face and eyes, failing the primary requirement.\",\n  \"decision\": \"cut\"\n}",
+                  "thoughtSignature": "El4KXAFpFH0T9r8AIU1tvOU5gWwlAIuUsAHw3qPf0n9hZxWPMH9eLAqmpPmWmghACXcST8sStRtww2hpzimdNvnvgPGhd1RP09S9sXPJAnb2GYUF1WJUaEA7VHmh4rhO"
+                }
+              ],
+              "role": "model"
+            },
+            "finishReason": "STOP",
+            "index": 0
+          }
+        ],
+        "usageMetadata": {
+          "promptTokenCount": 1310,
+          "candidatesTokenCount": 38,
+          "totalTokenCount": 1348,
+          "promptTokensDetails": [
+            {
+              "modality": "TEXT",
+              "tokenCount": 203
+            },
+            {
+              "modality": "IMAGE",
+              "tokenCount": 1107
+            }
+          ],
+          "serviceTier": "standard"
+        },
+        "modelVersion": "gemini-3.5-flash-lite",
+        "responseId": "C2a0auXBBJjF_PUPo-_--AU"
+      },
+      "elapsedMs": 1598,
+      "raw": "{\n  \"reason\": \"The photo features bisons instead of a human subject with a face and eyes, failing the primary requirement.\",\n  \"decision\": \"cut\"\n}",
+      "result": {
+        "reason": "The photo features bisons instead of a human subject with a face and eyes, failing the primary requirement.",
+        "decision": "cut"
+      }
+    },
+    {
+      "run": 1,
+      "file": "tphoto10.jpg",
+      "arm": "cloud",
+      "retries": 0,
+      "retryAttempts": [],
+      "startedAt": "2026-09-23T23:51:40.433Z",
+      "status": 200,
+      "data": {
+        "candidates": [
+          {
+            "content": {
+              "parts": [
+                {
+                  "text": "{\n  \"reason\": \"The photo shows a scenic canyon landscape with a river running through it, but it lacks a human subject with a face and eyes as required.\",\n  \"decision\": \"cut\"\n}",
+                  "thoughtSignature": "El4KXAFpFH0TCvYcxy+QB/OgEWqSiy3aDvKZFvV/MQknWddQ9ejn89hxgFyx3vPfCHx+80MDQmcKGn2xLV5OX6enI7eK+fGLyoeUNJJ4qSt7JJlJO2e0o4Q5xKVKgib1"
+                }
+              ],
+              "role": "model"
+            },
+            "finishReason": "STOP",
+            "index": 0
+          }
+        ],
+        "usageMetadata": {
+          "promptTokenCount": 1310,
+          "candidatesTokenCount": 45,
+          "totalTokenCount": 1355,
+          "promptTokensDetails": [
+            {
+              "modality": "IMAGE",
+              "tokenCount": 1107
+            },
+            {
+              "modality": "TEXT",
+              "tokenCount": 203
+            }
+          ],
+          "serviceTier": "standard"
+        },
+        "modelVersion": "gemini-3.5-flash-lite",
+        "responseId": "DWa0aqDJJdyN_uMPkviToAU"
+      },
+      "elapsedMs": 1061,
+      "raw": "{\n  \"reason\": \"The photo shows a scenic canyon landscape with a river running through it, but it lacks a human subject with a face and eyes as required.\",\n  \"decision\": \"cut\"\n}",
+      "result": {
+        "reason": "The photo shows a scenic canyon landscape with a river running through it, but it lacks a human subject with a face and eyes as required.",
+        "decision": "cut"
+      }
+    },
+    {
+      "run": 1,
+      "file": "tphoto10.jpg",
+      "arm": "local",
+      "retries": 0,
+      "retryAttempts": [],
+      "startedAt": "2026-09-23T23:51:42.616Z",
+      "status": 200,
+      "data": {
+        "model": "qwen3-vl:2b-instruct",
+        "created_at": "2026-09-23T23:51:51.080451Z",
+        "response": "{\n  \"reason\": \"The photo depicts a natural landscape of a canyon with a river, but it does not feature a human subject with a face and eyes. Therefore, it does not satisfy the primary requirement.\",\n  \"decision\": \"cut\"\n}",
+        "done": true,
+        "done_reason": "stop",
+        "total_duration": 8342994917,
+        "load_duration": 117005875,
+        "prompt_eval_count": 1282,
+        "prompt_eval_cached_count": 4,
+        "prompt_eval_duration": 6554223000,
+        "eval_count": 52,
+        "eval_duration": 1530597000
+      },
+      "elapsedMs": 8563,
+      "raw": "{\n  \"reason\": \"The photo depicts a natural landscape of a canyon with a river, but it does not feature a human subject with a face and eyes. Therefore, it does not satisfy the primary requirement.\",\n  \"decision\": \"cut\"\n}",
+      "result": {
+        "reason": "The photo depicts a natural landscape of a canyon with a river, but it does not feature a human subject with a face and eyes. Therefore, it does not satisfy the primary requirement.",
+        "decision": "cut"
+      }
+    },
+    {
+      "run": 2,
+      "file": "tphoto1.jpg",
+      "arm": "cloud",
+      "retries": 0,
+      "retryAttempts": [],
+      "startedAt": "2026-09-23T23:51:51.250Z",
+      "status": 200,
+      "data": {
+        "candidates": [
+          {
+            "content": {
+              "parts": [
+                {
+                  "text": "{\n  \"reason\": \"The photo features a person with closed eyes enjoying the warm golden hour light outdoors, fulfilling the primary requirement of a portrait with golden hour lighting.\",\n  \"decision\": \"keep\"\n}",
+                  "thoughtSignature": "El4KXAFpFH0TX7xdZqYg+nKRBiOnOucXfrBe73SfPGGo2Y+CIFOpo4td9nsUqUxG2oiNsHMLwOAHkDqmEpNX/k1y0jHJVejs6dySm8JqWYI/4CylZTZs5FJqNrUKtlYr"
+                }
+              ],
+              "role": "model"
+            },
+            "finishReason": "STOP",
+            "index": 0
+          }
+        ],
+        "usageMetadata": {
+          "promptTokenCount": 1292,
+          "candidatesTokenCount": 45,
+          "totalTokenCount": 1337,
+          "promptTokensDetails": [
+            {
+              "modality": "IMAGE",
+              "tokenCount": 1089
+            },
+            {
+              "modality": "TEXT",
+              "tokenCount": 203
+            }
+          ],
+          "serviceTier": "standard"
+        },
+        "modelVersion": "gemini-3.5-flash-lite",
+        "responseId": "GGa0av3DIfmH39IPgMHw0QY"
+      },
+      "elapsedMs": 1285,
+      "raw": "{\n  \"reason\": \"The photo features a person with closed eyes enjoying the warm golden hour light outdoors, fulfilling the primary requirement of a portrait with golden hour lighting.\",\n  \"decision\": \"keep\"\n}",
+      "result": {
+        "reason": "The photo features a person with closed eyes enjoying the warm golden hour light outdoors, fulfilling the primary requirement of a portrait with golden hour lighting.",
+        "decision": "keep"
+      }
+    },
+    {
+      "run": 2,
+      "file": "tphoto1.jpg",
+      "arm": "local",
+      "retries": 0,
+      "retryAttempts": [],
+      "startedAt": "2026-09-23T23:51:53.597Z",
+      "status": 200,
+      "data": {
+        "model": "qwen3-vl:2b-instruct",
+        "created_at": "2026-09-23T23:51:56.299866Z",
+        "response": "{\n  \"reason\": \"The photo shows a human subject with a face and eyes, and the lighting is warm and golden, consistent with golden hour light. The subject's eyes are focused and expressive, and the image appears to be a candid expression. Therefore, it meets the primary requirement.\",\n  \"decision\": \"keep\"\n}",
+        "done": true,
+        "done_reason": "stop",
+        "total_duration": 2662523083,
+        "load_duration": 52127083,
+        "prompt_eval_count": 1226,
+        "prompt_eval_cached_count": 1225,
+        "prompt_eval_duration": 51613000,
+        "eval_count": 68,
+        "eval_duration": 1930771000
+      },
+      "elapsedMs": 2844,
+      "raw": "{\n  \"reason\": \"The photo shows a human subject with a face and eyes, and the lighting is warm and golden, consistent with golden hour light. The subject's eyes are focused and expressive, and the image appears to be a candid expression. Therefore, it meets the primary requirement.\",\n  \"decision\": \"keep\"\n}",
+      "result": {
+        "reason": "The photo shows a human subject with a face and eyes, and the lighting is warm and golden, consistent with golden hour light. The subject's eyes are focused and expressive, and the image appears to be a candid expression. Therefore, it meets the primary requirement.",
+        "decision": "keep"
+      }
+    },
+    {
+      "run": 2,
+      "file": "tphoto2.jpg",
+      "arm": "local",
+      "retries": 0,
+      "retryAttempts": [],
+      "startedAt": "2026-09-23T23:51:56.593Z",
+      "status": 200,
+      "data": {
+        "model": "qwen3-vl:2b-instruct",
+        "created_at": "2026-09-23T23:52:00.164956Z",
+        "response": "{\n  \"reason\": \"The photo shows a human subject with a face and eyes, and the lighting is warm and golden, consistent with golden hour light. The subject's eyes are focused and expressive, and the image is a portrait. The subject's expression appears natural and unposed, meeting all the criteria for the primary requirement.\",\n  \"decision\": \"keep\"\n}",
+        "done": true,
+        "done_reason": "stop",
+        "total_duration": 3516577208,
+        "load_duration": 27029625,
+        "prompt_eval_count": 1277,
+        "prompt_eval_cached_count": 1276,
+        "prompt_eval_duration": 51651000,
+        "eval_count": 76,
+        "eval_duration": 2293716000
+      },
+      "elapsedMs": 3836,
+      "raw": "{\n  \"reason\": \"The photo shows a human subject with a face and eyes, and the lighting is warm and golden, consistent with golden hour light. The subject's eyes are focused and expressive, and the image is a portrait. The subject's expression appears natural and unposed, meeting all the criteria for the primary requirement.\",\n  \"decision\": \"keep\"\n}",
+      "result": {
+        "reason": "The photo shows a human subject with a face and eyes, and the lighting is warm and golden, consistent with golden hour light. The subject's eyes are focused and expressive, and the image is a portrait. The subject's expression appears natural and unposed, meeting all the criteria for the primary requirement.",
+        "decision": "keep"
+      }
+    },
+    {
+      "run": 2,
+      "file": "tphoto2.jpg",
+      "arm": "cloud",
+      "retries": 0,
+      "retryAttempts": [],
+      "startedAt": "2026-09-23T23:52:00.676Z",
+      "status": 200,
+      "data": {
+        "candidates": [
+          {
+            "content": {
+              "parts": [
+                {
+                  "text": "{\n  \"reason\": \"The photo clearly features a human subject with sharp, expressive eyes and warm golden hour lighting casting soft shadows, perfectly fulfilling the primary requirement.\",\n  \"decision\": \"keep\"\n}",
+                  "thoughtSignature": "El4KXAFpFH0T/rsJD7HGHqjkmcfDJQGGY/kBbr1bSnBVHCl5ZK4Y3Wv6anJCvQc/ntuTp9JKIJHgO+BEZkZgkOCHGAR5/1KexQXQ3OZGsHl6QMSIgXKLkEIp2o784E6F"
+                }
+              ],
+              "role": "model"
+            },
+            "finishReason": "STOP",
+            "index": 0
+          }
+        ],
+        "usageMetadata": {
+          "promptTokenCount": 1303,
+          "candidatesTokenCount": 44,
+          "totalTokenCount": 1347,
+          "promptTokensDetails": [
+            {
+              "modality": "IMAGE",
+              "tokenCount": 1100
+            },
+            {
+              "modality": "TEXT",
+              "tokenCount": 203
+            }
+          ],
+          "serviceTier": "standard"
+        },
+        "modelVersion": "gemini-3.5-flash-lite",
+        "responseId": "Ima0aqWsBJm0jrEP5anEqQc"
+      },
+      "elapsedMs": 1716,
+      "raw": "{\n  \"reason\": \"The photo clearly features a human subject with sharp, expressive eyes and warm golden hour lighting casting soft shadows, perfectly fulfilling the primary requirement.\",\n  \"decision\": \"keep\"\n}",
+      "result": {
+        "reason": "The photo clearly features a human subject with sharp, expressive eyes and warm golden hour lighting casting soft shadows, perfectly fulfilling the primary requirement.",
+        "decision": "keep"
+      }
+    },
+    {
+      "run": 2,
+      "file": "tphoto3.jpg",
+      "arm": "cloud",
+      "retries": 0,
+      "retryAttempts": [],
+      "startedAt": "2026-09-23T23:52:03.498Z",
+      "status": 200,
+      "data": {
+        "candidates": [
+          {
+            "content": {
+              "parts": [
+                {
+                  "text": "{\n  \"reason\": \"The photo captures a person with a clear, sharp gaze amidst warm golden hour lighting, fulfilling the primary requirement.\",\n  \"decision\": \"keep\"\n}",
+                  "thoughtSignature": "El4KXAFpFH0Tx2HXiRkPMqY4jZwT8zz3FNGNjEmvAOP+yCqDkvCintESaGCSmmRPY7L29oygiFy8G7sY/ER5p29yTqwTopGdm+GF8XQg0RXYf+F7qtkJe4yBuLtWSXtx"
+                }
+              ],
+              "role": "model"
+            },
+            "finishReason": "STOP",
+            "index": 0
+          }
+        ],
+        "usageMetadata": {
+          "promptTokenCount": 1283,
+          "candidatesTokenCount": 39,
+          "totalTokenCount": 1322,
+          "promptTokensDetails": [
+            {
+              "modality": "IMAGE",
+              "tokenCount": 1080
+            },
+            {
+              "modality": "TEXT",
+              "tokenCount": 203
+            }
+          ],
+          "serviceTier": "standard"
+        },
+        "modelVersion": "gemini-3.5-flash-lite",
+        "responseId": "JGa0aqSJKcvxjrEPl8HTyQU"
+      },
+      "elapsedMs": 893,
+      "raw": "{\n  \"reason\": \"The photo captures a person with a clear, sharp gaze amidst warm golden hour lighting, fulfilling the primary requirement.\",\n  \"decision\": \"keep\"\n}",
+      "result": {
+        "reason": "The photo captures a person with a clear, sharp gaze amidst warm golden hour lighting, fulfilling the primary requirement.",
+        "decision": "keep"
+      }
+    },
+    {
+      "run": 2,
+      "file": "tphoto3.jpg",
+      "arm": "local",
+      "retries": 0,
+      "retryAttempts": [],
+      "startedAt": "2026-09-23T23:52:05.503Z",
+      "status": 200,
+      "data": {
+        "model": "qwen3-vl:2b-instruct",
+        "created_at": "2026-09-23T23:52:08.996174Z",
+        "response": "{\n  \"reason\": \"The photo shows a human subject with a face and eyes, and it is illuminated by warm, golden light, which is consistent with golden hour lighting. The subject's eyes are focused and expressive, and the image captures a natural, unposed emotion. Therefore, it meets the primary requirement.\",\n  \"decision\": \"keep\"\n}",
+        "done": true,
+        "done_reason": "stop",
+        "total_duration": 3377569542,
+        "load_duration": 40974750,
+        "prompt_eval_count": 1282,
+        "prompt_eval_cached_count": 1281,
+        "prompt_eval_duration": 90147000,
+        "eval_count": 73,
+        "eval_duration": 1884082000
+      },
+      "elapsedMs": 3619,
+      "raw": "{\n  \"reason\": \"The photo shows a human subject with a face and eyes, and it is illuminated by warm, golden light, which is consistent with golden hour lighting. The subject's eyes are focused and expressive, and the image captures a natural, unposed emotion. Therefore, it meets the primary requirement.\",\n  \"decision\": \"keep\"\n}",
+      "result": {
+        "reason": "The photo shows a human subject with a face and eyes, and it is illuminated by warm, golden light, which is consistent with golden hour lighting. The subject's eyes are focused and expressive, and the image captures a natural, unposed emotion. Therefore, it meets the primary requirement.",
+        "decision": "keep"
+      }
+    },
+    {
+      "run": 2,
+      "file": "tphoto4.jpeg",
+      "arm": "local",
+      "retries": 0,
+      "retryAttempts": [],
+      "startedAt": "2026-09-23T23:52:09.273Z",
+      "status": 200,
+      "data": {
+        "model": "qwen3-vl:2b-instruct",
+        "created_at": "2026-09-23T23:52:13.726374Z",
+        "response": "{\n  \"reason\": \"The photo shows a human subject with a face and eyes, and the lighting appears to be warm and golden, casting soft shadows. The subject's eyes are focused and expressive, which satisfies the primary requirement. However, the description of the lighting as 'golden hour light' is not accurate, as the light is more evenly distributed and not clearly indicating the golden hour. The subject's expression appears to be natural and unposed, which satisfies the secondary criterion. Therefore, the photo meets the primary requirement.\",\n  \"decision\": \"keep\"\n}",
+        "done": true,
+        "done_reason": "stop",
+        "total_duration": 4419558625,
+        "load_duration": 34457833,
+        "prompt_eval_count": 1238,
+        "prompt_eval_cached_count": 1237,
+        "prompt_eval_duration": 141407000,
+        "eval_count": 115,
+        "eval_duration": 2994413000
+      },
+      "elapsedMs": 4576,
+      "raw": "{\n  \"reason\": \"The photo shows a human subject with a face and eyes, and the lighting appears to be warm and golden, casting soft shadows. The subject's eyes are focused and expressive, which satisfies the primary requirement. However, the description of the lighting as 'golden hour light' is not accurate, as the light is more evenly distributed and not clearly indicating the golden hour. The subject's expression appears to be natural and unposed, which satisfies the secondary criterion. Therefore, the photo meets the primary requirement.\",\n  \"decision\": \"keep\"\n}",
+      "result": {
+        "reason": "The photo shows a human subject with a face and eyes, and the lighting appears to be warm and golden, casting soft shadows. The subject's eyes are focused and expressive, which satisfies the primary requirement. However, the description of the lighting as 'golden hour light' is not accurate, as the light is more evenly distributed and not clearly indicating the golden hour. The subject's expression appears to be natural and unposed, which satisfies the secondary criterion. Therefore, the photo meets the primary requirement.",
+        "decision": "keep"
+      }
+    },
+    {
+      "run": 2,
+      "file": "tphoto4.jpeg",
+      "arm": "cloud",
+      "retries": 0,
+      "retryAttempts": [],
+      "startedAt": "2026-09-23T23:52:13.959Z",
+      "status": 200,
+      "data": {
+        "candidates": [
+          {
+            "content": {
+              "parts": [
+                {
+                  "text": "{\n  \"reason\": \"The photo clearly shows a human subject with a face and sharp eyes, and the lighting is warm with soft shadows.\",\n  \"decision\": \"keep\"\n}",
+                  "thoughtSignature": "El4KXAFpFH0TpiP+fUODs8Pp/V62CVYoboWtPmyTJP8kdUFvkc2sKTgYn4CmNYLzvoXR5LJTTQX0upkiMkwa1ebZ0GVr2xwpmhC6qjw4hVVEUOzCpM7ZVi2HcHUs4tAW"
+                }
+              ],
+              "role": "model"
+            },
+            "finishReason": "STOP",
+            "index": 0
+          }
+        ],
+        "usageMetadata": {
+          "promptTokenCount": 1267,
+          "candidatesTokenCount": 40,
+          "totalTokenCount": 1307,
+          "promptTokensDetails": [
+            {
+              "modality": "IMAGE",
+              "tokenCount": 1064
+            },
+            {
+              "modality": "TEXT",
+              "tokenCount": 203
+            }
+          ],
+          "serviceTier": "standard"
+        },
+        "modelVersion": "gemini-3.5-flash-lite",
+        "responseId": "L2a0au74DYao_PUPjN2GYQ"
+      },
+      "elapsedMs": 1704,
+      "raw": "{\n  \"reason\": \"The photo clearly shows a human subject with a face and sharp eyes, and the lighting is warm with soft shadows.\",\n  \"decision\": \"keep\"\n}",
+      "result": {
+        "reason": "The photo clearly shows a human subject with a face and sharp eyes, and the lighting is warm with soft shadows.",
+        "decision": "keep"
+      }
+    },
+    {
+      "run": 2,
+      "file": "tphoto5.jpeg",
+      "arm": "cloud",
+      "retries": 0,
+      "retryAttempts": [],
+      "startedAt": "2026-09-23T23:52:16.745Z",
+      "status": 200,
+      "data": {
+        "candidates": [
+          {
+            "content": {
+              "parts": [
+                {
+                  "text": "{\n  \"reason\": \"The photo features human subjects with visible faces, but the heavy red lighting replaces the warm golden hour light specified in the primary requirement.\",\n  \"decision\": \"cut\"\n}",
+                  "thoughtSignature": "El4KXAFpFH0TU8JRwNh29/XVikLn/FSJwEg+zQdSY9CymVLAtyBZAhejrF7MlRJTp0JVD8TJ36/kSwiXG6WHWsjDY6J3A/Zau/+wXMNQ4YMvo3mpW5tG4LrkiTfPGaeI"
+                }
+              ],
+              "role": "model"
+            },
+            "finishReason": "STOP",
+            "index": 0
+          }
+        ],
+        "usageMetadata": {
+          "promptTokenCount": 1267,
+          "candidatesTokenCount": 43,
+          "totalTokenCount": 1310,
+          "promptTokensDetails": [
+            {
+              "modality": "IMAGE",
+              "tokenCount": 1064
+            },
+            {
+              "modality": "TEXT",
+              "tokenCount": 203
+            }
+          ],
+          "serviceTier": "standard"
+        },
+        "modelVersion": "gemini-3.5-flash-lite",
+        "responseId": "MWa0aq6pN_rv_uMPtZ-2SA"
+      },
+      "elapsedMs": 928,
+      "raw": "{\n  \"reason\": \"The photo features human subjects with visible faces, but the heavy red lighting replaces the warm golden hour light specified in the primary requirement.\",\n  \"decision\": \"cut\"\n}",
+      "result": {
+        "reason": "The photo features human subjects with visible faces, but the heavy red lighting replaces the warm golden hour light specified in the primary requirement.",
+        "decision": "cut"
+      }
+    },
+    {
+      "run": 2,
+      "file": "tphoto5.jpeg",
+      "arm": "local",
+      "retries": 0,
+      "retryAttempts": [],
+      "startedAt": "2026-09-23T23:52:18.771Z",
+      "status": 200,
+      "data": {
+        "model": "qwen3-vl:2b-instruct",
+        "created_at": "2026-09-23T23:52:22.965931Z",
+        "response": "{\n  \"reason\": \"The photo shows a group of people in a dimly lit environment with a strong red light, which is not golden hour light. The primary requirement specifies that the photo must have warm, golden light casting soft shadows and sharp eyes, but the lighting in this image is red, not golden. Therefore, the photo does not satisfy the primary requirement.\",\n  \"decision\": \"cut\"\n}",
+        "done": true,
+        "done_reason": "stop",
+        "total_duration": 4124917459,
+        "load_duration": 36636375,
+        "prompt_eval_count": 1238,
+        "prompt_eval_cached_count": 1237,
+        "prompt_eval_duration": 129711000,
+        "eval_count": 84,
+        "eval_duration": 2467798000
+      },
+      "elapsedMs": 4418,
+      "raw": "{\n  \"reason\": \"The photo shows a group of people in a dimly lit environment with a strong red light, which is not golden hour light. The primary requirement specifies that the photo must have warm, golden light casting soft shadows and sharp eyes, but the lighting in this image is red, not golden. Therefore, the photo does not satisfy the primary requirement.\",\n  \"decision\": \"cut\"\n}",
+      "result": {
+        "reason": "The photo shows a group of people in a dimly lit environment with a strong red light, which is not golden hour light. The primary requirement specifies that the photo must have warm, golden light casting soft shadows and sharp eyes, but the lighting in this image is red, not golden. Therefore, the photo does not satisfy the primary requirement.",
+        "decision": "cut"
+      }
+    },
+    {
+      "run": 2,
+      "file": "tphoto6.JPG",
+      "arm": "local",
+      "retries": 0,
+      "retryAttempts": [],
+      "startedAt": "2026-09-23T23:52:23.510Z",
+      "status": 200,
+      "data": {
+        "model": "qwen3-vl:2b-instruct",
+        "created_at": "2026-09-23T23:52:27.029718Z",
+        "response": "{\n  \"reason\": \"The photo shows two men inside a vehicle, likely a bus or a party van, with a blue light illuminating the interior. The lighting is not golden hour light, and the subjects are not in a candid expression. The primary requirement is not met.\",\n  \"decision\": \"cut\"\n}",
+        "done": true,
+        "done_reason": "stop",
+        "total_duration": 3452224750,
+        "load_duration": 26731041,
+        "prompt_eval_count": 1234,
+        "prompt_eval_cached_count": 1233,
+        "prompt_eval_duration": 66980000,
+        "eval_count": 66,
+        "eval_duration": 1939190000
+      },
+      "elapsedMs": 3644,
+      "raw": "{\n  \"reason\": \"The photo shows two men inside a vehicle, likely a bus or a party van, with a blue light illuminating the interior. The lighting is not golden hour light, and the subjects are not in a candid expression. The primary requirement is not met.\",\n  \"decision\": \"cut\"\n}",
+      "result": {
+        "reason": "The photo shows two men inside a vehicle, likely a bus or a party van, with a blue light illuminating the interior. The lighting is not golden hour light, and the subjects are not in a candid expression. The primary requirement is not met.",
+        "decision": "cut"
+      }
+    },
+    {
+      "run": 2,
+      "file": "tphoto6.JPG",
+      "arm": "cloud",
+      "retries": 0,
+      "retryAttempts": [],
+      "startedAt": "2026-09-23T23:52:27.360Z",
+      "status": 200,
+      "data": {
+        "candidates": [
+          {
+            "content": {
+              "parts": [
+                {
+                  "text": "{\n  \"reason\": \"The image features human subjects, but the lighting is cool blue and artificial rather than the warm golden hour light required, failing the primary condition.\",\n  \"decision\": \"cut\"\n}",
+                  "thoughtSignature": "El4KXAFpFH0TLJwd5Hi0fnrAcB0RrzScEJQf59+qyiQWZ09vJv7zfJ2EhkOzHD6/fbIsKLNrLA2COuAmpgRBkVvWVzQEM9Ar5unYOiumXLeVqyMW79VCRr1EzCj/hC6E"
+                }
+              ],
+              "role": "model"
+            },
+            "finishReason": "STOP",
+            "index": 0
+          }
+        ],
+        "usageMetadata": {
+          "promptTokenCount": 1303,
+          "candidatesTokenCount": 45,
+          "totalTokenCount": 1348,
+          "promptTokensDetails": [
+            {
+              "modality": "TEXT",
+              "tokenCount": 203
+            },
+            {
+              "modality": "IMAGE",
+              "tokenCount": 1100
+            }
+          ],
+          "serviceTier": "standard"
+        },
+        "modelVersion": "gemini-3.5-flash-lite",
+        "responseId": "PGa0asKTL6u3_PUPk_iUgAY"
+      },
+      "elapsedMs": 1923,
+      "raw": "{\n  \"reason\": \"The image features human subjects, but the lighting is cool blue and artificial rather than the warm golden hour light required, failing the primary condition.\",\n  \"decision\": \"cut\"\n}",
+      "result": {
+        "reason": "The image features human subjects, but the lighting is cool blue and artificial rather than the warm golden hour light required, failing the primary condition.",
+        "decision": "cut"
+      }
+    },
+    {
+      "run": 2,
+      "file": "tphoto7.jpeg",
+      "arm": "cloud",
+      "retries": 0,
+      "retryAttempts": [],
+      "startedAt": "2026-09-23T23:52:30.526Z",
+      "status": 200,
+      "data": {
+        "candidates": [
+          {
+            "content": {
+              "parts": [
+                {
+                  "text": "{\n  \"reason\": \"The photo shows an urban landscape with buildings, streets, and mountains under a cloudy sky, but it fails the primary requirement because there is no human subject with a face and eyes.\",\n  \"decision\": \"cut\"\n}",
+                  "thoughtSignature": "El4KXAFpFH0TL0QAX27GJHz5LJAkZbYbNfTCvW4IWmPhrjuDpwel5SeEAb3eYq3Qc6eyNcIC2UhZ5oMc7tNa+hjOUuxo02G1vKpnC0eZz8/u3p/JVVRzqWEkb1wt4trQ"
+                }
+              ],
+              "role": "model"
+            },
+            "finishReason": "STOP",
+            "index": 0
+          }
+        ],
+        "usageMetadata": {
+          "promptTokenCount": 1267,
+          "candidatesTokenCount": 53,
+          "totalTokenCount": 1320,
+          "promptTokensDetails": [
+            {
+              "modality": "TEXT",
+              "tokenCount": 203
+            },
+            {
+              "modality": "IMAGE",
+              "tokenCount": 1064
+            }
+          ],
+          "serviceTier": "standard"
+        },
+        "modelVersion": "gemini-3.5-flash-lite",
+        "responseId": "P2a0araxLJjF_PUPo-_--AU"
+      },
+      "elapsedMs": 1596,
+      "raw": "{\n  \"reason\": \"The photo shows an urban landscape with buildings, streets, and mountains under a cloudy sky, but it fails the primary requirement because there is no human subject with a face and eyes.\",\n  \"decision\": \"cut\"\n}",
+      "result": {
+        "reason": "The photo shows an urban landscape with buildings, streets, and mountains under a cloudy sky, but it fails the primary requirement because there is no human subject with a face and eyes.",
+        "decision": "cut"
+      }
+    },
+    {
+      "run": 2,
+      "file": "tphoto7.jpeg",
+      "arm": "local",
+      "retries": 0,
+      "retryAttempts": [],
+      "startedAt": "2026-09-23T23:52:33.215Z",
+      "status": 200,
+      "data": {
+        "model": "qwen3-vl:2b-instruct",
+        "created_at": "2026-09-23T23:52:36.821627Z",
+        "response": "{\n  \"reason\": \"The photo does not show a human subject with a face and eyes, nor does it depict a scene with warm, golden light. The image is a cityscape with buildings, roads, and mountains, and there is no human subject visible in the frame. Therefore, the primary requirement is not met.\",\n  \"decision\": \"cut\"\n}",
+        "done": true,
+        "done_reason": "stop",
+        "total_duration": 3520316583,
+        "load_duration": 55440917,
+        "prompt_eval_count": 1238,
+        "prompt_eval_cached_count": 1237,
+        "prompt_eval_duration": 158465000,
+        "eval_count": 75,
+        "eval_duration": 2002247000
+      },
+      "elapsedMs": 3773,
+      "raw": "{\n  \"reason\": \"The photo does not show a human subject with a face and eyes, nor does it depict a scene with warm, golden light. The image is a cityscape with buildings, roads, and mountains, and there is no human subject visible in the frame. Therefore, the primary requirement is not met.\",\n  \"decision\": \"cut\"\n}",
+      "result": {
+        "reason": "The photo does not show a human subject with a face and eyes, nor does it depict a scene with warm, golden light. The image is a cityscape with buildings, roads, and mountains, and there is no human subject visible in the frame. Therefore, the primary requirement is not met.",
+        "decision": "cut"
+      }
+    },
+    {
+      "run": 2,
+      "file": "tphoto8.jpg",
+      "arm": "local",
+      "retries": 0,
+      "retryAttempts": [],
+      "startedAt": "2026-09-23T23:52:37.194Z",
+      "status": 200,
+      "data": {
+        "model": "qwen3-vl:2b-instruct",
+        "created_at": "2026-09-23T23:52:39.672496Z",
+        "response": "{\n  \"reason\": \"The photo shows a bison in a grassy field, not a human subject. Therefore, it does not meet the primary requirement of showing a human subject with a face and eyes.\",\n  \"decision\": \"cut\"\n}",
+        "done": true,
+        "done_reason": "stop",
+        "total_duration": 2437314541,
+        "load_duration": 20220125,
+        "prompt_eval_count": 1282,
+        "prompt_eval_cached_count": 1281,
+        "prompt_eval_duration": 38929000,
+        "eval_count": 52,
+        "eval_duration": 1368344000
+      },
+      "elapsedMs": 2543,
+      "raw": "{\n  \"reason\": \"The photo shows a bison in a grassy field, not a human subject. Therefore, it does not meet the primary requirement of showing a human subject with a face and eyes.\",\n  \"decision\": \"cut\"\n}",
+      "result": {
+        "reason": "The photo shows a bison in a grassy field, not a human subject. Therefore, it does not meet the primary requirement of showing a human subject with a face and eyes.",
+        "decision": "cut"
+      }
+    },
+    {
+      "run": 2,
+      "file": "tphoto8.jpg",
+      "arm": "cloud",
+      "retries": 0,
+      "retryAttempts": [],
+      "startedAt": "2026-09-23T23:52:39.826Z",
+      "status": 200,
+      "data": {
+        "candidates": [
+          {
+            "content": {
+              "parts": [
+                {
+                  "text": "{\n  \"reason\": \"The photo features an American bison rather than a human subject, failing the primary requirement for portraiture.\",\n  \"decision\": \"cut\"\n}",
+                  "thoughtSignature": "El4KXAFpFH0TN8dDPamIpOCYKtBDB2UZi1YPLXOjMA4pH4eQbMMfec1nB5Sw8ZygVpg94FdiHzEqYrDvAY2+5CZA5efz+svrg1CSp0E7eB6M8iv0OhhHrxxSm/6dqmQb"
+                }
+              ],
+              "role": "model"
+            },
+            "finishReason": "STOP",
+            "index": 0
+          }
+        ],
+        "usageMetadata": {
+          "promptTokenCount": 1310,
+          "candidatesTokenCount": 37,
+          "totalTokenCount": 1347,
+          "promptTokensDetails": [
+            {
+              "modality": "TEXT",
+              "tokenCount": 203
+            },
+            {
+              "modality": "IMAGE",
+              "tokenCount": 1107
+            }
+          ],
+          "serviceTier": "standard"
+        },
+        "modelVersion": "gemini-3.5-flash-lite",
+        "responseId": "SWa0ao_8CKTF_PUPwPXmyAE"
+      },
+      "elapsedMs": 2065,
+      "raw": "{\n  \"reason\": \"The photo features an American bison rather than a human subject, failing the primary requirement for portraiture.\",\n  \"decision\": \"cut\"\n}",
+      "result": {
+        "reason": "The photo features an American bison rather than a human subject, failing the primary requirement for portraiture.",
+        "decision": "cut"
+      }
+    },
+    {
+      "run": 2,
+      "file": "tphoto9.jpg",
+      "arm": "cloud",
+      "retries": 0,
+      "retryAttempts": [],
+      "startedAt": "2026-09-23T23:52:43.058Z",
+      "status": 200,
+      "data": {
+        "candidates": [
+          {
+            "content": {
+              "parts": [
+                {
+                  "text": "{\n  \"reason\": \"The photo features two bison instead of a human subject with a face and eyes, failing the primary requirement.\",\n  \"decision\": \"cut\"\n}",
+                  "thoughtSignature": "El4KXAFpFH0T78QqKIR8UFAahWTTGpZL4KNkcWsTNst4MXuE5NEjktXKy7o0o7jEKIUzbNYEgeoBaKQrQ6Rh+jup+GFORoIIESvih0w8Z8a2tGH3Tepjho70qkmzTbKF"
+                }
+              ],
+              "role": "model"
+            },
+            "finishReason": "STOP",
+            "index": 0
+          }
+        ],
+        "usageMetadata": {
+          "promptTokenCount": 1310,
+          "candidatesTokenCount": 38,
+          "totalTokenCount": 1348,
+          "promptTokensDetails": [
+            {
+              "modality": "IMAGE",
+              "tokenCount": 1107
+            },
+            {
+              "modality": "TEXT",
+              "tokenCount": 203
+            }
+          ],
+          "serviceTier": "standard"
+        },
+        "modelVersion": "gemini-3.5-flash-lite",
+        "responseId": "TGa0ar3pEfrv_uMPtZ-2SA"
+      },
+      "elapsedMs": 1365,
+      "raw": "{\n  \"reason\": \"The photo features two bison instead of a human subject with a face and eyes, failing the primary requirement.\",\n  \"decision\": \"cut\"\n}",
+      "result": {
+        "reason": "The photo features two bison instead of a human subject with a face and eyes, failing the primary requirement.",
+        "decision": "cut"
+      }
+    },
+    {
+      "run": 2,
+      "file": "tphoto9.jpg",
+      "arm": "local",
+      "retries": 0,
+      "retryAttempts": [],
+      "startedAt": "2026-09-23T23:52:45.694Z",
+      "status": 200,
+      "data": {
+        "model": "qwen3-vl:2b-instruct",
+        "created_at": "2026-09-23T23:52:48.611136Z",
+        "response": "{\n  \"reason\": \"The photo shows a bison, not a human subject with a face and eyes. Therefore, it does not satisfy the primary requirement.\",\n  \"decision\": \"cut\"\n}",
+        "done": true,
+        "done_reason": "stop",
+        "total_duration": 2801683875,
+        "load_duration": 79410167,
+        "prompt_eval_count": 1282,
+        "prompt_eval_cached_count": 1281,
+        "prompt_eval_duration": 98019000,
+        "eval_count": 42,
+        "eval_duration": 1246651000
+      },
+      "elapsedMs": 3125,
+      "raw": "{\n  \"reason\": \"The photo shows a bison, not a human subject with a face and eyes. Therefore, it does not satisfy the primary requirement.\",\n  \"decision\": \"cut\"\n}",
+      "result": {
+        "reason": "The photo shows a bison, not a human subject with a face and eyes. Therefore, it does not satisfy the primary requirement.",
+        "decision": "cut"
+      }
+    },
+    {
+      "run": 2,
+      "file": "tphoto10.jpg",
+      "arm": "local",
+      "retries": 0,
+      "retryAttempts": [],
+      "startedAt": "2026-09-23T23:52:49.179Z",
+      "status": 200,
+      "data": {
+        "model": "qwen3-vl:2b-instruct",
+        "created_at": "2026-09-23T23:52:53.846951Z",
+        "response": "{\n  \"reason\": \"The photo depicts a natural landscape of a canyon with a river, but it does not feature a human subject with a face and eyes. Therefore, it does not satisfy the primary requirement.\",\n  \"decision\": \"cut\"\n}",
+        "done": true,
+        "done_reason": "stop",
+        "total_duration": 4580041833,
+        "load_duration": 189327750,
+        "prompt_eval_count": 1282,
+        "prompt_eval_cached_count": 1281,
+        "prompt_eval_duration": 162665000,
+        "eval_count": 52,
+        "eval_duration": 1445791000
+      },
+      "elapsedMs": 5107,
+      "raw": "{\n  \"reason\": \"The photo depicts a natural landscape of a canyon with a river, but it does not feature a human subject with a face and eyes. Therefore, it does not satisfy the primary requirement.\",\n  \"decision\": \"cut\"\n}",
+      "result": {
+        "reason": "The photo depicts a natural landscape of a canyon with a river, but it does not feature a human subject with a face and eyes. Therefore, it does not satisfy the primary requirement.",
+        "decision": "cut"
+      }
+    },
+    {
+      "run": 2,
+      "file": "tphoto10.jpg",
+      "arm": "cloud",
+      "retries": 0,
+      "retryAttempts": [],
+      "startedAt": "2026-09-23T23:52:55.276Z",
+      "status": 200,
+      "data": {
+        "candidates": [
+          {
+            "content": {
+              "parts": [
+                {
+                  "text": "{\n  \"reason\": \"The photo displays a scenic canyon landscape with a river flowing through it, featuring no human subjects, thus failing the primary requirement for a human subject.\",\n  \"decision\": \"cut\"\n}",
+                  "thoughtSignature": "El4KXAFpFH0TEr5Y8Xp/dndJzcCeB8DYM7FTGRkkOrXSc+MBUArNC5crio/3abcOMipIhoIuT5Hmcz9wiXfUmKE2ER8SwG5QWYAyljVlKZ/rczA/Lu+E98P1XHZzc3LQ"
+                }
+              ],
+              "role": "model"
+            },
+            "finishReason": "STOP",
+            "index": 0
+          }
+        ],
+        "usageMetadata": {
+          "promptTokenCount": 1310,
+          "candidatesTokenCount": 46,
+          "totalTokenCount": 1356,
+          "promptTokensDetails": [
+            {
+              "modality": "TEXT",
+              "tokenCount": 203
+            },
+            {
+              "modality": "IMAGE",
+              "tokenCount": 1107
+            }
+          ],
+          "serviceTier": "standard"
+        },
+        "modelVersion": "gemini-3.5-flash-lite",
+        "responseId": "WGa0aur4NfyNjrEPvtH9OA"
+      },
+      "elapsedMs": 2170,
+      "raw": "{\n  \"reason\": \"The photo displays a scenic canyon landscape with a river flowing through it, featuring no human subjects, thus failing the primary requirement for a human subject.\",\n  \"decision\": \"cut\"\n}",
+      "result": {
+        "reason": "The photo displays a scenic canyon landscape with a river flowing through it, featuring no human subjects, thus failing the primary requirement for a human subject.",
+        "decision": "cut"
+      }
+    },
+    {
+      "run": 3,
+      "file": "tphoto1.jpg",
+      "arm": "local",
+      "retries": 0,
+      "retryAttempts": [],
+      "startedAt": "2026-09-23T23:52:59.324Z",
+      "status": 200,
+      "data": {
+        "model": "qwen3-vl:2b-instruct",
+        "created_at": "2026-09-23T23:53:20.490604Z",
+        "response": "{\n  \"reason\": \"The photo shows a human subject with a face and eyes, and the lighting is warm and golden, consistent with golden hour light. The subject's eyes are focused and expressive, and the image appears to be a candid expression. Therefore, it meets the primary requirement.\",\n  \"decision\": \"keep\"\n}",
+        "done": true,
+        "done_reason": "stop",
+        "total_duration": 18344108791,
+        "load_duration": 1297598041,
+        "prompt_eval_count": 1226,
+        "prompt_eval_cached_count": 1225,
+        "prompt_eval_duration": 938098000,
+        "eval_count": 68,
+        "eval_duration": 6954661000
+      },
+      "elapsedMs": 23685,
+      "raw": "{\n  \"reason\": \"The photo shows a human subject with a face and eyes, and the lighting is warm and golden, consistent with golden hour light. The subject's eyes are focused and expressive, and the image appears to be a candid expression. Therefore, it meets the primary requirement.\",\n  \"decision\": \"keep\"\n}",
+      "result": {
+        "reason": "The photo shows a human subject with a face and eyes, and the lighting is warm and golden, consistent with golden hour light. The subject's eyes are focused and expressive, and the image appears to be a candid expression. Therefore, it meets the primary requirement.",
+        "decision": "keep"
+      }
+    },
+    {
+      "run": 3,
+      "file": "tphoto1.jpg",
+      "arm": "cloud",
+      "retries": 0,
+      "retryAttempts": [],
+      "startedAt": "2026-09-23T23:53:28.653Z",
+      "status": 200,
+      "data": {
+        "candidates": [
+          {
+            "content": {
+              "parts": [
+                {
+                  "text": "{\n  \"reason\": \"The photo shows a human subject with her eyes closed, illuminated by warm golden hour light, satisfying the primary requirement for a backlit portrait.\",\n  \"decision\": \"keep\"\n}",
+                  "thoughtSignature": "El4KXAFpFH0Twzk4SPHmPu05pQhkPvfh1WXYlXwy61JgWlybB1a32PrRZM4Vyn7ueAZl2IG8R+cfydfLNa9/Ft+Nd5ozk6zmc74X5xs3SnN63hMAT0t/68PXCxjqOoxM"
+                }
+              ],
+              "role": "model"
+            },
+            "finishReason": "STOP",
+            "index": 0
+          }
+        ],
+        "usageMetadata": {
+          "promptTokenCount": 1292,
+          "candidatesTokenCount": 44,
+          "totalTokenCount": 1336,
+          "promptTokensDetails": [
+            {
+              "modality": "IMAGE",
+              "tokenCount": 1089
+            },
+            {
+              "modality": "TEXT",
+              "tokenCount": 203
+            }
+          ],
+          "serviceTier": "standard"
+        },
+        "modelVersion": "gemini-3.5-flash-lite",
+        "responseId": "hWa0aoz8HuDG-8YP9cfi0AI"
+      },
+      "elapsedMs": 14834,
+      "raw": "{\n  \"reason\": \"The photo shows a human subject with her eyes closed, illuminated by warm golden hour light, satisfying the primary requirement for a backlit portrait.\",\n  \"decision\": \"keep\"\n}",
+      "result": {
+        "reason": "The photo shows a human subject with her eyes closed, illuminated by warm golden hour light, satisfying the primary requirement for a backlit portrait.",
+        "decision": "keep"
+      }
+    },
+    {
+      "run": 3,
+      "file": "tphoto2.jpg",
+      "arm": "cloud",
+      "retries": 0,
+      "retryAttempts": [],
+      "startedAt": "2026-09-23T23:53:49.554Z",
+      "status": 200,
+      "data": {
+        "candidates": [
+          {
+            "content": {
+              "parts": [
+                {
+                  "text": "{\n  \"reason\": \"The photo clearly shows a human subject with sharp, focused eyes, illuminated by warm golden hour lighting that enhances the overall portrait.\",\n  \"decision\": \"keep\"\n}",
+                  "thoughtSignature": "El4KXAFpFH0TJm4vXfthuOMs2mziXBG0YwcaGdaCHAS2GGJEBE3r3Nbr1npcLVbxJA71HVib6XoKuT+Rrc0PoAQWBEfFc6S7Sris2X8WGgcN+SkD81AtrfIMRi8SkER2"
+                }
+              ],
+              "role": "model"
+            },
+            "finishReason": "STOP",
+            "index": 0
+          }
+        ],
+        "usageMetadata": {
+          "promptTokenCount": 1303,
+          "candidatesTokenCount": 42,
+          "totalTokenCount": 1345,
+          "promptTokensDetails": [
+            {
+              "modality": "IMAGE",
+              "tokenCount": 1100
+            },
+            {
+              "modality": "TEXT",
+              "tokenCount": 203
+            }
+          ],
+          "serviceTier": "standard"
+        },
+        "modelVersion": "gemini-3.5-flash-lite",
+        "responseId": "kma0aviZDKyQ39IP2egM"
+      },
+      "elapsedMs": 4656,
+      "raw": "{\n  \"reason\": \"The photo clearly shows a human subject with sharp, focused eyes, illuminated by warm golden hour lighting that enhances the overall portrait.\",\n  \"decision\": \"keep\"\n}",
+      "result": {
+        "reason": "The photo clearly shows a human subject with sharp, focused eyes, illuminated by warm golden hour lighting that enhances the overall portrait.",
+        "decision": "keep"
+      }
+    },
+    {
+      "run": 3,
+      "file": "tphoto2.jpg",
+      "arm": "local",
+      "retries": 0,
+      "retryAttempts": [],
+      "startedAt": "2026-09-23T23:53:57.279Z",
+      "status": 200,
+      "data": {
+        "model": "qwen3-vl:2b-instruct",
+        "created_at": "2026-09-23T23:54:13.451348Z",
+        "response": "{\n  \"reason\": \"The photo shows a human subject with a face and eyes, and the lighting is warm and golden, consistent with golden hour light. The subject's eyes are focused and expressive, and the image is a portrait. The subject's expression appears natural and unposed, meeting all the criteria for the primary requirement.\",\n  \"decision\": \"keep\"\n}",
+        "done": true,
+        "done_reason": "stop",
+        "total_duration": 12180568917,
+        "load_duration": 1527999750,
+        "prompt_eval_count": 1277,
+        "prompt_eval_cached_count": 1276,
+        "prompt_eval_duration": 372868000,
+        "eval_count": 76,
+        "eval_duration": 2553202000
+      },
+      "elapsedMs": 17345,
+      "raw": "{\n  \"reason\": \"The photo shows a human subject with a face and eyes, and the lighting is warm and golden, consistent with golden hour light. The subject's eyes are focused and expressive, and the image is a portrait. The subject's expression appears natural and unposed, meeting all the criteria for the primary requirement.\",\n  \"decision\": \"keep\"\n}",
+      "result": {
+        "reason": "The photo shows a human subject with a face and eyes, and the lighting is warm and golden, consistent with golden hour light. The subject's eyes are focused and expressive, and the image is a portrait. The subject's expression appears natural and unposed, meeting all the criteria for the primary requirement.",
+        "decision": "keep"
+      }
+    },
+    {
+      "run": 3,
+      "file": "tphoto3.jpg",
+      "arm": "local",
+      "retries": 0,
+      "retryAttempts": [],
+      "startedAt": "2026-09-23T23:54:18.689Z",
+      "status": 200,
+      "data": {
+        "model": "qwen3-vl:2b-instruct",
+        "created_at": "2026-09-23T23:54:26.530267Z",
+        "response": "{\n  \"reason\": \"The photo shows a human subject with a face and eyes, and it is illuminated by warm, golden light, which is consistent with golden hour lighting. The subject's eyes are focused and expressive, and the image captures a natural, unposed emotion. Therefore, it meets the primary requirement.\",\n  \"decision\": \"keep\"\n}",
+        "done": true,
+        "done_reason": "stop",
+        "total_duration": 6922743958,
+        "load_duration": 204599750,
+        "prompt_eval_count": 1282,
+        "prompt_eval_cached_count": 1281,
+        "prompt_eval_duration": 229667000,
+        "eval_count": 73,
+        "eval_duration": 2426527000
+      },
+      "elapsedMs": 8755,
+      "raw": "{\n  \"reason\": \"The photo shows a human subject with a face and eyes, and it is illuminated by warm, golden light, which is consistent with golden hour lighting. The subject's eyes are focused and expressive, and the image captures a natural, unposed emotion. Therefore, it meets the primary requirement.\",\n  \"decision\": \"keep\"\n}",
+      "result": {
+        "reason": "The photo shows a human subject with a face and eyes, and it is illuminated by warm, golden light, which is consistent with golden hour lighting. The subject's eyes are focused and expressive, and the image captures a natural, unposed emotion. Therefore, it meets the primary requirement.",
+        "decision": "keep"
+      }
+    },
+    {
+      "run": 3,
+      "file": "tphoto3.jpg",
+      "arm": "cloud",
+      "retries": 0,
+      "retryAttempts": [],
+      "startedAt": "2026-09-23T23:54:31.316Z",
+      "status": 200,
+      "data": {
+        "candidates": [
+          {
+            "content": {
+              "parts": [
+                {
+                  "text": "{\n  \"reason\": \"The photo captures a person in a field during the golden hour with warm lighting, sharp focused eyes, and a visible face, completely satisfying the primary requirement.\",\n  \"decision\": \"keep\"\n}",
+                  "thoughtSignature": "El4KXAFpFH0TPhVfpfOb4Bx5FIKpTNFZhl6dkyjwHAzS825G9v0ucT0uCqA+6P90O5f7G7g2ljwjbWN4dAIuecopiUmULsZfZMRCf7N3JxD4GiUVLw2mh5IiPmzwIM4x"
+                }
+              ],
+              "role": "model"
+            },
+            "finishReason": "STOP",
+            "index": 0
+          }
+        ],
+        "usageMetadata": {
+          "promptTokenCount": 1283,
+          "candidatesTokenCount": 48,
+          "totalTokenCount": 1331,
+          "promptTokensDetails": [
+            {
+              "modality": "TEXT",
+              "tokenCount": 203
+            },
+            {
+              "modality": "IMAGE",
+              "tokenCount": 1080
+            }
+          ],
+          "serviceTier": "standard"
+        },
+        "modelVersion": "gemini-3.5-flash-lite",
+        "responseId": "u2a0atTRGuCEjrEP4OuDiQc"
+      },
+      "elapsedMs": 4006,
+      "raw": "{\n  \"reason\": \"The photo captures a person in a field during the golden hour with warm lighting, sharp focused eyes, and a visible face, completely satisfying the primary requirement.\",\n  \"decision\": \"keep\"\n}",
+      "result": {
+        "reason": "The photo captures a person in a field during the golden hour with warm lighting, sharp focused eyes, and a visible face, completely satisfying the primary requirement.",
+        "decision": "keep"
+      }
+    },
+    {
+      "run": 3,
+      "file": "tphoto4.jpeg",
+      "arm": "cloud",
+      "retries": 0,
+      "retryAttempts": [],
+      "startedAt": "2026-09-23T23:54:38.442Z",
+      "status": 200,
+      "data": {
+        "candidates": [
+          {
+            "content": {
+              "parts": [
+                {
+                  "text": "{\n  \"reason\": \"The photo clearly shows a human subject with a face and sharp, expressive eyes, and features warm lighting creating soft shadows, thus satisfying the primary requirement.\",\n  \"decision\": \"keep\"\n}",
+                  "thoughtSignature": "El4KXAFpFH0ThGHvsAy62ZrHk0wJdyFZgATjBAj+XbbwEuOcg3FEA6Tlz0hkOjEUQJg2YyZMGLz7Yjn1i2ljSJAYNlvwn/17j/ZGnvOqv19NBoyOr4CxPO2kwLN8xueG"
+                }
+              ],
+              "role": "model"
+            },
+            "finishReason": "STOP",
+            "index": 0
+          }
+        ],
+        "usageMetadata": {
+          "promptTokenCount": 1267,
+          "candidatesTokenCount": 48,
+          "totalTokenCount": 1315,
+          "promptTokensDetails": [
+            {
+              "modality": "TEXT",
+              "tokenCount": 203
+            },
+            {
+              "modality": "IMAGE",
+              "tokenCount": 1064
+            }
+          ],
+          "serviceTier": "standard"
+        },
+        "modelVersion": "gemini-3.5-flash-lite",
+        "responseId": "wGa0ar3rAYq4sOIPqMf0-QM"
+      },
+      "elapsedMs": 1967,
+      "raw": "{\n  \"reason\": \"The photo clearly shows a human subject with a face and sharp, expressive eyes, and features warm lighting creating soft shadows, thus satisfying the primary requirement.\",\n  \"decision\": \"keep\"\n}",
+      "result": {
+        "reason": "The photo clearly shows a human subject with a face and sharp, expressive eyes, and features warm lighting creating soft shadows, thus satisfying the primary requirement.",
+        "decision": "keep"
+      }
+    },
+    {
+      "run": 3,
+      "file": "tphoto4.jpeg",
+      "arm": "local",
+      "retries": 0,
+      "retryAttempts": [],
+      "startedAt": "2026-09-23T23:54:43.922Z",
+      "status": 200,
+      "data": {
+        "model": "qwen3-vl:2b-instruct",
+        "created_at": "2026-09-23T23:54:54.175747Z",
+        "response": "{\n  \"reason\": \"The photo shows a human subject with a face and eyes, and the lighting appears to be warm and golden, casting soft shadows. The subject's eyes are focused and expressive, which satisfies the primary requirement. However, the description of the lighting as 'golden hour light' is not accurate, as the light is more evenly distributed and not clearly indicating the golden hour. The subject's expression appears to be natural and unposed, which satisfies the secondary criterion. Therefore, the photo meets the primary requirement.\",\n  \"decision\": \"keep\"\n}",
+        "done": true,
+        "done_reason": "stop",
+        "total_duration": 8943767667,
+        "load_duration": 310633583,
+        "prompt_eval_count": 1238,
+        "prompt_eval_cached_count": 1237,
+        "prompt_eval_duration": 480304000,
+        "eval_count": 115,
+        "eval_duration": 3660686000
+      },
+      "elapsedMs": 11957,
+      "raw": "{\n  \"reason\": \"The photo shows a human subject with a face and eyes, and the lighting appears to be warm and golden, casting soft shadows. The subject's eyes are focused and expressive, which satisfies the primary requirement. However, the description of the lighting as 'golden hour light' is not accurate, as the light is more evenly distributed and not clearly indicating the golden hour. The subject's expression appears to be natural and unposed, which satisfies the secondary criterion. Therefore, the photo meets the primary requirement.\",\n  \"decision\": \"keep\"\n}",
+      "result": {
+        "reason": "The photo shows a human subject with a face and eyes, and the lighting appears to be warm and golden, casting soft shadows. The subject's eyes are focused and expressive, which satisfies the primary requirement. However, the description of the lighting as 'golden hour light' is not accurate, as the light is more evenly distributed and not clearly indicating the golden hour. The subject's expression appears to be natural and unposed, which satisfies the secondary criterion. Therefore, the photo meets the primary requirement.",
+        "decision": "keep"
+      }
+    },
+    {
+      "run": 3,
+      "file": "tphoto5.jpeg",
+      "arm": "local",
+      "retries": 0,
+      "retryAttempts": [],
+      "startedAt": "2026-09-23T23:54:56.649Z",
+      "status": 200,
+      "data": {
+        "model": "qwen3-vl:2b-instruct",
+        "created_at": "2026-09-23T23:55:05.180151Z",
+        "response": "{\n  \"reason\": \"The photo shows a group of people in a dimly lit environment with a strong red light, which is not golden hour light. The primary requirement specifies that the photo must have warm, golden light casting soft shadows and sharp eyes, but the lighting in this image is red, not golden. Therefore, the photo does not satisfy the primary requirement.\",\n  \"decision\": \"cut\"\n}",
+        "done": true,
+        "done_reason": "stop",
+        "total_duration": 7681020291,
+        "load_duration": 347432708,
+        "prompt_eval_count": 1238,
+        "prompt_eval_cached_count": 1237,
+        "prompt_eval_duration": 787694000,
+        "eval_count": 84,
+        "eval_duration": 3459393000
+      },
+      "elapsedMs": 8974,
+      "raw": "{\n  \"reason\": \"The photo shows a group of people in a dimly lit environment with a strong red light, which is not golden hour light. The primary requirement specifies that the photo must have warm, golden light casting soft shadows and sharp eyes, but the lighting in this image is red, not golden. Therefore, the photo does not satisfy the primary requirement.\",\n  \"decision\": \"cut\"\n}",
+      "result": {
+        "reason": "The photo shows a group of people in a dimly lit environment with a strong red light, which is not golden hour light. The primary requirement specifies that the photo must have warm, golden light casting soft shadows and sharp eyes, but the lighting in this image is red, not golden. Therefore, the photo does not satisfy the primary requirement.",
+        "decision": "cut"
+      }
+    },
+    {
+      "run": 3,
+      "file": "tphoto5.jpeg",
+      "arm": "cloud",
+      "retries": 0,
+      "retryAttempts": [],
+      "startedAt": "2026-09-23T23:55:07.703Z",
+      "status": 200,
+      "data": {
+        "candidates": [
+          {
+            "content": {
+              "parts": [
+                {
+                  "text": "{\n  \"reason\": \"The photo features human subjects with visible faces, but the lighting is heavily tinted red from stage lights rather than warm golden hour sunlight, failing the lighting requirement.\",\n  \"decision\": \"cut\"\n}",
+                  "thoughtSignature": "El4KXAFpFH0Tl+r5f1p7Al1sDxnY6yR/6/mogvt1CuE2Rzd3gnMXnZQtkZAmzF4aHRepT0ZTl4d3rLqpYDwnZktbxZsoSy4eaZtRk2u2Duh/IaQcPZ6qmjgNDSW/oU2l"
+                }
+              ],
+              "role": "model"
+            },
+            "finishReason": "STOP",
+            "index": 0
+          }
+        ],
+        "usageMetadata": {
+          "promptTokenCount": 1267,
+          "candidatesTokenCount": 48,
+          "totalTokenCount": 1315,
+          "promptTokensDetails": [
+            {
+              "modality": "IMAGE",
+              "tokenCount": 1064
+            },
+            {
+              "modality": "TEXT",
+              "tokenCount": 203
+            }
+          ],
+          "serviceTier": "standard"
+        },
+        "modelVersion": "gemini-3.5-flash-lite",
+        "responseId": "6Ga0arDNDoiw1MkPiIGX6A4"
+      },
+      "elapsedMs": 12298,
+      "raw": "{\n  \"reason\": \"The photo features human subjects with visible faces, but the lighting is heavily tinted red from stage lights rather than warm golden hour sunlight, failing the lighting requirement.\",\n  \"decision\": \"cut\"\n}",
+      "result": {
+        "reason": "The photo features human subjects with visible faces, but the lighting is heavily tinted red from stage lights rather than warm golden hour sunlight, failing the lighting requirement.",
+        "decision": "cut"
+      }
+    },
+    {
+      "run": 3,
+      "file": "tphoto6.JPG",
+      "arm": "cloud",
+      "retries": 0,
+      "retryAttempts": [],
+      "startedAt": "2026-09-23T23:55:22.844Z",
+      "status": 200,
+      "data": {
+        "candidates": [
+          {
+            "content": {
+              "parts": [
+                {
+                  "text": "{\n  \"reason\": \"The image features human subjects with visible faces, but the lighting is cool and blue from artificial sources rather than warm golden hour light, failing the primary requirement.\",\n  \"decision\": \"cut\"\n}",
+                  "thoughtSignature": "El4KXAFpFH0T0X54B/rd2Ev28sLBWTpFjUBTwdRYNxbcbqM9U5gXW7aDDg65NJ9o8dNcIPjauhbW1Qzttl5pcToLHI9nmvFuI483lDEAj33rrNoj7gbsebVJMSqnCf9x"
+                }
+              ],
+              "role": "model"
+            },
+            "finishReason": "STOP",
+            "index": 0
+          }
+        ],
+        "usageMetadata": {
+          "promptTokenCount": 1303,
+          "candidatesTokenCount": 48,
+          "totalTokenCount": 1351,
+          "promptTokensDetails": [
+            {
+              "modality": "IMAGE",
+              "tokenCount": 1100
+            },
+            {
+              "modality": "TEXT",
+              "tokenCount": 203
+            }
+          ],
+          "serviceTier": "standard"
+        },
+        "modelVersion": "gemini-3.5-flash-lite",
+        "responseId": "7Ga0asnCC8yx1MkP8bzliAs"
+      },
+      "elapsedMs": 1315,
+      "raw": "{\n  \"reason\": \"The image features human subjects with visible faces, but the lighting is cool and blue from artificial sources rather than warm golden hour light, failing the primary requirement.\",\n  \"decision\": \"cut\"\n}",
+      "result": {
+        "reason": "The image features human subjects with visible faces, but the lighting is cool and blue from artificial sources rather than warm golden hour light, failing the primary requirement.",
+        "decision": "cut"
+      }
+    },
+    {
+      "run": 3,
+      "file": "tphoto6.JPG",
+      "arm": "local",
+      "retries": 0,
+      "retryAttempts": [],
+      "startedAt": "2026-09-23T23:55:26.472Z",
+      "status": 200,
+      "data": {
+        "model": "qwen3-vl:2b-instruct",
+        "created_at": "2026-09-23T23:55:33.71992Z",
+        "response": "{\n  \"reason\": \"The photo shows two men inside a vehicle, likely a bus or a party van, with a blue light illuminating the interior. The lighting is not golden hour light, and the subjects are not in a candid expression. The primary requirement is not met.\",\n  \"decision\": \"cut\"\n}",
+        "done": true,
+        "done_reason": "stop",
+        "total_duration": 6540115958,
+        "load_duration": 199454166,
+        "prompt_eval_count": 1234,
+        "prompt_eval_cached_count": 1233,
+        "prompt_eval_duration": 205113000,
+        "eval_count": 66,
+        "eval_duration": 1944394000
+      },
+      "elapsedMs": 7423,
+      "raw": "{\n  \"reason\": \"The photo shows two men inside a vehicle, likely a bus or a party van, with a blue light illuminating the interior. The lighting is not golden hour light, and the subjects are not in a candid expression. The primary requirement is not met.\",\n  \"decision\": \"cut\"\n}",
+      "result": {
+        "reason": "The photo shows two men inside a vehicle, likely a bus or a party van, with a blue light illuminating the interior. The lighting is not golden hour light, and the subjects are not in a candid expression. The primary requirement is not met.",
+        "decision": "cut"
+      }
+    },
+    {
+      "run": 3,
+      "file": "tphoto7.jpeg",
+      "arm": "local",
+      "retries": 0,
+      "retryAttempts": [],
+      "startedAt": "2026-09-23T23:55:34.496Z",
+      "status": 200,
+      "data": {
+        "model": "qwen3-vl:2b-instruct",
+        "created_at": "2026-09-23T23:55:44.697436Z",
+        "response": "{\n  \"reason\": \"The photo does not show a human subject with a face and eyes, nor does it depict a scene with warm, golden light. The image is a cityscape with buildings, roads, and mountains, and there is no human subject visible in the frame. Therefore, the primary requirement is not met.\",\n  \"decision\": \"cut\"\n}",
+        "done": true,
+        "done_reason": "stop",
+        "total_duration": 8679639416,
+        "load_duration": 878752750,
+        "prompt_eval_count": 1238,
+        "prompt_eval_cached_count": 1237,
+        "prompt_eval_duration": 252952000,
+        "eval_count": 75,
+        "eval_duration": 2130328000
+      },
+      "elapsedMs": 10485,
+      "raw": "{\n  \"reason\": \"The photo does not show a human subject with a face and eyes, nor does it depict a scene with warm, golden light. The image is a cityscape with buildings, roads, and mountains, and there is no human subject visible in the frame. Therefore, the primary requirement is not met.\",\n  \"decision\": \"cut\"\n}",
+      "result": {
+        "reason": "The photo does not show a human subject with a face and eyes, nor does it depict a scene with warm, golden light. The image is a cityscape with buildings, roads, and mountains, and there is no human subject visible in the frame. Therefore, the primary requirement is not met.",
+        "decision": "cut"
+      }
+    },
+    {
+      "run": 3,
+      "file": "tphoto7.jpeg",
+      "arm": "cloud",
+      "retries": 0,
+      "retryAttempts": [],
+      "startedAt": "2026-09-23T23:55:45.572Z",
+      "status": 200,
+      "data": {
+        "candidates": [
+          {
+            "content": {
+              "parts": [
+                {
+                  "text": "{\n  \"reason\": \"The image shows a city skyline and street view with no human subject present, thereby failing the primary requirement of displaying a human subject with a face and eyes.\",\n  \"decision\": \"cut\"\n}",
+                  "thoughtSignature": "El4KXAFpFH0TdRH+MGLzDXSbHxKwgqA5zlB/JkB1sdhd74Xe+yCJGMb7ErG/qMZPNUsYUFisAi+jW6A89rTIW3unOti9EGibnCHEAUxFRYXoUQA349PemSeg6LUKTDpT"
+                }
+              ],
+              "role": "model"
+            },
+            "finishReason": "STOP",
+            "index": 0
+          }
+        ],
+        "usageMetadata": {
+          "promptTokenCount": 1267,
+          "candidatesTokenCount": 48,
+          "totalTokenCount": 1315,
+          "promptTokensDetails": [
+            {
+              "modality": "TEXT",
+              "tokenCount": 203
+            },
+            {
+              "modality": "IMAGE",
+              "tokenCount": 1064
+            }
+          ],
+          "serviceTier": "standard"
+        },
+        "modelVersion": "gemini-3.5-flash-lite",
+        "responseId": "BGe0aqGeCcOhjrEPrIuSuAU"
+      },
+      "elapsedMs": 2748,
+      "raw": "{\n  \"reason\": \"The image shows a city skyline and street view with no human subject present, thereby failing the primary requirement of displaying a human subject with a face and eyes.\",\n  \"decision\": \"cut\"\n}",
+      "result": {
+        "reason": "The image shows a city skyline and street view with no human subject present, thereby failing the primary requirement of displaying a human subject with a face and eyes.",
+        "decision": "cut"
+      }
+    },
+    {
+      "run": 3,
+      "file": "tphoto8.jpg",
+      "arm": "cloud",
+      "retries": 0,
+      "retryAttempts": [],
+      "startedAt": "2026-09-23T23:55:50.251Z",
+      "status": 200,
+      "data": {
+        "candidates": [
+          {
+            "content": {
+              "parts": [
+                {
+                  "text": "{\n  \"reason\": \"The photo shows a bison in a field, which fails the primary requirement for a human subject.\",\n  \"decision\": \"cut\"\n}",
+                  "thoughtSignature": "El4KXAFpFH0TRtDm7Z4WB+NEc1YpX/Dt1rf15FD2hAYeqk9/yYVDn94afo2QCx4XHx1+qjSdh2xNBhy/VESrJ8lfEPbu8hZFD6QnLdZmLwPZWOSMbW+FyJrJYucZhjQq"
+                }
+              ],
+              "role": "model"
+            },
+            "finishReason": "STOP",
+            "index": 0
+          }
+        ],
+        "usageMetadata": {
+          "promptTokenCount": 1310,
+          "candidatesTokenCount": 36,
+          "totalTokenCount": 1346,
+          "promptTokensDetails": [
+            {
+              "modality": "TEXT",
+              "tokenCount": 203
+            },
+            {
+              "modality": "IMAGE",
+              "tokenCount": 1107
+            }
+          ],
+          "serviceTier": "standard"
+        },
+        "modelVersion": "gemini-3.5-flash-lite",
+        "responseId": "B2e0arH9K9q639IP8ai2kQQ"
+      },
+      "elapsedMs": 1589,
+      "raw": "{\n  \"reason\": \"The photo shows a bison in a field, which fails the primary requirement for a human subject.\",\n  \"decision\": \"cut\"\n}",
+      "result": {
+        "reason": "The photo shows a bison in a field, which fails the primary requirement for a human subject.",
+        "decision": "cut"
+      }
+    },
+    {
+      "run": 3,
+      "file": "tphoto8.jpg",
+      "arm": "local",
+      "retries": 0,
+      "retryAttempts": [],
+      "startedAt": "2026-09-23T23:55:55.326Z",
+      "status": 200,
+      "data": {
+        "model": "qwen3-vl:2b-instruct",
+        "created_at": "2026-09-23T23:56:04.727199Z",
+        "response": "{\n  \"reason\": \"The photo shows a bison in a grassy field, not a human subject. Therefore, it does not meet the primary requirement of showing a human subject with a face and eyes.\",\n  \"decision\": \"cut\"\n}",
+        "done": true,
+        "done_reason": "stop",
+        "total_duration": 5886208958,
+        "load_duration": 194121833,
+        "prompt_eval_count": 1282,
+        "prompt_eval_cached_count": 1281,
+        "prompt_eval_duration": 371410000,
+        "eval_count": 52,
+        "eval_duration": 1606095000
+      },
+      "elapsedMs": 10017,
+      "raw": "{\n  \"reason\": \"The photo shows a bison in a grassy field, not a human subject. Therefore, it does not meet the primary requirement of showing a human subject with a face and eyes.\",\n  \"decision\": \"cut\"\n}",
+      "result": {
+        "reason": "The photo shows a bison in a grassy field, not a human subject. Therefore, it does not meet the primary requirement of showing a human subject with a face and eyes.",
+        "decision": "cut"
+      }
+    },
+    {
+      "run": 3,
+      "file": "tphoto9.jpg",
+      "arm": "local",
+      "retries": 0,
+      "retryAttempts": [],
+      "startedAt": "2026-09-23T23:56:07.678Z",
+      "status": 200,
+      "data": {
+        "model": "qwen3-vl:2b-instruct",
+        "created_at": "2026-09-23T23:56:11.906765Z",
+        "response": "{\n  \"reason\": \"The photo shows a bison, not a human subject with a face and eyes. Therefore, it does not satisfy the primary requirement.\",\n  \"decision\": \"cut\"\n}",
+        "done": true,
+        "done_reason": "stop",
+        "total_duration": 3542204833,
+        "load_duration": 97059667,
+        "prompt_eval_count": 1282,
+        "prompt_eval_cached_count": 1281,
+        "prompt_eval_duration": 260447000,
+        "eval_count": 42,
+        "eval_duration": 1134570000
+      },
+      "elapsedMs": 4324,
+      "raw": "{\n  \"reason\": \"The photo shows a bison, not a human subject with a face and eyes. Therefore, it does not satisfy the primary requirement.\",\n  \"decision\": \"cut\"\n}",
+      "result": {
+        "reason": "The photo shows a bison, not a human subject with a face and eyes. Therefore, it does not satisfy the primary requirement.",
+        "decision": "cut"
+      }
+    },
+    {
+      "run": 3,
+      "file": "tphoto9.jpg",
+      "arm": "cloud",
+      "retries": 0,
+      "retryAttempts": [],
+      "startedAt": "2026-09-23T23:56:13.049Z",
+      "status": 200,
+      "data": {
+        "candidates": [
+          {
+            "content": {
+              "parts": [
+                {
+                  "text": "{\n  \"reason\": \"The photo features two bison instead of a human subject with a face and eyes, failing the primary requirement.\",\n  \"decision\": \"cut\"\n}",
+                  "thoughtSignature": "El4KXAFpFH0TtCwE7ch+RLGSGYnqF4aS8dPmP3q56NyaWCTcUPu1xQbuLC0a0OlgBfPlvXDot7xJLRnPd4HMuoXl2IOPw3dK0O2MAk+eR7NsnDgxy5kF2H4E/Z6Z9Xim"
+                }
+              ],
+              "role": "model"
+            },
+            "finishReason": "STOP",
+            "index": 0
+          }
+        ],
+        "usageMetadata": {
+          "promptTokenCount": 1310,
+          "candidatesTokenCount": 38,
+          "totalTokenCount": 1348,
+          "promptTokensDetails": [
+            {
+              "modality": "IMAGE",
+              "tokenCount": 1107
+            },
+            {
+              "modality": "TEXT",
+              "tokenCount": 203
+            }
+          ],
+          "serviceTier": "standard"
+        },
+        "modelVersion": "gemini-3.5-flash-lite",
+        "responseId": "IGe0asXXBauQ-8YPpdfQuA8"
+      },
+      "elapsedMs": 3218,
+      "raw": "{\n  \"reason\": \"The photo features two bison instead of a human subject with a face and eyes, failing the primary requirement.\",\n  \"decision\": \"cut\"\n}",
+      "result": {
+        "reason": "The photo features two bison instead of a human subject with a face and eyes, failing the primary requirement.",
+        "decision": "cut"
+      }
+    },
+    {
+      "run": 3,
+      "file": "tphoto10.jpg",
+      "arm": "cloud",
+      "retries": 0,
+      "retryAttempts": [],
+      "startedAt": "2026-09-23T23:56:17.592Z",
+      "status": 200,
+      "data": {
+        "candidates": [
+          {
+            "content": {
+              "parts": [
+                {
+                  "text": "{\n  \"reason\": \"The photo shows a scenic canyon with a winding river and trees, lacking any human subject with a face and eyes as required by the primary constraint.\",\n  \"decision\": \"cut\"\n}",
+                  "thoughtSignature": "El4KXAFpFH0TN/2b3SesXDfI3Lr69/wFYjPcmmpnWoDJDFLpB0qs2ch+WqQf6+ENgph25Im1fJQs5mCvyLgSg5t+0Ghjq9zWnVs4sRBZHlLjmhPcxdYqyiiJYAEU61Jo"
+                }
+              ],
+              "role": "model"
+            },
+            "finishReason": "STOP",
+            "index": 0
+          }
+        ],
+        "usageMetadata": {
+          "promptTokenCount": 1310,
+          "candidatesTokenCount": 46,
+          "totalTokenCount": 1356,
+          "promptTokensDetails": [
+            {
+              "modality": "TEXT",
+              "tokenCount": 203
+            },
+            {
+              "modality": "IMAGE",
+              "tokenCount": 1107
+            }
+          ],
+          "serviceTier": "standard"
+        },
+        "modelVersion": "gemini-3.5-flash-lite",
+        "responseId": "I2e0arWLAqKwsOIPvpHl4QQ"
+      },
+      "elapsedMs": 1570,
+      "raw": "{\n  \"reason\": \"The photo shows a scenic canyon with a winding river and trees, lacking any human subject with a face and eyes as required by the primary constraint.\",\n  \"decision\": \"cut\"\n}",
+      "result": {
+        "reason": "The photo shows a scenic canyon with a winding river and trees, lacking any human subject with a face and eyes as required by the primary constraint.",
+        "decision": "cut"
+      }
+    },
+    {
+      "run": 3,
+      "file": "tphoto10.jpg",
+      "arm": "local",
+      "retries": 0,
+      "retryAttempts": [],
+      "startedAt": "2026-09-23T23:56:20.476Z",
+      "status": 200,
+      "data": {
+        "model": "qwen3-vl:2b-instruct",
+        "created_at": "2026-09-23T23:56:24.437161Z",
+        "response": "{\n  \"reason\": \"The photo depicts a natural landscape of a canyon with a river, but it does not feature a human subject with a face and eyes. Therefore, it does not satisfy the primary requirement.\",\n  \"decision\": \"cut\"\n}",
+        "done": true,
+        "done_reason": "stop",
+        "total_duration": 3435925167,
+        "load_duration": 111150125,
+        "prompt_eval_count": 1282,
+        "prompt_eval_cached_count": 1281,
+        "prompt_eval_duration": 224142000,
+        "eval_count": 52,
+        "eval_duration": 1478974000
+      },
+      "elapsedMs": 4389,
+      "raw": "{\n  \"reason\": \"The photo depicts a natural landscape of a canyon with a river, but it does not feature a human subject with a face and eyes. Therefore, it does not satisfy the primary requirement.\",\n  \"decision\": \"cut\"\n}",
+      "result": {
+        "reason": "The photo depicts a natural landscape of a canyon with a river, but it does not feature a human subject with a face and eyes. Therefore, it does not satisfy the primary requirement.",
+        "decision": "cut"
+      }
+    }
+  ],
+  "finishedAt": "2026-09-23T23:56:24.890Z"
+}

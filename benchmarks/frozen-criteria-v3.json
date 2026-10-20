@@ -1,0 +1,22 @@
+[
+  {
+    "signal": "portrait",
+    "weight": "high",
+    "description": "photo shows a human subject with a face and eyes"
+  },
+  {
+    "signal": "golden hour light",
+    "weight": "high",
+    "description": "photo has warm, golden light casting soft shadows"
+  },
+  {
+    "signal": "candid expression",
+    "weight": "medium",
+    "description": "subject's face shows natural, unposed emotion"
+  },
+  {
+    "signal": "sharp eyes",
+    "weight": "high",
+    "description": "subject's eyes are focused and expressive"
+  }
+]
