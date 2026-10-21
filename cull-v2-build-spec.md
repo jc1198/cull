@@ -329,9 +329,31 @@ separate blue.
 
 Starred photos carry the star badge; manually moved photos carry the `Moved` marker; a
 photo can carry both. The selection effect is a shadow at spread 1 / radius 4, so it
-reaches ~5px past the thumbnail: the grid's clipping box needs ~6px of room on every side
-or the glow clips on the outer tiles. Keep the clip itself on the grid — below 1440 the
-grid must still clip rather than push the detail pane off-screen.
+reaches ~5px past the thumbnail: retain 6px top/left clearance and the reserved gap
+on the right. Bottom inner padding is zero, so at full scroll the last row ends level
+with the track. The same grid scroll container serves Keeps, Cuts, and Starred and
+reuses Taste's native scrollbar treatment and `scrollbar-gutter: stable`.
+
+Within the 1280px column, keep the grid at 772px (five 148 × 110 tiles with 8px gutters)
+and the detail pane at 484px. Divide their remaining 24px into equal gap / scrollbar /
+equal gap: measure native scrollbar width W and use (24px − W) / 2 for both gaps.
+An 8px scrollbar gives 8 / 8 / 8px; a 15px native scrollbar gives 4.5 / 15 / 4.5px.
+Overlay scrollbars reserve one tile gutter (8px) in the same budget. Reserve this space
+even for short and empty sets so tiles and the pane do not shift.
+
+Size the scroll container to end one computed gap above the console, rather than adding
+bottom content padding. Clip only the top clearance over the scrollbar so its visible
+track starts level with the first row, never above it toward the tabs. Results disables
+the shared gradient fade to leave the final row and track boundary clear; Taste retains
+its fade and existing layout.
+Only the grid scrolls; tabs, detail pane, wordmark, model picker, and console stay fixed.
+Empty messages center on the grid column, and all tabs remain clickable at zero.
+
+Start at the top on arrival, re-run, and tab changes. Preserve scroll position after a
+move or toast undo, retaining trailing space if the last row disappears. When a move or
+unstar removes the selected photo, reveal its replacement with `block: "nearest"` only
+if outside the viewport. Tile clicks and undo do not scroll. Programmatic scrolling is
+instant, including with reduced motion, and does not interrupt manual scrolling.
 
 ### Detail pane
 
@@ -356,9 +378,8 @@ grows into the space between the photo and the actions instead of pushing anythi
 The pane's top edge still aligns with the grid — that alignment is load-bearing; only the
 bottom changes.
 
-The pane and the grid therefore end differently at the console: the grid clips
-mid-thumbnail, the pane holds its clearance. That's intended. They're doing different
-jobs — one is a batch bleeding off the edge, the other a single object with a baseline.
+The grid scrolls independently and ends one computed scrollbar gap above the console;
+the pane holds its own clearance and does not move with the grid.
 
 Two levels of give when the content outruns the canvas, in order:
 
@@ -392,8 +413,7 @@ A moved photo has two decisions: Cull's and the user's. The card must not confla
 
 The grid carries the same state so it's visible before selection: a `Moved` marker on the
 thumbnail. Keep it visually distinct from the star badge — no accent fill, no glyph — the
-two co-occur. Top-left, across from the star rather than below it, so it survives the row
-the canvas clips at the console edge.
+two co-occur. Top-left, across from the star rather than below it.
 
 ### Selection rules
 

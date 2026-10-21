@@ -647,8 +647,7 @@ export default function App() {
 
       {step === 'results' && (
         <>
-          {/* Not a scrolling canvas: the detail pane sizes itself to the canvas
-              height so its actions can hold a fixed clearance above the console. */}
+          {/* Results scrolls its grid independently of the fixed detail pane. */}
           <Canvas modelPicker={modelPicker}>
             <ResultsView
               results={results}

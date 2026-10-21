@@ -1,4 +1,4 @@
-import { memo, useState, useEffect } from 'react'
+import { memo, useState, useEffect, useLayoutEffect, useRef } from 'react'
 import { SecondaryButton } from './Button'
 import { getDetailPreviewBlob } from '../lib/thumbnail'
 
@@ -36,7 +36,7 @@ function StarBadge() {
 // The manual-override marker. Deliberately not the star's language — no accent
 // fill, no glyph — because a photo can be starred and moved at once and the two
 // must stay tellable apart. Top-left — across from the star rather than below
-// it, so the marker survives the row the canvas clips at the console edge.
+// it, keeping both markers visible together.
 function MovedBadge() {
   return (
     <span
@@ -54,12 +54,15 @@ const GridTile = memo(function GridTile({ item, isSelected, starred, moved, cutL
     <button
       type="button"
       onClick={() => onSelect(item.photo.id)}
+      data-photo-id={item.photo.id}
       className="relative block"
       style={{ width: `${TILE_W}px`, height: `${TILE_H}px`, borderRadius: '6px',
                // Selection is the shared accent effect, not a separate blue.
                boxShadow: isSelected ? '0 0 4px 1px #BAA9FF' : 'none' }}
     >
       <img
+        loading="lazy"
+        decoding="async"
         src={item.photo.thumbUrl}
         alt={item.photo.name}
         className="object-cover"
@@ -80,7 +83,7 @@ function FilterTabs({ activeTab, counts, onChange }) {
     { key: 'starred', label: 'Starred', count: counts.starred },
   ]
   return (
-    <div className="flex items-start" style={{ gap: '24px' }}>
+    <div className="flex items-start shrink-0" style={{ gap: '24px' }}>
       {TABS.map((t) => {
         const active = activeTab === t.key
         return (
@@ -239,6 +242,64 @@ export default function ResultsView({
   const displayed = activeTab === 'cuts' ? cuts : activeTab === 'starred' ? starred : keeps
   const selectedItem = displayed.find((r) => r.photo.id === selectedId) ?? null
 
+  const scrollRef = useRef(null)
+  const runwayRef = useRef(null)
+  const previous = useRef(null)
+  const scrollTop = useRef(0)
+  const manualUntil = useRef(0)
+
+  useLayoutEffect(() => {
+    const scroll = scrollRef.current
+    const row = scroll.closest('.results-row')
+    // Native scrollbar styling stays shared with Taste. Measure the stable
+    // gutter instead of assuming an OS-specific width. Overlay bars reserve
+    // one tile gutter explicitly so they cannot overlap the thumbnails.
+    function measureScrollbar() {
+      const width = scroll.offsetWidth - scroll.clientWidth
+      row.style.setProperty('--results-scrollbar-width', `${width || GUTTER}px`)
+      row.style.setProperty('--results-overlay-reserve', `${width ? 0 : GUTTER}px`)
+    }
+    measureScrollbar()
+    const observer = new ResizeObserver(measureScrollbar)
+    observer.observe(scroll)
+    return () => observer.disconnect()
+  }, [])
+
+  useLayoutEffect(() => {
+    const scroll = scrollRef.current
+    const before = previous.current
+    const ids = displayed.map((item) => item.photo.id)
+    previous.current = { tab: activeTab, selectedId, ids }
+    if (!before || before.tab !== activeTab) {
+      runwayRef.current.style.minHeight = ''
+      scroll.scrollTop = 0
+      scrollTop.current = 0
+      return
+    }
+    // Retain trailing space when a move removes the last row. Browser scroll
+    // anchoring is disabled by the shared library CSS; undo keeps this offset too.
+    if (before.ids.length !== ids.length) {
+      runwayRef.current.style.minHeight = `${scrollTop.current + scroll.clientHeight - parseFloat(getComputedStyle(scroll).paddingTop)}px`
+      scroll.scrollTop = scrollTop.current
+    }
+    // Only a departing selection warrants revealing its replacement. Tile clicks
+    // and undo (which adds a photo) never trigger a programmatic scroll.
+    if (!before.selectedId || before.selectedId === selectedId || ids.includes(before.selectedId) ||
+        !selectedId || performance.now() < manualUntil.current) return
+    const tile = [...scroll.querySelectorAll('[data-photo-id]')]
+      .find((node) => node.dataset.photoId === String(selectedId))
+    if (!tile) return
+    const viewport = scroll.getBoundingClientRect()
+    const bounds = tile.getBoundingClientRect()
+    if (bounds.top < viewport.top + 6 || bounds.bottom > viewport.bottom - 6) {
+      tile.scrollIntoView({ block: 'nearest', inline: 'nearest', behavior: 'instant' })
+    }
+  })
+
+  function markManualScroll() {
+    manualUntil.current = performance.now() + 250
+  }
+
   return (
     <div className="w-full flex flex-col flex-1 min-h-0" style={{ gap: '24px' }}>
       <FilterTabs
@@ -247,18 +308,26 @@ export default function ResultsView({
         onChange={onTabChange}
       />
 
-      {/* items-start keeps the grid content-sized — it clips at the canvas edge
-          mid-thumbnail. The pane opts into the full height instead. */}
-      <div className="flex items-start flex-1 min-h-0" style={{ gap: '24px' }}>
-        {/* The selection glow (spread 1, radius 4) reaches ~5px past the tile,
-            so the clipping box is pushed 6px out and pulled back by an equal
-            negative margin — the grid stays aligned to the 1280 column and the
-            glow no longer clips on the outer tiles. The clip itself stays here:
-            below 1440 the grid must still clip rather than push the pane off. */}
-        <div className="flex-1 min-w-0 overflow-hidden" style={{ padding: '6px', margin: '-6px' }}>
+      <div className="results-row flex items-start flex-1 min-h-0" style={{
+        '--results-grid-width': `${COLUMNS * TILE_W + (COLUMNS - 1) * GUTTER}px`,
+        '--results-row-space': '24px',
+        '--results-tile-gutter': `${GUTTER}px`,
+        '--results-edge-padding': '6px',
+      }}>
+        <div className="photo-grid-frame results-grid-frame">
+          <div ref={scrollRef} className="photo-grid-scroll results-grid-scroll"
+            tabIndex={0} role="region" aria-label={`${activeTab} photos`}
+            onWheel={markManualScroll} onTouchMove={markManualScroll}
+            onPointerDown={markManualScroll} onKeyDown={markManualScroll}
+            onScroll={() => {
+              scrollTop.current = scrollRef.current.scrollTop
+              // Include momentum and scrollbar dragging in the manual-scroll guard.
+              if (performance.now() < manualUntil.current) markManualScroll()
+            }}>
+          <div ref={runwayRef}>
           {displayed.length === 0 ? (
             // Centered on the canvas column, not the full viewport width.
-            <div className="flex items-center justify-center w-full" style={{ height: '280px' }}>
+            <div className="flex items-center justify-center" style={{ width: '772px', height: '280px' }}>
               <p className="text-[13px] text-primary">
                 {activeTab === 'keeps' ? 'No keeps yet.' : activeTab === 'cuts' ? 'No cuts yet.' : 'No starred photos yet. Star a photo to collect it here.'}
               </p>
@@ -266,7 +335,7 @@ export default function ResultsView({
           ) : (
             <div
               className="grid justify-start"
-              style={{ gridTemplateColumns: `repeat(${COLUMNS}, ${TILE_W}px)`, gap: `${GUTTER}px` }}
+              style={{ width: '772px', gridTemplateColumns: `repeat(${COLUMNS}, ${TILE_W}px)`, gap: `${GUTTER}px` }}
             >
               {displayed.map((item) => (
                 <GridTile
@@ -281,6 +350,8 @@ export default function ResultsView({
               ))}
             </div>
           )}
+          </div>
+          </div>
         </div>
 
         <DetailPane

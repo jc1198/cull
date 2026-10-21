@@ -39,8 +39,8 @@ Every screen uses two zones.
 - **Console** — a full-bleed frame at the bottom, 1440px max-width, contents on a 1280px
   column (80px gutters). Sizes to its contents rather than holding a fixed height.
 
-**Every** step clips: results was the last screen with a scrolling canvas, and it now
-sizes its detail pane to the canvas instead, so `Canvas` has no `scroll` variant left.
+The outer `Canvas` clips; individual photo grids own scrolling inside that boundary.
+`Canvas` has no `scroll` variant.
 
 `Canvas` owns the 48px gap between the wordmark and screen content (`WORDMARK_GAP`) —
 one value in one place. Screens don't set their own top margin; screen 1 used to, and
@@ -187,8 +187,20 @@ closed over when the iteration started. Cancel goes to results with whatever fin
 
 ## Results (screen 4)
 
-Grid flexes; the detail pane holds 484px. Below 1440 the grid clips like the rest of the
-canvas rather than pushing the pane off-screen.
+The 772px, five-column grid scrolls inside `ResultsView.jsx`, using the shared
+`.photo-grid-frame` / `.photo-grid-scroll` CSS in `src/index.css` (the taste library's
+native scrollbar). Results disables the shared fade. `.results-row` defines the
+existing 24px row-space and 8px tile-gutter tokens; `ResultsView.jsx` measures the stable
+native scrollbar width W. `.results-grid-frame` and `.results-grid-scroll` divide the
+24px into (24 − W) / 2 gap, W scrollbar, (24 − W) / 2 gap beside the fixed 484px pane.
+That is 8/8/8px for an 8px bar, or 4.5/15/4.5px for a 15px native bar. Overlay bars
+reserve the 8px tile gutter. The container ends one computed gap above the console;
+its visible track starts at the first row's top. Taste's layout is unchanged.
+Tabs, wordmark, model picker, console, and detail pane remain fixed while the grid scrolls.
+Arrival, re-run, and tab changes reset to the top. Moves and undo hold the offset,
+including trailing space after a final-row removal. A departing selection reveals its
+replacement only when outside the viewport, with instant `block: "nearest"` scrolling;
+manual scrolling suppresses that reveal. Tile clicks and undo do not auto-scroll.
 
 Selection rules — the detail pane always shows something, so actions never need a disabled
 state: first photo on arrival, first photo on tab switch, next-then-previous when the
@@ -215,16 +227,18 @@ with the grid. Photo and card live in one bounded `flex-1 min-h-0 overflow-y-aut
 a long rationale shrinks and scrolls the card with the photo fixed, and a canvas too short
 for the photo scrolls the whole region. The actions never move.
 
-That makes the pane and the grid end differently at the console — the grid clips
-mid-thumbnail, the pane holds clearance. Intended; they're doing different jobs.
+The grid ends above the console by the computed scrollbar gap while the independent
+pane holds its own clearance.
 
 `REASON_CARD_MIN_H` survives for a different reason than it was added: the card is the
 pane's only shrinkable item, so without a floor a short canvas collapses it to its padding
 before the region starts scrolling.
 
-The results grid's clipping box carries 6px of padding, pulled back by an equal negative
-margin, so the selection shadow (spread 1, radius 4) has room. The analyzing scan line is
-an inset border, not a shadow, so it needs none.
+The results grid's scroll container carries 6px top/left clearance and the computed
+right gap for the selection shadow, with zero bottom padding so the final row meets
+the track's bottom at full scroll. Top/left negative margins retain tile alignment;
+a clip over the scrollbar's top clearance aligns its visible start to the first row.
+The analyzing scan line is an inset border, not a shadow, so it needs no clearance.
 
 There is no refinement input. Refinement happens by returning to step 2.
 

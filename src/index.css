@@ -55,7 +55,7 @@ body {
 
 .model-picker-label { font-family: "Kantumruy Pro", sans-serif; font-weight: 600; font-synthesis: none; }
 .photo-grid-frame { position: relative; flex: 1; min-height: 0; width: 100%; }
-.photo-grid-scroll { height: 100%; overflow: auto; overscroll-behavior: contain; overflow-anchor: none; padding-bottom: 32px; }
+.photo-grid-scroll { height: 100%; overflow: auto; overscroll-behavior: contain; overflow-anchor: none; scrollbar-gutter: stable; padding-bottom: 32px; }
 .photo-grid-frame::after { content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 40px; pointer-events: none; background: linear-gradient(transparent, #272727); }
 .photo-remove { position: absolute; top: 6px; right: 6px; width: 28px; height: 28px; border-radius: 50%; background: rgba(0,0,0,.8); color: white; font-size: 22px; line-height: 24px; opacity: 0; }
 .photo-thumbnail:hover .photo-remove, .photo-thumbnail:focus-within .photo-remove { opacity: 1; }
@@ -96,3 +96,32 @@ body {
 .export-dialog input { background: transparent; border: 1px solid rgba(255,255,255,.6); border-radius: 8px; padding: 8px; }
 .export-dialog input:focus { border-color: white; outline: none; }
 .export-dialog button:focus-visible { outline: 2px solid white; outline-offset: 3px; }
+
+/* Split the existing 24px between tiles and pane into gap / native bar / gap.
+   Results measures the shared native scrollbar; Taste's layout is unchanged. */
+.results-row {
+  --results-scrollbar-width: var(--results-tile-gutter);
+  --results-overlay-reserve: 0px;
+  --results-scroll-gap: calc((var(--results-row-space) - var(--results-scrollbar-width)) / 2);
+  gap: var(--results-scroll-gap);
+}
+.results-grid-frame {
+  flex: none;
+  align-self: stretch;
+  min-width: 0;
+  width: calc(var(--results-grid-width) + var(--results-edge-padding) + var(--results-scroll-gap) + var(--results-scrollbar-width));
+  margin: calc(-1 * var(--results-edge-padding)) 0 var(--results-scroll-gap) calc(-1 * var(--results-edge-padding));
+}
+.results-grid-scroll {
+  width: 100%;
+  overflow-x: hidden;
+  padding: var(--results-edge-padding) calc(var(--results-scroll-gap) + var(--results-overlay-reserve)) 0 var(--results-edge-padding);
+  /* Keep glow clearance above the photos, but expose the native track only
+     from the first row's top. This works without a second scrollbar skin. */
+  clip-path: polygon(0 0, calc(100% - var(--results-scrollbar-width)) 0,
+    calc(100% - var(--results-scrollbar-width)) var(--results-edge-padding),
+    100% var(--results-edge-padding), 100% 100%, 0 100%);
+}
+/* The last row should meet the track's bottom without a fade obscuring it. */
+.results-grid-frame::after { display: none; }
+.results-grid-scroll [data-photo-id] { scroll-margin: 6px; }
