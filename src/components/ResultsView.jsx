@@ -297,7 +297,7 @@ export default function ResultsView({
   }
 
   return (
-    <div className="w-full flex flex-col flex-1 min-h-0" style={{ gap: '24px' }}>
+    <div className="w-full flex flex-col flex-1 min-h-0 gap-6 pb-6">
       <FilterTabs
         activeTab={activeTab}
         counts={{ keeps: keeps.length, cuts: cuts.length, starred: starred.length }}

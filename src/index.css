@@ -110,7 +110,7 @@ body {
   align-self: stretch;
   min-width: 0;
   width: calc(var(--results-grid-width) + var(--results-edge-padding) + var(--results-scroll-gap) + var(--results-scrollbar-width));
-  margin: calc(-1 * var(--results-edge-padding)) 0 var(--results-scroll-gap) calc(-1 * var(--results-edge-padding));
+  margin: calc(-1 * var(--results-edge-padding)) 0 0 calc(-1 * var(--results-edge-padding));
 }
 .results-grid-scroll {
   width: 100%;
@@ -126,19 +126,19 @@ body {
 .results-grid-frame::after { display: none; }
 .results-grid-scroll [data-photo-id] { scroll-margin: 6px; }
 
-/* Match the grid's canvas boundary without changing its scrollbar budget. */
+/* The parent reserves spacing-6 below the entire row, matching its tabs gap. */
 .results-detail {
   width: 484px;
-  margin-bottom: var(--results-scroll-gap);
 }
 .results-detail-photo {
   width: 484px;
   min-height: 160px;
   max-height: 280px;
-  /* First 280 → 240, then compress the card to its readable floor,
-     then 240 → 160. The 66px budget is two gap-4 spaces plus actions. */
+  /* The row already excludes the shared spacing-6 console clearance.
+     First 280 → 200, then compress the card to its readable floor,
+     then 200 → 160. The 66px budget is two gap-4 spaces plus actions. */
   flex: 0 0 clamp(
-    clamp(160px, calc(100% - var(--reason-readable-floor, 92px) - 66px), 240px),
+    clamp(160px, calc(100% - var(--reason-readable-floor, 92px) - 66px), 200px),
     calc(100% - var(--reason-content-height, 92px) - 66px),
     280px);
 }

@@ -194,7 +194,7 @@ existing 24px row-space and 8px tile-gutter tokens; `ResultsView.jsx` measures t
 native scrollbar width W. `.results-grid-frame` and `.results-grid-scroll` divide the
 24px into (24 − W) / 2 gap, W scrollbar, (24 − W) / 2 gap beside the fixed 484px pane.
 That is 8/8/8px for an 8px bar, or 4.5/15/4.5px for a 15px native bar. Overlay bars
-reserve the 8px tile gutter. The container ends one computed gap above the console;
+reserve the 8px tile gutter. The container ends spacing-6 (24px) above the console;
 its visible track starts at the first row's top. Taste's layout is unchanged.
 Tabs, wordmark, model picker, console, and detail pane remain fixed while the grid scrolls.
 Arrival, re-run, and tab changes reset to the top. Moves and undo hold the offset,
@@ -219,12 +219,16 @@ Cull's decision, so titling them by the current tab makes the card contradict it
 gains an accent line above the title (`You moved this photo to cuts`) plus a `Moved`
 marker on the thumbnail. The move action still follows the current decision.
 
-**The detail pane hugs its content and aligns to the top.** `ResultsView.jsx` renders
+**The detail card hugs its content; actions follow it by 16px.** `ResultsView.jsx` renders
 a bounded flex column styled by `.results-detail*` in `src/index.css`. A ResizeObserver
 measures the natural rationale content and its title to budget the shrink order:
-photo 280 → 240px, card down to title plus two text lines, then photo 240 → 160px.
-The card never grows beyond its content. Actions follow it with `gap-4`; spare space
-collects below them. The card has equal 16px padding and consistent 6px text gaps.
+photo 280 → 200px, card down to title plus two text lines, then photo 200 → 160px.
+The card never grows beyond its content. The results wrapper uses `gap-6 pb-6` to
+share spacing-6 (24px) between tabs/grid and row/console. Shrink calculations use the
+row's reduced height. Actions follow the card with exactly `gap-4` (16px), including
+when the card scrolls; spare space collects below the actions. The grid track ends
+24px above the console. Actions maintain at least that clearance and may end higher.
+The card has equal 16px padding and consistent 6px text gaps.
 Only overflowing cards show a native scrollbar, extra 8px scrollbar spacing, and bottom
 fade. There is no outer pane scroll. Grid scrollbar sizing is unchanged.
 

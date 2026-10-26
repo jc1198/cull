@@ -341,8 +341,12 @@ An 8px scrollbar gives 8 / 8 / 8px; a 15px native scrollbar gives 4.5 / 15 / 4.5
 Overlay scrollbars reserve one tile gutter (8px) in the same budget. Reserve this space
 even for short and empty sets so tiles and the pane do not shift.
 
-Size the scroll container to end one computed gap above the console, rather than adding
-bottom content padding. Clip only the top clearance over the scrollbar so its visible
+Reserve the existing spacing-6 token (24px) below the whole results content row,
+matching the tabs-to-first-photo gap, including the tabs' underline. The grid scrollbar
+track ends exactly 24px above the console; actions end at least 24px above it. This
+replaces the earlier 8px track-to-console gap; retain the horizontal tile/bar/pane spacing unchanged.
+Use `gap-6` and `pb-6` on the results wrapper so both clearances share the same token,
+rather than adding bottom padding inside the grid scroll content. Clip only the top clearance over the scrollbar so its visible
 track starts level with the first row, never above it toward the tabs. Results disables
 the shared gradient fade to leave the final row and track boundary clear; Taste retains
 its fade and existing layout.
@@ -363,27 +367,32 @@ instant, including with reduced motion, and does not interrupt manual scrolling.
 - Four bullets from the `reason` field
 - Actions below: `Move to cuts` and the star toggle
 
-#### The pane hugs its content and aligns to the top
+#### The card hugs its content; actions follow it by 16px
 
 The 484px detail column aligns with the first grid row and stays bounded by the canvas.
 The reasoning card hugs its content, with no flex-grow or stretching minimum height.
-Actions sit directly below the card. Use the existing `gap-4` (16px) token between the
-frame and card and between the card and actions. Spare height collects below the actions.
+Use the existing `gap-4` (16px) token between the frame and card and exactly 16px
+between the card's bottom and the actions' top, including when the card scrolls.
+The stack aligns to the top; spare height collects below the actions, never between
+the card and actions. The actions do not grow or use an auto top margin.
+The whole row reserves spacing-6 (24px), matching the tabs-to-grid gap, above the
+console. The grid track ends at that boundary; actions may end farther above it,
+but never closer. The shrink calculation uses the row's reduced available height.
 
 The card has 16px inner padding on all four sides. Use the same 6px gap from title to
 first bullet and between bullets. The photo frame retains `object-fit: contain` and
 shrinks in this order when the content exceeds the canvas:
 
-1. Shrink the frame from 280px to 240px.
+1. Shrink the frame from 280px to 200px.
 2. Shrink the card below its natural content height, scrolling internally with
    `min-height: 0` and `overflow-y: auto`, down to a readable floor of its title and two
    lines of text (including the moved-photo label when present).
-3. Shrink the frame from 240px to its 160px minimum.
+3. Shrink the frame from 200px to its 160px minimum.
 
 The readable floor is a shrink budget, not a minimum that stretches short content.
 Actions remain fully visible. Show the bottom fade and Taste's native scrollbar only
 when the card overflows. Add 8px of spacing beside that scrollbar only while overflowing;
-reserve no scrollbar space otherwise. Grid, tabs, and console sizing remain unchanged.
+reserve no scrollbar space otherwise. Tabs and console sizing remain unchanged.
 
 **Minimum supported viewport:** 1440 × 780 in the tested matrix, for the results layout.
 The fixed grid/detail widths plus 80px gutters clip the detail card horizontally at
