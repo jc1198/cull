@@ -131,19 +131,30 @@ function useFullPreview(photo) {
   return preview && preview.photo === photo ? preview.url : null
 }
 
-// Clearance between the actions and the console's top border. Matches the
-// console's own 32px top padding, so the boundary breathes symmetrically.
-const ACTIONS_CLEARANCE = 32
-
-// The reasoning card's floor: four single-line bullets.
-// 16 top + 18 title + 12 gap + (4 x 18 bullets + 3 x 6 gaps) + 16 bottom.
-// It no longer keeps the pane from shifting — the pinned actions do that — but
-// the card is the pane's only shrinkable item, so without a floor a short canvas
-// collapses it to its own padding before anything else gives.
-const REASON_CARD_MIN_H = 152
-
 function DetailPane({ item, activeTab, starred, onMove, onStar }) {
   const previewUrl = useFullPreview(item?.photo)
+  const paneRef = useRef(null)
+  const reasonRef = useRef(null)
+  const reasonContentRef = useRef(null)
+  useLayoutEffect(() => {
+    const pane = paneRef.current
+    const card = reasonRef.current
+    const content = reasonContentRef.current
+    if (!pane || !card || !content) return
+    const measure = () => {
+      // Measure natural content, independently of the card's scroll viewport.
+      pane.style.setProperty('--reason-content-height', `${content.getBoundingClientRect().height + 32}px`)
+      const title = content.firstElementChild.getBoundingClientRect().height
+      pane.style.setProperty('--reason-readable-floor', `${32 + title + 6 + 36}px`)
+      card.classList.toggle('is-overflowing', card.scrollHeight > card.clientHeight)
+    }
+    const observer = new ResizeObserver(measure)
+    observer.observe(pane)
+    observer.observe(card)
+    observer.observe(content)
+    measure()
+    return () => observer.disconnect()
+  }, [item])
   if (!item) return null
 
   // The move action follows where the photo is now; the card title follows
@@ -154,58 +165,43 @@ function DetailPane({ item, activeTab, starred, onMove, onStar }) {
   const overridden = item.decision !== item.originalDecision
 
   return (
-    // Stretched to the canvas floor rather than sized by its content, so the
-    // actions hold one position and the gap above the console stops varying
-    // with the rationale's length. Top edge still aligns with the grid.
-    <div
-      className="flex flex-col shrink-0 self-stretch"
-      style={{ width: '484px', gap: '16px', paddingBottom: `${ACTIONS_CLEARANCE}px` }}
-    >
-      {/* Everything above the actions lives in one bounded region. Free space
-          collects at its bottom, so a shorter rationale leaves a gap between the
-          card and the actions instead of moving them. */}
-      <div className="flex flex-col flex-1 min-h-0 overflow-y-auto" style={{ gap: '16px' }}>
-        <img
-          src={previewUrl ?? item.photo.thumbUrl}
-          alt={item.photo.name}
-          className="object-contain bg-black/20 shrink-0"
-          style={{ width: '484px', height: '280px', borderRadius: '8px' }}
-          draggable={false}
-        />
+    <div ref={paneRef} className="results-detail flex flex-col shrink-0 self-stretch min-h-0 gap-4">
+      <img
+        src={previewUrl ?? item.photo.thumbUrl}
+        alt={item.photo.name}
+        className="results-detail-photo object-contain bg-black/20"
+        style={{ borderRadius: '8px' }}
+        draggable={false}
+      />
 
-        {/* Natural height, growing into the space below it. Two levels of give,
-            in order: a long rationale shrinks the card and scrolls inside it,
-            leaving the photo put; a canvas too short even for the photo scrolls
-            the whole region. Either way the actions hold their position. */}
-        <div
-          className="w-full min-h-0 overflow-y-auto bg-surface rounded-lg"
-          style={{ paddingLeft: '16px', paddingRight: '24px', paddingTop: '16px', paddingBottom: '16px',
-                   minHeight: `${REASON_CARD_MIN_H}px` }}
-        >
-          <div className="flex flex-col" style={{ gap: '12px' }}>
-            <div className="flex flex-col" style={{ gap: '4px' }}>
-              {overridden && (
-                <p className="text-[12px] font-semibold text-accent leading-[14px]">
-                  You moved this photo to {isCut ? 'cuts' : 'keeps'}
-                </p>
-              )}
-              <p className="text-[14px] font-semibold text-primary leading-[18px]">
-                {cullCut ? 'Why Cull cut this' : 'Why Cull kept this'}
+      <div
+        ref={reasonRef}
+        className="results-detail-reason w-full min-h-0 overflow-y-auto bg-surface rounded-lg"
+        tabIndex={0} role="region" aria-label="Cull’s reasoning"
+      >
+        <div ref={reasonContentRef} className="flex flex-col gap-1.5">
+          <div className="flex flex-col" style={{ gap: '4px' }}>
+            {overridden && (
+              <p className="text-[12px] font-semibold text-accent leading-[14px]">
+                You moved this photo to {isCut ? 'cuts' : 'keeps'}
               </p>
-            </div>
-            <ul className="flex flex-col" style={{ gap: '6px' }}>
-              {reasonToBullets(item.reason).map((b, i) => (
-                <li key={i} className="flex items-start text-[13px] leading-[18px] text-primary" style={{ gap: '8px' }}>
-                  <span aria-hidden="true">•</span>
-                  <span>{b}</span>
-                </li>
-              ))}
-            </ul>
+            )}
+            <p className="text-[14px] font-semibold text-primary leading-[18px]">
+              {cullCut ? 'Why Cull cut this' : 'Why Cull kept this'}
+            </p>
           </div>
+          <ul className="flex flex-col gap-1.5">
+            {reasonToBullets(item.reason).map((b, i) => (
+              <li key={i} className="flex items-start text-[13px] leading-[18px] text-primary" style={{ gap: '8px' }}>
+                <span aria-hidden="true">•</span>
+                <span>{b}</span>
+              </li>
+            ))}
+          </ul>
         </div>
       </div>
 
-      <div className="flex items-center shrink-0" style={{ gap: '16px' }}>
+      <div className="results-detail-actions flex items-center shrink-0 gap-4">
         <SecondaryButton
           onClick={() => onMove(item.photo.id)}
           className="!text-[14px] !leading-[16px]"

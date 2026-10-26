@@ -219,20 +219,14 @@ Cull's decision, so titling them by the current tab makes the card contradict it
 gains an accent line above the title (`You moved this photo to cuts`) plus a `Moved`
 marker on the thumbnail. The move action still follows the current decision.
 
-**The detail pane is height-anchored at both ends.** It stretches to the canvas floor
-(`self-stretch`) instead of ending with its content, and the actions sit at the bottom
-behind `ACTIONS_CLEARANCE = 32` — the console's own top padding — so the gap at the
-boundary is constant rather than a function of the bullet count. The top edge still aligns
-with the grid. Photo and card live in one bounded `flex-1 min-h-0 overflow-y-auto` region:
-a long rationale shrinks and scrolls the card with the photo fixed, and a canvas too short
-for the photo scrolls the whole region. The actions never move.
-
-The grid ends above the console by the computed scrollbar gap while the independent
-pane holds its own clearance.
-
-`REASON_CARD_MIN_H` survives for a different reason than it was added: the card is the
-pane's only shrinkable item, so without a floor a short canvas collapses it to its padding
-before the region starts scrolling.
+**The detail pane hugs its content and aligns to the top.** `ResultsView.jsx` renders
+a bounded flex column styled by `.results-detail*` in `src/index.css`. A ResizeObserver
+measures the natural rationale content and its title to budget the shrink order:
+photo 280 → 240px, card down to title plus two text lines, then photo 240 → 160px.
+The card never grows beyond its content. Actions follow it with `gap-4`; spare space
+collects below them. The card has equal 16px padding and consistent 6px text gaps.
+Only overflowing cards show a native scrollbar, extra 8px scrollbar spacing, and bottom
+fade. There is no outer pane scroll. Grid scrollbar sizing is unchanged.
 
 The results grid's scroll container carries 6px top/left clearance and the computed
 right gap for the selection shadow, with zero bottom padding so the final row meets

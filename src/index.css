@@ -125,3 +125,33 @@ body {
 /* The last row should meet the track's bottom without a fade obscuring it. */
 .results-grid-frame::after { display: none; }
 .results-grid-scroll [data-photo-id] { scroll-margin: 6px; }
+
+/* Match the grid's canvas boundary without changing its scrollbar budget. */
+.results-detail {
+  width: 484px;
+  margin-bottom: var(--results-scroll-gap);
+}
+.results-detail-photo {
+  width: 484px;
+  min-height: 160px;
+  max-height: 280px;
+  /* First 280 → 240, then compress the card to its readable floor,
+     then 240 → 160. The 66px budget is two gap-4 spaces plus actions. */
+  flex: 0 0 clamp(
+    clamp(160px, calc(100% - var(--reason-readable-floor, 92px) - 66px), 240px),
+    calc(100% - var(--reason-content-height, 92px) - 66px),
+    280px);
+}
+.results-detail-reason {
+  flex: 0 1 auto;
+  padding: 16px;
+  overflow-x: hidden;
+  overscroll-behavior: contain;
+}
+.results-detail-reason.is-overflowing {
+  /* Taste's native scrollbar; add spacing only when scrolling is needed. */
+  mask-image: linear-gradient(#000 calc(100% - 8px), #0008);
+}
+.results-detail-reason.is-overflowing > div {
+  margin-right: 8px;
+}

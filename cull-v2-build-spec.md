@@ -357,39 +357,39 @@ instant, including with reduced motion, and does not interrupt manual scrolling.
 
 ### Detail pane
 
-- Selected photo at 484 × 280
+- Selected photo up to 484 × 280; the frame shrinks to a 160px minimum height, with `object-fit: contain`.
 - Reasoning card on a dark elevated surface, one step lighter than the canvas
 - Card title reflects Cull’s original decision (`originalDecision`): `Why Cull kept this` or `Why Cull cut this`, independent of the current tab or manual moves. Preserve the `You moved this photo` line on moved photos.
 - Four bullets from the `reason` field
 - Actions below: `Move to cuts` and the star toggle
 
-#### The pane is height-anchored at both ends
+#### The pane hugs its content and aligns to the top
 
-The pane fills the canvas height rather than ending where its content does. Photo at the
-top, rationale below it, **actions pinned to the bottom with 32px of clearance above the
-console** — the same 32px as the console's own top padding, so the two zones breathe
-symmetrically across the boundary.
+The 484px detail column aligns with the first grid row and stays bounded by the canvas.
+The reasoning card hugs its content, with no flex-grow or stretching minimum height.
+Actions sit directly below the card. Use the existing `gap-4` (16px) token between the
+frame and card and between the card and actions. Spare height collects below the actions.
 
-Sized by content, the gap above the console tracked the bullet count: cramped under a long
-rationale, loose under a short one, and moving by the height of the override line whenever
-a moved photo was selected. Pinning the actions makes that gap a constant, and the card
-grows into the space between the photo and the actions instead of pushing anything.
+The card has 16px inner padding on all four sides. Use the same 6px gap from title to
+first bullet and between bullets. The photo frame retains `object-fit: contain` and
+shrinks in this order when the content exceeds the canvas:
 
-The pane's top edge still aligns with the grid — that alignment is load-bearing; only the
-bottom changes.
+1. Shrink the frame from 280px to 240px.
+2. Shrink the card below its natural content height, scrolling internally with
+   `min-height: 0` and `overflow-y: auto`, down to a readable floor of its title and two
+   lines of text (including the moved-photo label when present).
+3. Shrink the frame from 240px to its 160px minimum.
 
-The grid scrolls independently and ends one computed scrollbar gap above the console;
-the pane holds its own clearance and does not move with the grid.
+The readable floor is a shrink budget, not a minimum that stretches short content.
+Actions remain fully visible. Show the bottom fade and Taste's native scrollbar only
+when the card overflows. Add 8px of spacing beside that scrollbar only while overflowing;
+reserve no scrollbar space otherwise. Grid, tabs, and console sizing remain unchanged.
 
-Two levels of give when the content outruns the canvas, in order:
-
-1. A long rationale shrinks the card, which scrolls inside itself. The photo stays put.
-2. A canvas too short even for the photo scrolls the photo-plus-card region as a whole.
-
-The actions never move in either case. The card keeps a minimum height of four
-single-line bullets — not to stop the pane shifting any more, that's the pinned actions'
-job, but because the card is the pane's only shrinkable item and without a floor a short
-canvas collapses it to its own padding before anything else gives.
+**Minimum supported viewport:** 1440 × 780 in the tested matrix, for the results layout.
+The fixed grid/detail widths plus 80px gutters clip the detail card horizontally at
+1280px width; those grid/gutter constraints are unchanged. Taste has separate short-height
+limitations: with the tested 452px expanded console, 1280 × 640 hides the grid and
+clips the photo count, while 1280 × 700 leaves only a 31px strip of thumbnails.
 
 The star toggle is labelled, not icon-only: `Star` with an outline glyph when unstarred,
 `Starred` with a filled glyph and an accent fill when starred.
